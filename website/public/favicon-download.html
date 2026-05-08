@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Download favicon — Soft Luxe Daily</title>
+<style>
+  body {
+    margin: 0;
+    background: #fbf7f3;
+    color: #2a2522;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 18px;
+    padding: 32px;
+  }
+  h1 { font-family: ui-serif, Georgia, serif; margin: 0; font-size: 28px; }
+  p { color: #6b5e57; margin: 0; }
+  #status { font-size: 14px; }
+  button {
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid #2a2522;
+    background: #2a2522;
+    color: #fbf7f3;
+    cursor: pointer;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <h1>Pearl drop favicon</h1>
+  <p id="status">Preparing 512×512 PNG…</p>
+  <button id="dl">Download again</button>
+
+<script>
+const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <defs>
+    <radialGradient id="pearl" cx="42%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#fff8f3"/>
+      <stop offset="55%" stop-color="#f5e2dc"/>
+      <stop offset="100%" stop-color="#d6a8a0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="#2a2522"/>
+  <circle cx="50" cy="50" r="28" fill="url(#pearl)"/>
+</svg>`;
+
+function download() {
+  const status = document.getElementById("status");
+  const blob = new Blob([SVG], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, 512, 512);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((png) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(png);
+      a.download = "favicon-source.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      status.textContent = "Downloaded favicon-source.png ✓";
+    }, "image/png");
+  };
+  img.src = url;
+}
+
+download();
+document.getElementById("dl").addEventListener("click", download);
+</script>
+</body>
+</html>

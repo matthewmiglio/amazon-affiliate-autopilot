@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbf7f3;
+  --foreground: #1c1917;
+  --rose: #d6a8a0;
+  --rose-soft: #f5e2dc;
+  --gold: #b58a3a;
+  --gold-soft: #e7d3a4;
+  --ink: #2a2522;
+  --muted: #6b5e57;
+  --line: #e8ddd4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif-display {
+  font-family: var(--font-playfair), ui-serif, Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
