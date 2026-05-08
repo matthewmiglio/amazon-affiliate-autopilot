@@ -14,9 +14,9 @@ Every subsequent upload:
   python upload.py --list                                       # show status of all products
   python upload.py --channels                                   # show registered channels
 
-Metadata for each product lives in metadata.json. Each entry drives the YouTube
-snippet (title, description, tags, category). The actual video file is pulled
-from ../videos/<product-slug>.mp4.
+Metadata for each product lives in `products/<slug>/manifest.json` under the
+`youtube-metadata` key (title, description, tags, category, privacy). The video
+file is read directly from `products/<slug>/final-with-music.mp4`.
 
 Multi-channel rotation:
   Each authenticated account has a token saved in tokens/<name>.json and a
@@ -32,8 +32,6 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 import argparse
 import datetime as dt
 import json
-import random
-import re
 from pathlib import Path
 
 from youtube_auth import (
@@ -50,19 +48,11 @@ from youtube_auth import (
 )
 
 HERE = Path(__file__).resolve().parent
-VIDEOS = HERE.parent / "videos"
-METADATA_FILE = HERE / "metadata.json"
+PRODUCTS = HERE.parent / "products"
 HISTORY_FILE = HERE / "history.json"
 
 CATEGORY_PEOPLE_BLOGS = "22"
-
-TITLE_HASHTAG_POOL = [
-    "#AmazonFinds", "#AmazonMustHaves", "#AmazonDeals", "#AmazonHaul",
-    "#TikTokMadeMeBuyIt", "#Shorts", "#YouTubeShorts", "#ProductReview",
-    "#MustHave", "#OnlineShopping", "#AmazonReview", "#SmartBuy",
-    "#JewelryFinds", "#JewelryLover", "#DaintyJewelry", "#FineJewelry",
-]
-TITLE_HASHTAG_COUNT = 3
+FINAL_VIDEO_NAME = "final-with-music.mp4"
 
 BLACKLIST_CHARS = [
     "<", ">", "\\", "|", "@", "%", "^", "*", "+", "=", "`", "~",
@@ -83,23 +73,15 @@ def sanitize(text: str) -> str:
     return text.strip()
 
 
-def apply_title_hashtags(title: str) -> str:
-    stripped = re.sub(r'\s*#\S+', '', title).strip()
-    tags = random.sample(TITLE_HASHTAG_POOL, TITLE_HASHTAG_COUNT)
-    result = f"{stripped} {' '.join(tags)}"
-    if len(result) > 100:
-        result = f"{stripped} {' '.join(tags[:2])}"
-    if len(result) > 100:
-        result = f"{stripped} {tags[0]}"
-    if len(result) > 100:
-        result = stripped
-    return result
+def manifest_path(product_slug: str) -> Path:
+    return PRODUCTS / product_slug / "manifest.json"
 
 
-def load_metadata() -> dict:
-    if not METADATA_FILE.exists():
-        sys.exit(f"metadata.json missing at {METADATA_FILE}")
-    return json.loads(METADATA_FILE.read_text(encoding="utf-8"))
+def load_product_manifest(product_slug: str) -> dict | None:
+    p = manifest_path(product_slug)
+    if not p.exists():
+        return None
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 def load_history() -> dict:
@@ -222,18 +204,22 @@ def do_auth(channel_name: str) -> None:
 
 def upload_one(product_slug: str, dry_run: bool, force: bool, assume_yes: bool = False,
                channel: str | None = None) -> str | None:
-    metadata = load_metadata()
+    manifest = load_product_manifest(product_slug)
     history = load_history()
 
-    if product_slug not in metadata:
-        print(f"  [skip] {product_slug}: no entry in metadata.json")
+    if manifest is None:
+        print(f"  [skip] {product_slug}: no manifest at {manifest_path(product_slug)}")
+        return None
+    entry = manifest.get("youtube-metadata") or {}
+    if not entry.get("title"):
+        print(f"  [skip] {product_slug}: manifest has no youtube-metadata.title - run /upload-ad first")
         return None
     if not force and product_slug in history:
         prev = history[product_slug]
         print(f"  [skip] {product_slug}: already uploaded {prev['uploaded_at']} -> https://youtu.be/{prev['video_id']}")
         return None
 
-    video_path = VIDEOS / f"{product_slug}.mp4"
+    video_path = PRODUCTS / product_slug / FINAL_VIDEO_NAME
     if not video_path.exists():
         print(f"  [skip] {product_slug}: video not rendered at {video_path}")
         return None
@@ -241,9 +227,8 @@ def upload_one(product_slug: str, dry_run: bool, force: bool, assume_yes: bool =
     if channel is None:
         channel = pick_channel(history)
 
-    entry = metadata[product_slug]
-    title = apply_title_hashtags(sanitize(entry["title"]))
-    description = sanitize(entry["description"])
+    title = sanitize(entry["title"])
+    description = sanitize(entry.get("description", ""))
     tags = [sanitize(t) for t in entry.get("tags", [])]
     category = entry.get("category", CATEGORY_PEOPLE_BLOGS)
     privacy = entry.get("privacy", "public")
@@ -311,19 +296,22 @@ def upload_one(product_slug: str, dry_run: bool, force: bool, assume_yes: bool =
 # ---------------------------------------------------------------------------
 
 def list_status() -> None:
-    metadata = load_metadata()
     history = load_history()
-    rendered = {p.stem for p in VIDEOS.glob("*.mp4")} if VIDEOS.exists() else set()
-    all_names = sorted({k for k in metadata if not k.startswith("_")} | rendered)
-    print(f"{'product':<32}{'rendered':<10}{'meta':<8}{'uploaded':<12}{'channel':<32}url")
+    if not PRODUCTS.exists():
+        print("(no products/ dir)")
+        return
+    all_names = sorted(p.name for p in PRODUCTS.iterdir() if p.is_dir())
+    print(f"{'product':<40}{'rendered':<10}{'meta':<8}{'uploaded':<12}{'channel':<32}url")
     for name in all_names:
-        has_render = "yes" if name in rendered else "no"
-        has_meta = "yes" if name in metadata else "no"
+        manifest = load_product_manifest(name) or {}
+        rendered = (PRODUCTS / name / FINAL_VIDEO_NAME).exists()
+        has_meta = bool((manifest.get("youtube-metadata") or {}).get("title"))
         up = history.get(name)
         up_when = up["uploaded_at"][:10] if up else "-"
         ch = up.get("channel", "") if up else ""
         url = f"https://youtu.be/{up['video_id']}" if up else ""
-        print(f"{name:<32}{has_render:<10}{has_meta:<8}{up_when:<12}{ch:<32}{url}")
+        short = (name[:37] + "...") if len(name) > 40 else name
+        print(f"{short:<40}{('yes' if rendered else 'no'):<10}{('yes' if has_meta else 'no'):<8}{up_when:<12}{ch:<32}{url}")
 
 
 def list_channels() -> None:

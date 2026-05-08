@@ -28,45 +28,74 @@ def row_for(product_dir: Path) -> dict | None:
     return {
         "item": product_dir.name,
         "commission": m.get("commission-percentage", "") or "",
-        "has script": yn(bool((m.get("script-raw-text") or "").strip())),
-        "has video-prompt": yn(bool((m.get("video-prompt") or "").strip())),
-        "has description": yn(bool((info.get("description") or "").strip())),
+        "script": yn(bool((m.get("script-raw-text") or "").strip())),
+        "video-prompt": yn(bool((m.get("video-prompt") or "").strip())),
+        "description": yn(bool((info.get("description") or "").strip())),
         "product-page-url": info.get("product-page-url", "") or "",
         "affiliate-link": info.get("affiliate-link", "") or "",
         "category": info.get("category", "") or "",
-        "has main-product-image": yn(has_file(m.get("main-product-image-path", ""))),
-        "has narration-audio": yn(has_file(m.get("narration-audio-path", ""))),
-        "has lifestyle-image": yn(has_file(m.get("lifestyle-image-path", ""))),
+        "main-product-image": yn(has_file(m.get("main-product-image-path", ""))),
+        "narration-audio": yn(has_file(m.get("narration-audio-path", ""))),
+        "lifestyle-image": yn(has_file(m.get("lifestyle-image-path", ""))),
+        "raw-speaker-video": yn(has_file(m.get("raw-speaker-video-path", ""))),
+        "stitched-narration-video": yn(has_file(m.get("stitched-narration-video-path", ""))),
+        "captioned-video": yn(has_file(m.get("captioned-video-path", ""))),
+        "final-with-music": yn(has_file(m.get("final-with-music-video-path", ""))),
+        "uploaded": yn(bool(m.get("uploaded"))),
     }
+
+
+COL_HEADERS = {
+    "commission": "comm%",
+    "video-prompt": "vid prompt",
+    "description": "desc",
+    "main-product-image": "product img",
+    "narration-audio": "narration",
+    "lifestyle-image": "start img",
+    "raw-speaker-video": "raw-gen-vid",
+    "stitched-narration-video": "stitch-narration",
+    "captioned-video": "captioned",
+    "final-with-music": "with-music",
+    "uploaded": "uploaded",
+}
 
 
 def print_matrix(rows: list[dict]) -> None:
     cols = [
-        "item", "commission", "has script", "has video-prompt", "has description",
+        "item", "commission", "script", "video-prompt", "description",
         "affiliate-link", "category",
-        "has main-product-image", "has narration-audio", "has lifestyle-image",
+        "main-product-image", "narration-audio",
+        "lifestyle-image", "raw-speaker-video", "stitched-narration-video",
+        "captioned-video", "final-with-music", "uploaded",
     ]
+    headers = [COL_HEADERS.get(c, c) for c in cols]
     display = [{**r, "item": (r["item"][:27] + "...") if len(r["item"]) > 30 else r["item"]}
                for r in rows]
-    widths = {c: max(len(c), *(len(str(r[c])) for r in display)) for c in cols} if display \
-        else {c: len(c) for c in cols}
+    widths = {c: max(len(h), *(len(str(r[c])) for r in display))
+              for c, h in zip(cols, headers)} if display \
+        else {c: len(h) for c, h in zip(cols, headers)}
 
     def fmt(values):
         return "| " + " | ".join(str(v).ljust(widths[c]) for c, v in zip(cols, values)) + " |"
 
-    print(fmt(cols))
+    print(fmt(headers))
     print("|" + "|".join("-" * (widths[c] + 2) for c in cols) + "|")
     for r in display:
         print(fmt([r[c] for c in cols]))
 
 
 NEEDS_FLAGS = {
-    "needs-script": "has script",
-    "needs-video-prompt": "has video-prompt",
-    "needs-description": "has description",
-    "needs-main-image": "has main-product-image",
-    "needs-narration": "has narration-audio",
-    "needs-lifestyle-pic": "has lifestyle-image",
+    "needs-script": "script",
+    "needs-video-prompt": "video-prompt",
+    "needs-description": "description",
+    "needs-main-image": "main-product-image",
+    "needs-narration": "narration-audio",
+    "needs-lifestyle-pic": "lifestyle-image",
+    "needs-raw-speaker-video": "raw-speaker-video",
+    "needs-stitched-narration": "stitched-narration-video",
+    "needs-captioned": "captioned-video",
+    "needs-final-with-music": "final-with-music",
+    "needs-upload": "uploaded",
 }
 
 
@@ -97,7 +126,7 @@ def main() -> int:
             print(json.dumps([r["item"] for r in missing]))
             return 0
         for r in missing:
-            lacking = [c.replace("has ", "") for c in active_needs if r[c] == "no"]
+            lacking = [c for c in active_needs if r[c] == "no"]
             print(f"{r['item']}\t{', '.join(lacking)}")
         print(f"\n{len(missing)} of {len(rows)} missing: {', '.join(active_needs)}")
     elif args.json:
