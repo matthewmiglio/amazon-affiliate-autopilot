@@ -7,7 +7,7 @@ The full-stack pipeline that takes a static image of an AI-generated woman + a w
 ## The Stack
 
 ```
-[script.txt]
+[manifest.script-raw-text]
     ↓ ElevenLabs TTS API
 [narration.mp3]
     ↓ + [hero-podcast.png]
@@ -15,7 +15,7 @@ The full-stack pipeline that takes a static image of an AI-generated woman + a w
 [talking-head.mp4]   (9:16, lip-synced, audio baked in)
     ↓ HyperFrames
 [final-short.mp4]    (with captions + branding)
-    ↓ YouTube upload script
+    ↓ multi-platform upload (YouTube + Instagram/Facebook + Pinterest)
 [posted Short]
 ```
 
@@ -96,7 +96,7 @@ Steps 3–5 are already built from V1. Steps 1–2 are the new work:
 2. **ElevenLabs TTS API** → narration audio from script
 3. **Hedra Character-3 API** → talking-head video clip
 4. **HyperFrames** → composite video + captions + branding overlays
-5. **YouTube upload script** → post the Short
+5. **Multi-platform upload** → push the same `final-with-music.mp4` to YouTube Shorts, Instagram Reels, Facebook Reels, and Pinterest. State is tracked per-platform under `manifest["uploads"][platform]` (`uploaded`, `url`, `metadata`). Today only YouTube is wired up; Meta and Pinterest stubs skip cleanly until those uploaders land in `uploader/meta/` and `uploader/pinterest/`.
 
 ## What Kling Is Still For
 

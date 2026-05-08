@@ -64,6 +64,38 @@ The rules that keep the channel alive. Breaking any of the **HARD RULES** can te
 
 6. **No engagement-bait that violates spam policy** ("comment YES if you want the link" is borderline; "subscribe to see the link" is a violation).
 
+### Instagram + Facebook Reels (Meta)
+
+1. **Affiliate links are allowed**, but Meta's Community/Commerce policies forbid:
+   - Cloaked redirects, link shorteners that hide the destination, or links to malware/scam pages.
+   - Driving traffic to "low-quality" landing pages (interstitials, pop-up farms). Amazon product pages are fine.
+2. **Branded Content / Paid Partnership disclosure.** Reels containing affiliate links must use Meta's **Branded Content tool** (paid partnership label) or include a clear caption disclosure (`#ad`, `#affiliate`, "Amazon Associate"). On-screen text disclosure is still required for FTC.
+3. **Account type.** Uploading via the Graph API requires:
+   - An **Instagram Business or Creator account**
+   - Linked to a **Facebook Page** (not a personal profile)
+   - A Meta Developer App with `instagram_content_publish` + `pages_manage_posts` permissions, App Review approved.
+4. **Reels API rate limits.** 50 API-published posts per Instagram account per 24 hours. Plenty of headroom for our cadence but worth knowing.
+5. **No dedicated affiliate program from Meta** for Amazon — the affiliate relationship is purely between us and Amazon. Meta just hosts the content.
+6. **No automated/scripted engagement.** Don't run bots that like/follow/comment. Account-killer.
+7. **Music licensing.** Reels has its own music library; using non-licensed audio in a Business-account Reel will mute it (Business accounts can't use most popular tracks). Stick to our own `music/` library or the Meta Sound Collection.
+8. **Same video on Reels + Shorts is fine** — neither platform penalizes cross-posting, but Meta does down-rank videos with a visible TikTok watermark, so render clean.
+
+### Pinterest
+
+1. **Affiliate links are explicitly allowed** (Pinterest reversed its 2017 ban in 2020). Direct Amazon links work.
+2. **Disclosure is mandatory.** Pin description must include `#affiliate` or "Amazon Associate" — Pinterest's own Community Guidelines + FTC.
+3. **No cloaked links.** Pinterest auto-rejects pins whose destination URL doesn't resolve to the displayed domain. Use raw `amzn.to` or full `amazon.com` URLs.
+4. **One pin per product, varied titles/descriptions.** Pinterest's spam detection flags identical pins repeated across boards. Re-pinning the same affiliate link to 10 boards = ban risk.
+5. **No misleading pins.** Pin image must represent what the click destination actually sells.
+6. **Idea Pins (now "Pins" with video) support a destination URL** — that's our affiliate link. No "link in bio" workaround needed.
+7. **API access.** The Pinterest API v5 supports video pin creation with a `link` field. Requires:
+   - A Pinterest **Business account** (free conversion from personal)
+   - A registered app at `developers.pinterest.com`
+   - OAuth user token with `pins:write`, `boards:read` scopes.
+8. **Rate limits.** 1000 API calls/hour per user token — generous.
+9. **No engagement manipulation.** Don't run pin-loop groups, bot saves, or buy followers.
+10. **Adult / restricted categories.** Beauty and home are fine; supplements, weapons, and "before/after" body content are restricted — avoid for affiliate pins.
+
 ### FTC (US disclosure law)
 
 1. **Disclosure must be "clear and conspicuous"** — meaning a viewer cannot reasonably miss it. In a 15s Short, this means: on-screen text + spoken + in description. All three.
