@@ -26,18 +26,55 @@ Examples of stage-3 starting frames across different products.
 
 ## Pipeline
 
-| # | Stage | Skill / tool | Visual |
-|---|---|---|---|
-| 1 | **Character refs** — pin a host face + voice per channel | manual `characters/<channel>/` | See "The Character" above |
-| 2 | **Scrape Amazon** — link + product details + main image | `amazon-product-page-scraper/` (Chrome ext) | <img width="160" src="https://github.com/user-attachments/assets/5a0ae8f4-49dd-4a10-9fc4-863b468c718b" /> |
-| 3 | **Starting frame** — Hedra image-gen, 9:16 lifestyle composite | `/generate-starting-image` | <img width="200" src="https://github.com/user-attachments/assets/7a4e8a47-a587-4ad3-b42e-67df9b13f9e4" /> |
-| 4 | **Narration script** — 15–20s podcast-tone voiceover | `/write-script` | _"Listen, your cleanser matters way more than people give it credit for. The Clé de Peau Beauté Clarifying Cleansing Foam — made in Japan, built around their Skin Intelligence research that's been their signature for over forty years. Clears the day off without that tight, stripped feeling. An affordable luxury, honestly. Tap the link to grab it on Amazon."_ |
-| 5 | **Narration audio** — ElevenLabs TTS, channel voice pinned | `/generate-narration` | https://github.com/user-attachments/assets/fb628d39-0bb2-43f3-8910-8ee74dab9202 |
-| 6 | **UGC talking head** — starting image + narration → Hedra Avatar | `/generate-hedra-video` | https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf |
-| 7 | **Audio restitch** — swap Hedra's baked audio for the clean local mp3 | `/stitch-narration` (ffmpeg) | https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb |
-| 8 | **Captions** — WhisperX word-level + auto-picked style preset | `/caption-video` | https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f |
-| 9 | **Background music** — ducked random track from `music/` library | `/overlay-music` | https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b<br/><br/>BG track: https://github.com/user-attachments/assets/9c36811c-777b-49c1-8935-b4b9cd1e05af |
-| 10 | **Upload** — YouTube Shorts via multi-channel OAuth | `/upload-ad` | Posted Short — affiliate link in first line of description, paid-promotion toggle ON |
+### 1. Character refs
+Pin a host face + voice per channel — `characters/<channel>/`. See "The Character" above.
+
+### 2. Scrape Amazon — `amazon-product-page-scraper/` (Chrome ext)
+Pulls link + product details + main image into `products/<slug>/manifest.json`.
+
+<img width="200" src="https://github.com/user-attachments/assets/5a0ae8f4-49dd-4a10-9fc4-863b468c718b" />
+
+### 3. Starting frame — `/generate-starting-image`
+Hedra image-gen produces a 9:16 lifestyle composite with the host holding the product.
+
+<img width="240" src="https://github.com/user-attachments/assets/7a4e8a47-a587-4ad3-b42e-67df9b13f9e4" />
+
+### 4. Narration script — `/write-script`
+15–20s podcast-tone voiceover, written into `script-raw-text` in the manifest.
+
+> "Listen, your cleanser matters way more than people give it credit for. The Clé de Peau Beauté Clarifying Cleansing Foam — made in Japan, built around their Skin Intelligence research that's been their signature for over forty years. Clears the day off without that tight, stripped feeling. An affordable luxury, honestly. Tap the link to grab it on Amazon."
+
+### 5. Narration audio — `/generate-narration`
+ElevenLabs TTS with the channel voice pinned per character.
+
+https://github.com/user-attachments/assets/fb628d39-0bb2-43f3-8910-8ee74dab9202
+
+### 6. UGC talking head — `/generate-hedra-video`
+Starting image + narration → Hedra Avatar. Audio is baked into the mp4 at low quality at this stage — that's fixed in the next step.
+
+https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf
+
+### 7. Audio restitch — `/stitch-narration` (ffmpeg)
+Swap Hedra's baked audio for the clean local ElevenLabs mp3.
+
+https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb
+
+### 8. Captions — `/caption-video`
+WhisperX word-level transcription + auto-picked style preset, scored against the background.
+
+https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f
+
+### 9. Background music — `/overlay-music`
+Ducked random track from the `music/` library, with fade-in / fade-out under the narration.
+
+https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b
+
+BG track used:
+
+https://github.com/user-attachments/assets/9c36811c-777b-49c1-8935-b4b9cd1e05af
+
+### 10. Upload — `/upload-ad`
+YouTube Shorts via multi-channel OAuth (`uploader/upload.py`). Affiliate link in first line of the description, paid-promotion toggle ON, "uploaded" flag flipped in the manifest.
 
 ## Layout
 
