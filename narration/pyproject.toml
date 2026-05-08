@@ -1,15 +1,14 @@
 [tool.poetry]
 name = "narration"
-version = "0.2.0"
-description = "Hedra TTS narration generator for Amazon affiliate products"
+version = "0.3.0"
+description = "ElevenLabs narration generator for Amazon affiliate products"
 authors = ["Matt"]
 package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-requests = "^2.32"
+elevenlabs = "^1.8.0"
 python-dotenv = "^1.0.1"
-pygame = "^2.6.1"
 
 [build-system]
 requires = ["poetry-core"]
