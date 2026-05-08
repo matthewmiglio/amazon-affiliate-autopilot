@@ -4,19 +4,39 @@ End-to-end pipeline that turns Amazon affiliate products into AI talking-head Yo
 
 Each pipeline stage is a slash-command skill — idempotent, manifest-driven, and accepts a single slug, a comma-list, or `--all-needing`.
 
+## The Character
+
+A pinned character folder defines the host. Same face, same voice across every Short.
+
+<p align="center">
+  <img width="240" alt="Host pose 1" src="https://github.com/user-attachments/assets/2901efcc-9d07-41c1-baf3-c7bf02eeef79" />
+  <img width="240" alt="Host pose 2" src="https://github.com/user-attachments/assets/6203d864-c59a-4319-8dd6-3976c00ab58d" />
+  <img width="240" alt="Host pose 3" src="https://github.com/user-attachments/assets/7cc1e1a5-75ad-420d-a51f-42c7d1dd3a5a" />
+</p>
+
+## Lifestyle Frames
+
+Examples of stage-3 starting frames across different products.
+
+<p align="center">
+  <img width="240" alt="Lifestyle 1" src="https://github.com/user-attachments/assets/6761df5f-e847-4810-bb93-359bc568dbac" />
+  <img width="240" alt="Lifestyle 2" src="https://github.com/user-attachments/assets/20c74fdf-fea8-4a36-928e-f3b4930c15a9" />
+  <img width="240" alt="Lifestyle 3" src="https://github.com/user-attachments/assets/b73cd8b7-8fbd-4f40-a3cd-b4976683235d" />
+</p>
+
 ## Pipeline
 
 | # | Stage | Skill / tool | Visual |
 |---|---|---|---|
-| 1 | **Character refs** — pin a host face + voice per channel | manual `characters/<channel>/` | <img src="docs/readme-assets/character-1.png" width="120" /> <img src="docs/readme-assets/character-2.png" width="120" /> <img src="docs/readme-assets/character-3.png" width="120" /> |
-| 2 | **Scrape Amazon** — link + product details + main image | `amazon-product-page-scraper/` (Chrome ext) | <img src="docs/readme-assets/02-scraped-product.jpg" width="200" /> |
-| 3 | **Starting frame** — Hedra image-gen, 9:16 lifestyle composite | `/generate-starting-image` | <img src="docs/readme-assets/03-starting-frame.png" width="200" /> |
+| 1 | **Character refs** — pin a host face + voice per channel | manual `characters/<channel>/` | See "The Character" above |
+| 2 | **Scrape Amazon** — link + product details + main image | `amazon-product-page-scraper/` (Chrome ext) | <img width="160" src="https://github.com/user-attachments/assets/5a0ae8f4-49dd-4a10-9fc4-863b468c718b" /> |
+| 3 | **Starting frame** — Hedra image-gen, 9:16 lifestyle composite | `/generate-starting-image` | <img width="200" src="https://github.com/user-attachments/assets/7a4e8a47-a587-4ad3-b42e-67df9b13f9e4" /> |
 | 4 | **Narration script** — 15–20s podcast-tone voiceover | `/write-script` | _"Listen, your cleanser matters way more than people give it credit for. The Clé de Peau Beauté Clarifying Cleansing Foam — made in Japan, built around their Skin Intelligence research that's been their signature for over forty years. Clears the day off without that tight, stripped feeling. An affordable luxury, honestly. Tap the link to grab it on Amazon."_ |
-| 5 | **Narration audio** — ElevenLabs TTS, channel voice pinned | `/generate-narration` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/05-narration.mp3" controls></video> |
-| 6 | **UGC talking head** — starting image + narration → Hedra Avatar | `/generate-hedra-video` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/06-raw-speaker-video.mp4" controls width="240"></video> |
-| 7 | **Audio restitch** — swap Hedra's baked audio for the clean local mp3 | `/stitch-narration` (ffmpeg) | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/07-stitched-narration.mp4" controls width="240"></video> |
-| 8 | **Captions** — WhisperX word-level + auto-picked style preset | `/caption-video` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/08-captioned-video.mp4" controls width="240"></video> |
-| 9 | **Background music** — ducked random track from `music/` library | `/overlay-music` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/09-final-with-music.mp4" controls width="240"></video> |
+| 5 | **Narration audio** — ElevenLabs TTS, channel voice pinned | `/generate-narration` | https://github.com/user-attachments/assets/fb628d39-0bb2-43f3-8910-8ee74dab9202 |
+| 6 | **UGC talking head** — starting image + narration → Hedra Avatar | `/generate-hedra-video` | https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf |
+| 7 | **Audio restitch** — swap Hedra's baked audio for the clean local mp3 | `/stitch-narration` (ffmpeg) | https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb |
+| 8 | **Captions** — WhisperX word-level + auto-picked style preset | `/caption-video` | https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f |
+| 9 | **Background music** — ducked random track from `music/` library | `/overlay-music` | https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b<br/><br/>BG track: https://github.com/user-attachments/assets/9c36811c-777b-49c1-8935-b4b9cd1e05af |
 | 10 | **Upload** — YouTube Shorts via multi-channel OAuth | `/upload-ad` | Posted Short — affiliate link in first line of description, paid-promotion toggle ON |
 
 ## Layout
