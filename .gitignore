@@ -42,3 +42,6 @@ hyperframes/
 
 # One-off / migration scripts (not part of the recurring pipeline)
 hyperframes/scripts/update_plans.py
+
+# Hedra starting-image benchmarking (local experiments, not pipeline)
+hedra-starting-image-benchmarking/

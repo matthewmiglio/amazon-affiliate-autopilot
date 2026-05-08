@@ -106,12 +106,17 @@ def short_tagline(brand: str, product: str) -> str:
     return tag or "Amazon find"
 
 
+HASHTAG_TOTAL = 4
+HASHTAG_EVERGREEN_COUNT = 1
+HASHTAG_CATEGORY_COUNT = HASHTAG_TOTAL - HASHTAG_EVERGREEN_COUNT
+
+
 def pick_hashtags(category: str, max_chars_for_tags: int) -> list[str]:
     pool = category_pool(category)
     chosen: list[str] = []
     rng = random.Random()
-    chosen.append(rng.choice(EVERGREEN_HASHTAGS))
-    for tag in rng.sample(pool, k=min(2, len(pool))):
+    chosen.extend(rng.sample(EVERGREEN_HASHTAGS, k=min(HASHTAG_EVERGREEN_COUNT, len(EVERGREEN_HASHTAGS))))
+    for tag in rng.sample(pool, k=min(HASHTAG_CATEGORY_COUNT, len(pool))):
         if tag.lower() not in (c.lower() for c in chosen):
             chosen.append(tag)
 
@@ -130,15 +135,18 @@ def build_title(tagline: str, hashtags: list[str]) -> str:
     return title
 
 
-def build_description(brand: str, product: str, script: str, link: str) -> str:
+def build_description(brand: str, product: str, script: str, link: str, hashtags: list[str]) -> str:
     parts = []
     if script:
         parts.append(script.strip())
     elif product:
         parts.append(f"{brand + ' ' if brand else ''}{product}.")
+    tail_tags = list(hashtags) + ["#shorts"]
+    tail = " ".join(tail_tags)
     if link:
-        parts.append(f"\nShop on Amazon: {link}")
-    parts.append("\n#shorts")
+        parts.append(f"\nShop on Amazon: {link} {tail}")
+    else:
+        parts.append(f"\n{tail}")
     return "\n".join(parts).strip()
 
 
@@ -172,7 +180,7 @@ def generate_metadata(manifest: OrderedDict) -> dict:
     hashtags_budget = max(0, YT_TITLE_MAX - len(tagline) - 1)
     hashtags = pick_hashtags(category, hashtags_budget)
     title = build_title(tagline, hashtags)
-    description = build_description(brand, product, script, link)
+    description = build_description(brand, product, script, link, hashtags)
     tags = build_yt_tags(brand, product, category, hashtags)
 
     return {
