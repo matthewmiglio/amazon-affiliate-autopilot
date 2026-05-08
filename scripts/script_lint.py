@@ -1,6 +1,6 @@
 """Quality gate for narration scripts.
 
-Checks each <products>/<slug>/script.txt against rules:
+Checks each <products>/<slug>/manifest.json `script-raw-text` against rules:
   - 45-60 words (warn outside)
   - 280-380 chars (warn outside)
   - no '$' character (TTS reads inconsistently — spell out prices)
@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import re
 from pathlib import Path
 
@@ -56,12 +57,17 @@ def main() -> int:
 
     bad = 0
     for pdir in targets:
-        sp = pdir / "script.txt"
-        if not sp.exists():
+        mp = pdir / "manifest.json"
+        if not mp.exists():
+            print(f"{pdir.name}\tNO MANIFEST")
+            bad += 1
+            continue
+        manifest = json.loads(mp.read_text(encoding="utf-8"))
+        text = (manifest.get("script-raw-text") or "").strip()
+        if not text:
             print(f"{pdir.name}\tNO SCRIPT")
             bad += 1
             continue
-        text = sp.read_text(encoding="utf-8").strip()
         issues = lint(text)
         if issues:
             bad += 1

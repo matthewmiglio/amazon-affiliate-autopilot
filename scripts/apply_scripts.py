@@ -1,10 +1,8 @@
 """Apply authored narration scripts to product folders.
 
-Reads a JSON file mapping slug -> script text, then for each entry:
-  - writes <products>/<slug>/script.txt
-  - sets manifest.json `script-raw-text` to the same string
-
-Both writes happen together per product (atomic per-product, not across products).
+Reads a JSON file mapping slug -> script text, then for each entry sets
+manifest.json `script-raw-text` to the script string. The manifest is the
+single source of truth — no sibling script.txt is written.
 
 Usage:
   python apply_scripts.py path/to/scripts.json
@@ -42,7 +40,6 @@ def apply(scripts: dict[str, str], overwrite: bool) -> tuple[int, list[str]]:
             skipped.append(f"{slug} — already has script (use --overwrite)")
             continue
         text = script.strip()
-        (pdir / "script.txt").write_text(text, encoding="utf-8")
         manifest["script-raw-text"] = text
         mpath.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         written += 1

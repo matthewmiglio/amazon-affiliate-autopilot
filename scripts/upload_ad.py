@@ -1,14 +1,17 @@
-"""Upload a product's final-with-music video to YouTube Shorts.
+"""Upload a product's final-with-music video to all configured platforms.
 
-Validates / generates `youtube-metadata` in the product manifest, runs
-`uploader/upload.py`, then flips `manifest.uploaded = true` plus the resulting
-`uploaded-video-url`.
+Iterates through [youtube, instagram, facebook, pinterest]. For each platform:
+  - skips if `manifest["uploads"][platform]["uploaded"]` is true (unless --overwrite)
+  - generates platform metadata if missing
+  - invokes the per-platform uploader script if it exists
+  - skips with "[platform] not implemented, skipping" if the uploader script
+    is absent (placeholder for meta/ and pinterest/ until those land)
 
     python scripts/upload_ad.py --product <slug-or-path>
     python scripts/upload_ad.py --product <...> --overwrite
     python scripts/upload_ad.py --product <...> --regen-meta
 
-Output: <slug>\\t<STATUS>\\t<detail>  where STATUS in {OK, SKIP, FIXED, FAIL}.
+Output: <slug>\\t<platform>\\t<STATUS>\\t<detail>  STATUS in {OK, SKIP, FIXED, FAIL}.
 """
 from __future__ import annotations
 
@@ -24,12 +27,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PRODUCTS_DIR = ROOT / "products"
-UPLOADER = ROOT / "uploader" / "upload.py"
+
+UPLOADERS: dict[str, Path] = {
+    "youtube":   ROOT / "uploader" / "youtube"   / "upload.py",
+    "instagram": ROOT / "uploader" / "meta"      / "upload_instagram.py",
+    "facebook":  ROOT / "uploader" / "meta"      / "upload_facebook.py",
+    "pinterest": ROOT / "uploader" / "pinterest" / "upload.py",
+}
+
+PLATFORMS = ("youtube", "instagram", "facebook", "pinterest")
 
 FINAL_VIDEO_NAME = "final-with-music.mp4"
-YT_METADATA_KEY = "youtube-metadata"
-UPLOADED_KEY = "uploaded"
-UPLOADED_URL_KEY = "uploaded-video-url"
 
 YT_TITLE_MAX = 100
 YT_DEFAULT_CATEGORY = "22"  # People & Blogs
@@ -80,8 +88,6 @@ def _ascii_fold(s: str) -> str:
 
 
 def short_tagline(brand: str, product: str) -> str:
-    """Build a punchy ≤60-char tagline. Prefer brand + the first salient phrase
-    from the product name; fall back to product name alone."""
     p = (product or "").strip()
     p = re.split(r"\s+-\s+|,|\(", p)[0].strip()
     p = re.sub(r"\s+\d+(\.\d+)?\s*(oz|ml|g|kg|lb|pack|count|ct)\b.*$", "", p, flags=re.I).strip()
@@ -168,109 +174,169 @@ def build_yt_tags(brand: str, product: str, category: str, hashtags: list[str]) 
     return out
 
 
-def generate_metadata(manifest: OrderedDict) -> dict:
+# ---------------------------------------------------------------------------
+# Per-platform metadata generators
+# ---------------------------------------------------------------------------
+
+def _info(manifest: OrderedDict) -> dict:
     info = manifest.get("item-auxiliary-information") or {}
-    brand = (info.get("brand") or "").strip()
-    product = (info.get("product") or "").strip()
-    category = (info.get("category") or "").strip()
-    link = (info.get("affiliate-link") or "").strip()
-    script = (manifest.get("script-raw-text") or "").strip()
-
-    tagline = short_tagline(brand, product)
-    hashtags_budget = max(0, YT_TITLE_MAX - len(tagline) - 1)
-    hashtags = pick_hashtags(category, hashtags_budget)
-    title = build_title(tagline, hashtags)
-    description = build_description(brand, product, script, link, hashtags)
-    tags = build_yt_tags(brand, product, category, hashtags)
-
     return {
-        "title": title,
-        "description": description,
-        "tags": tags,
-        "category": YT_DEFAULT_CATEGORY,
-        "privacy": YT_DEFAULT_PRIVACY,
-        "hashtags": hashtags,
+        "brand":    (info.get("brand") or "").strip(),
+        "product":  (info.get("product") or "").strip(),
+        "category": (info.get("category") or "").strip(),
+        "link":     (info.get("affiliate-link") or "").strip(),
+        "script":   (manifest.get("script-raw-text") or "").strip(),
     }
 
 
-def ensure_metadata(manifest: OrderedDict, regen: bool) -> tuple[OrderedDict, bool]:
-    existing = manifest.get(YT_METADATA_KEY) or {}
-    if existing.get("title") and not regen:
+def _gen_youtube(manifest: OrderedDict) -> OrderedDict:
+    i = _info(manifest)
+    tagline = short_tagline(i["brand"], i["product"])
+    hashtags_budget = max(0, YT_TITLE_MAX - len(tagline) - 1)
+    hashtags = pick_hashtags(i["category"], hashtags_budget)
+    return OrderedDict([
+        ("title",       build_title(tagline, hashtags)),
+        ("description", build_description(i["brand"], i["product"], i["script"], i["link"], hashtags)),
+        ("tags",        build_yt_tags(i["brand"], i["product"], i["category"], hashtags)),
+        ("category",    YT_DEFAULT_CATEGORY),
+        ("privacy",     YT_DEFAULT_PRIVACY),
+        ("hashtags",    hashtags),
+    ])
+
+
+def _gen_instagram(manifest: OrderedDict) -> OrderedDict:
+    return OrderedDict([("caption", ""), ("hashtags", [])])
+
+
+def _gen_facebook(manifest: OrderedDict) -> OrderedDict:
+    return OrderedDict([("caption", ""), ("hashtags", [])])
+
+
+def _gen_pinterest(manifest: OrderedDict) -> OrderedDict:
+    i = _info(manifest)
+    return OrderedDict([
+        ("title", ""),
+        ("description", ""),
+        ("destination_url", i["link"]),
+        ("board", ""),
+    ])
+
+
+_GENERATORS = {
+    "youtube":   _gen_youtube,
+    "instagram": _gen_instagram,
+    "facebook":  _gen_facebook,
+    "pinterest": _gen_pinterest,
+}
+
+
+# ---------------------------------------------------------------------------
+# Manifest helpers
+# ---------------------------------------------------------------------------
+
+def get_platform_block(manifest: OrderedDict, platform: str) -> dict:
+    return ((manifest.get("uploads") or {}).get(platform) or {})
+
+
+def ensure_platform_metadata(manifest: OrderedDict, platform: str, regen: bool) -> tuple[OrderedDict, bool]:
+    block = get_platform_block(manifest, platform)
+    metadata = block.get("metadata") or {}
+    has_content = bool(metadata.get("title") or metadata.get("caption"))
+    if has_content and not regen:
         return manifest, False
-    meta = generate_metadata(manifest)
-    new = OrderedDict()
-    inserted = False
-    for k, v in manifest.items():
-        if k == YT_METADATA_KEY:
-            continue
-        new[k] = v
-        if k == "commission-percentage" and not inserted:
-            new[YT_METADATA_KEY] = meta
-            inserted = True
-    if not inserted:
-        new[YT_METADATA_KEY] = meta
-    return new, True
+    new_meta = _GENERATORS[platform](manifest)
+    uploads = manifest.setdefault("uploads", OrderedDict())
+    pblock = uploads.setdefault(platform, OrderedDict([("uploaded", False), ("url", ""), ("metadata", OrderedDict())]))
+    pblock["metadata"] = new_meta
+    return manifest, True
 
 
-def set_uploaded(manifest: OrderedDict, url: str) -> OrderedDict:
-    new = OrderedDict()
-    for k, v in manifest.items():
-        if k in (UPLOADED_KEY, UPLOADED_URL_KEY):
-            continue
-        new[k] = v
-    new[UPLOADED_KEY] = True
-    new[UPLOADED_URL_KEY] = url
-    return new
+def set_uploaded(manifest: OrderedDict, platform: str, url: str) -> OrderedDict:
+    uploads = manifest.setdefault("uploads", OrderedDict())
+    pblock = uploads.setdefault(platform, OrderedDict([("uploaded", False), ("url", ""), ("metadata", OrderedDict())]))
+    pblock["uploaded"] = True
+    pblock["url"] = url or ""
+    return manifest
 
 
-def run_uploader(slug: str) -> tuple[bool, str | None, str]:
-    cmd = [sys.executable, str(UPLOADER), slug, "-y"]
+# ---------------------------------------------------------------------------
+# Per-platform upload runners
+# ---------------------------------------------------------------------------
+
+_URL_PATTERNS = {
+    "youtube":   r"uploaded\s*->\s*(https://youtu\.be/\S+)",
+    "instagram": r"uploaded\s*->\s*(https://\S+)",
+    "facebook":  r"uploaded\s*->\s*(https://\S+)",
+    "pinterest": r"uploaded\s*->\s*(https://\S+)",
+}
+
+
+def run_uploader(slug: str, platform: str) -> tuple[str, str | None, str]:
+    """Returns (status, url, detail). status in {OK, SKIP, FAIL}."""
+    uploader = UPLOADERS[platform]
+    if not uploader.exists():
+        return "SKIP", None, f"{platform} not implemented (no {uploader.relative_to(ROOT)})"
+
+    cmd = [sys.executable, str(uploader), slug, "-y"]
     r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = (r.stdout or "") + (r.stderr or "")
-    m = re.search(r"uploaded\s*->\s*(https://youtu\.be/\S+)", out)
+    m = re.search(_URL_PATTERNS[platform], out)
     if r.returncode != 0:
         tail = out.strip().splitlines()[-3:]
-        return False, None, " | ".join(tail) or f"upload.py exit {r.returncode}"
+        return "FAIL", None, " | ".join(tail) or f"upload exit {r.returncode}"
     if not m:
         if "[skip]" in out:
             tail = [l for l in out.splitlines() if "[skip]" in l][-1:]
-            return False, None, tail[0].strip() if tail else "uploader skipped without URL"
-        return False, None, "no upload URL in uploader output"
-    return True, m.group(1), ""
+            return "FAIL", None, tail[0].strip() if tail else "uploader skipped without URL"
+        return "FAIL", None, "no upload URL in uploader output"
+    return "OK", m.group(1), ""
 
 
-def process(product_arg: str, overwrite: bool, regen_meta: bool) -> tuple[str, str, str]:
-    pdir = resolve_product_dir(product_arg)
-    slug = pdir.name
-    if not pdir.exists() or not pdir.is_dir():
-        return slug, "FAIL", f"no product dir at {pdir}"
-
-    manifest_path = pdir / "manifest.json"
-    if not manifest_path.exists():
-        return slug, "FAIL", f"no manifest.json at {manifest_path}"
-
-    if not (pdir / FINAL_VIDEO_NAME).exists():
-        return slug, "FAIL", f"missing {FINAL_VIDEO_NAME} - run /overlay-music first"
-
+def process_platform(manifest_path: Path, slug: str, platform: str,
+                     overwrite: bool, regen_meta: bool) -> tuple[str, str]:
     manifest = load_manifest(manifest_path)
+    block = get_platform_block(manifest, platform)
+    if block.get("uploaded") and not overwrite:
+        url = block.get("url") or "(no url)"
+        return "SKIP", f"already uploaded: {url}"
 
-    if manifest.get(UPLOADED_KEY) and not overwrite:
-        url = manifest.get(UPLOADED_URL_KEY) or "(no url)"
-        return slug, "SKIP", f"already uploaded: {url}"
-
-    manifest, changed = ensure_metadata(manifest, regen=regen_meta)
+    manifest, changed = ensure_platform_metadata(manifest, platform, regen=regen_meta)
     if changed:
         save_manifest(manifest_path, manifest)
 
-    ok, url, err = run_uploader(slug)
-    if not ok:
-        return slug, "FAIL", err
+    status, url, detail = run_uploader(slug, platform)
+    if status != "OK":
+        return status, detail
 
     manifest = load_manifest(manifest_path)
-    manifest = set_uploaded(manifest, url or "")
+    manifest = set_uploaded(manifest, platform, url or "")
     save_manifest(manifest_path, manifest)
+    return "OK", f"uploaded -> {url}"
 
-    return slug, "OK", f"uploaded -> {url}"
+
+def process(product_arg: str, overwrite: bool, regen_meta: bool) -> int:
+    pdir = resolve_product_dir(product_arg)
+    slug = pdir.name
+    if not pdir.exists() or not pdir.is_dir():
+        print(f"{slug}\t-\tFAIL\tno product dir at {pdir}")
+        return 1
+
+    manifest_path = pdir / "manifest.json"
+    if not manifest_path.exists():
+        print(f"{slug}\t-\tFAIL\tno manifest.json at {manifest_path}")
+        return 1
+
+    if not (pdir / FINAL_VIDEO_NAME).exists():
+        print(f"{slug}\t-\tFAIL\tmissing {FINAL_VIDEO_NAME} - run /overlay-music first")
+        return 1
+
+    any_failed = False
+    for platform in PLATFORMS:
+        status, detail = process_platform(manifest_path, slug, platform, overwrite, regen_meta)
+        print(f"{slug}\t{platform}\t{status}\t{detail}")
+        if status == "FAIL":
+            any_failed = True
+    return 1 if any_failed else 0
 
 
 def main() -> int:
@@ -278,18 +344,12 @@ def main() -> int:
     parser.add_argument("--product", required=True,
                         help="Slug under products/, or absolute product folder path.")
     parser.add_argument("--overwrite", action="store_true",
-                        help="Re-upload even if manifest.uploaded is true.")
+                        help="Re-upload platforms even if uploads.<platform>.uploaded is true.")
     parser.add_argument("--regen-meta", action="store_true",
-                        help="Regenerate youtube-metadata even if already present.")
+                        help="Regenerate platform metadata even if already present.")
     args = parser.parse_args()
 
-    if not UPLOADER.exists():
-        print(f"FATAL: uploader not found at {UPLOADER}", file=sys.stderr)
-        return 2
-
-    slug, status, detail = process(args.product, args.overwrite, args.regen_meta)
-    print(f"{slug}\t{status}\t{detail}")
-    return 0 if status != "FAIL" else 1
+    return process(args.product, args.overwrite, args.regen_meta)
 
 
 if __name__ == "__main__":

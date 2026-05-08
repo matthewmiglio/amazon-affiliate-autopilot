@@ -25,6 +25,11 @@ def row_for(product_dir: Path) -> dict | None:
             return False
         return (product_dir / rel).exists()
 
+    uploads = m.get("uploads") or {}
+
+    def up(platform: str) -> str:
+        return yn(bool((uploads.get(platform) or {}).get("uploaded")))
+
     return {
         "item": product_dir.name,
         "commission": m.get("commission-percentage", "") or "",
@@ -41,7 +46,10 @@ def row_for(product_dir: Path) -> dict | None:
         "stitched-narration-video": yn(has_file(m.get("stitched-narration-video-path", ""))),
         "captioned-video": yn(has_file(m.get("captioned-video-path", ""))),
         "final-with-music": yn(has_file(m.get("final-with-music-video-path", ""))),
-        "uploaded": yn(bool(m.get("uploaded"))),
+        "yt-up":    up("youtube"),
+        "insta-up": up("instagram"),
+        "fb-up":    up("facebook"),
+        "pint-up":  up("pinterest"),
     }
 
 
@@ -56,7 +64,10 @@ COL_HEADERS = {
     "stitched-narration-video": "stitch-narration",
     "captioned-video": "captioned",
     "final-with-music": "with-music",
-    "uploaded": "uploaded",
+    "yt-up": "yt-up",
+    "insta-up": "insta-up",
+    "fb-up": "fb-up",
+    "pint-up": "pint-up",
 }
 
 
@@ -74,19 +85,21 @@ def _colorize(col: str, value: str, width: int) -> str:
 
 
 def print_matrix(rows: list[dict]) -> None:
-    # Columns ordered to match the pipeline progression (steps 2-10).
+    # User-pinned column order: catalog metadata → script → narration → start
+    # image → video prompt → raw video → stitched → captions → music → per-
+    # platform upload status.
     cols = [
-        "item", "commission", "category", "affiliate-link",
-        "description", "main-product-image",
-        "video-prompt",              # step 2: video prompt
-        "script",                    # step 3: script
-        "narration-audio",           # step 4: narration
-        "lifestyle-image",           # step 5: starting image
-        "raw-speaker-video",         # step 6: raw hedra video
-        "stitched-narration-video",  # step 7: stitched narration
-        "captioned-video",           # step 8: captions
-        "final-with-music",          # step 9: bg music
-        "uploaded",                  # step 10: youtube
+        "item", "commission", "category",
+        "description", "main-product-image", "affiliate-link",
+        "script",                    # step 1: script written
+        "narration-audio",           # step 2: narration mp3
+        "lifestyle-image",           # step 3: starting image
+        "video-prompt",              # step 4: video prompt
+        "raw-speaker-video",         # step 5: raw hedra video
+        "stitched-narration-video",  # step 6: clean audio swapped in
+        "captioned-video",           # step 7: captions burned in
+        "final-with-music",          # step 8: bg music mixed
+        "yt-up", "insta-up", "fb-up", "pint-up",  # step 9: per-platform upload
     ]
     headers = [COL_HEADERS.get(c, c) for c in cols]
     display = [{**r, "item": (r["item"][:27] + "...") if len(r["item"]) > 30 else r["item"]}
@@ -118,7 +131,10 @@ NEEDS_FLAGS = {
     "needs-stitched-narration": "stitched-narration-video",
     "needs-captioned": "captioned-video",
     "needs-final-with-music": "final-with-music",
-    "needs-upload": "uploaded",
+    "needs-yt-upload":    "yt-up",
+    "needs-insta-upload": "insta-up",
+    "needs-fb-upload":    "fb-up",
+    "needs-pint-upload":  "pint-up",
 }
 
 
@@ -156,9 +172,9 @@ def main() -> int:
         print(json.dumps([r["item"] for r in rows]))
     elif args.matrix:
         progress_cols = [
-            "video-prompt", "script", "narration-audio", "lifestyle-image",
+            "script", "narration-audio", "lifestyle-image", "video-prompt",
             "raw-speaker-video", "stitched-narration-video", "captioned-video",
-            "final-with-music", "uploaded",
+            "final-with-music", "yt-up", "insta-up", "fb-up", "pint-up",
         ]
         rows.sort(key=lambda r: -sum(1 for c in progress_cols if r.get(c) == "yes"))
         print_matrix(rows)
