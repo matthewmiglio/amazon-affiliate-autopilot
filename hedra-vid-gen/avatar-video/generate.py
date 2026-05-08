@@ -125,8 +125,18 @@ def _process(slug: str, key: str, overwrite: bool) -> tuple[str, str]:
         },
     )
 
-    body = hc.poll(key, gen_id)
+    # Hedra Avatar can sit in `queued` for 30+ minutes when the queue is
+    # backed up. Use a 60-minute cap and 15s poll interval. If we still
+    # time out, the generation may finish later — `_recover_<slug>.py`
+    # patterns can fetch the asset by id.
+    body = hc.poll(key, gen_id, interval_s=15, timeout_s=60 * 60)
     url = hc.extract_download_url(body)
+    if not url:
+        # Avatar `complete` payload sometimes returns asset_id but no URL.
+        # Fall back to GET /assets?type=video&ids=<asset_id>.
+        asset_id = body.get("asset_id")
+        if asset_id:
+            url = hc.fetch_asset_url(key, asset_id, "video")
     if not url:
         return ("FAIL", f"completed but no download_url in response: {body}")
 
