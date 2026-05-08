@@ -211,6 +211,8 @@ async function processEditPage() {
     chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'failed', reason: lastFailReason });
     return;
   }
+  remoteLog('waiting 5s for save to land');
+  await sleep(5000);
   const confirmed = await waitForSaveComplete();
   if (!confirmed) {
     lastFailReason = 'save did not complete';
