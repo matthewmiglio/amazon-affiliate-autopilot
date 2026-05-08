@@ -15,7 +15,8 @@ uploader/channels.json
 
 # OS / editor
 .DS_Store
-.claude/
+.claude/*
+!.claude/skills/
 
 # Node
 node_modules/
