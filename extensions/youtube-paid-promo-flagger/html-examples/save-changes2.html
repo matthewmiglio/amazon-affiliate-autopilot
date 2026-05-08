@@ -1,0 +1,597 @@
+<div class="buttons style-scope ytcp-video-details-section" slot="secondary"><ytcp-button id="discard"
+        class="style-scope ytcp-video-details-section" tabindex="-1" type="tonal" button-style="default"
+        icon-alignment="start"
+        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                title="" aria-label="Undo changes" aria-disabled="false" tabindex="0" style=""
+                aria-describedby="goog_356336739">
+                <div class="ytcpButtonShapeImpl__button-text-content">Undo changes</div><yt-touch-feedback-shape
+                    aria-hidden="true" class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                </yt-touch-feedback-shape>
+            </button></ytcp-button-shape></ytcp-button><ytcp-button id="save" track-click="" type="filled"
+        class="style-scope ytcp-video-details-section" tabindex="-1" button-style="default" icon-alignment="start"
+        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--filled ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                title="" aria-label="Save" aria-disabled="false" tabindex="0" style="">
+                <div class="ytcpButtonShapeImpl__button-text-content">Save</div><yt-touch-feedback-shape
+                    aria-hidden="true"
+                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponseInverse">
+                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                </yt-touch-feedback-shape>
+            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+        class="style-scope ytcp-video-details-section"></dom-if><ytcp-video-overflow-menu id="video-overflow-menu"
+        class="style-scope ytcp-video-details-section"><!--css-build:shady--><!--css_build_scope:ytcp-video-overflow-menu--><ytcp-icon-button
+            id="overflow-menu-button" icon="more-vert" track-click="" class="style-scope ytcp-video-overflow-menu"
+            tabindex="0" aria-disabled="false" aria-label="Options"
+            role="button"><!--css-build:shady--><!--css_build_scope:ytcp-icon-button--><yt-icon
+                class="remove-defaults style-scope ytcp-icon-button"><!--css-build:shady--><!--css_build_scope:yt-icon--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.shared.core.yt_icon.yt.icon.css.js--><span
+                    class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost">
+                    <div style="width: 100%; height: 100%; display: block; fill: currentcolor;"><svg
+                            xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"
+                            focusable="false" aria-hidden="true"
+                            style="pointer-events: none; display: inherit; width: 100%; height: 100%;">
+                            <path
+                                d="M12 4a2 2 0 100 4 2 2 0 000-4Zm0 6a2 2 0 100 4 2 2 0 000-4Zm0 6a2 2 0 100 4 2 2 0 000-4Z">
+                            </path>
+                        </svg></div>
+                </span></yt-icon><ytcp-tooltip offset="6" suppress-aria-announcement="true"
+                class="style-scope ytcp-icon-button" style="display: none;"></ytcp-tooltip><dom-if restamp=""
+                class="style-scope ytcp-icon-button"></dom-if></ytcp-icon-button><ytcp-text-menu id="overflow-menu"
+            class="style-scope ytcp-video-overflow-menu"><!--css-build:shady--><!--css_build_scope:ytcp-text-menu--><tp-yt-paper-dialog
+                id="dialog" style-target="dialog" class="style-scope ytcp-text-menu" role="dialog" tabindex="-1"
+                aria-hidden="true"
+                style="outline: none; display: none;"><!--css-build:shady--><!--css_build_scope:tp-yt-paper-dialog--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,third_party.javascript.youtube_components.tp_yt_paper_dialog.tp.yt.paper.dialog.css.js-->
+                <dom-if restamp="" class="style-scope ytcp-text-menu"></dom-if>
+                <div class="content style-scope ytcp-text-menu">
+                    <dom-if restamp="" class="style-scope ytcp-text-menu"></dom-if>
+                    <tp-yt-paper-listbox id="paper-list" selectable=".selectable-item"
+                        class="style-scope ytcp-text-menu" role="listbox"
+                        tabindex="0"><!--css-build:shady--><!--css_build_scope:tp-yt-paper-listbox--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,third_party.javascript.youtube_components.tp_yt_paper_listbox.tp.yt.paper.listbox.css.js-->
+                        <dom-repeat as="item" class="style-scope ytcp-text-menu"></dom-repeat>
+                        <dom-if restamp="" class="style-scope ytcp-text-menu"></dom-if>
+
+                    </tp-yt-paper-listbox>
+                </div>
+
+            </tp-yt-paper-dialog>
+        </ytcp-text-menu><ytcp-rss-video-sync-state-dialog id="video-sync-state-dialog"
+            class="style-scope ytcp-video-overflow-menu"><!--css-build:shady--><!--css_build_scope:ytcp-rss-video-sync-state-dialog--><ytcp-dialog
+                id="dialog" aria-label="Video sync state dialog" header-divider="" max-width="960" min-width="960"
+                scrollable=""
+                class="style-scope ytcp-rss-video-sync-state-dialog"><!--css-build:shady--><!--css_build_scope:ytcp-dialog--><tp-yt-paper-dialog
+                    id="dialog" restore-focus-on-close="" class=" style-scope ytcp-dialog style-scope ytcp-dialog"
+                    aria-label="Video sync state dialog" style-target="host" role="dialog" tabindex="-1"
+                    aria-hidden="true"
+                    style="outline: none; display: none; min-width: 960px; max-width: 960px;"><!--css-build:shady--><!--css_build_scope:tp-yt-paper-dialog--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,third_party.javascript.youtube_components.tp_yt_paper_dialog.tp.yt.paper.dialog.css.js-->
+                    <div class="header style-scope ytcp-dialog">
+                        <div class="header-content style-scope ytcp-dialog">
+                            <div class="header style-scope ytcp-rss-video-sync-state-dialog" slot="primary-header">
+                                <div class="title style-scope ytcp-rss-video-sync-state-dialog">Sync status</div>
+                            </div>
+                            <div slot="secondary-header" class="style-scope ytcp-rss-video-sync-state-dialog">
+                                <ytcp-icon-button id="close-button" icon="yt-sys-icons:close" track-click=""
+                                    class="style-scope ytcp-rss-video-sync-state-dialog" tabindex="0"
+                                    aria-disabled="false" aria-label="Close"
+                                    role="button"><!--css-build:shady--><!--css_build_scope:ytcp-icon-button--><yt-icon
+                                        class="remove-defaults style-scope ytcp-icon-button"><!--css-build:shady--><!--css_build_scope:yt-icon--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.shared.core.yt_icon.yt.icon.css.js--><span
+                                            class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost">
+                                            <div style="width: 100%; height: 100%; display: block; fill: currentcolor;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24"
+                                                    width="24" focusable="false" aria-hidden="true"
+                                                    style="pointer-events: none; display: inherit; width: 100%; height: 100%;">
+                                                    <path
+                                                        d="M17.293 5.293 12 10.586 6.707 5.293a1 1 0 10-1.414 1.414L10.586 12l-5.293 5.293a1 1 0 001.414 1.414L12 13.414l5.293 5.293a1 1 0 001.414-1.414L13.414 12l5.293-5.293a1 1 0 10-1.414-1.414Z">
+                                                    </path>
+                                                </svg></div>
+                                        </span></yt-icon><ytcp-tooltip offset="6" suppress-aria-announcement="true"
+                                        class="style-scope ytcp-icon-button"
+                                        style="display: none;"></ytcp-tooltip><dom-if restamp=""
+                                        class="style-scope ytcp-icon-button"></dom-if></ytcp-icon-button></div>
+                        </div><tp-yt-paper-progress indeterminate="" class="style-scope ytcp-dialog" hidden=""
+                            aria-label="Operation in progress" role="progressbar" value="0" aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-disabled="false"><!--css-build:shady--><!--css_build_scope:tp-yt-paper-progress--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,third_party.javascript.youtube_components.tp_yt_paper_progress.tp.yt.paper.progress.css.js-->
+                            <div id="progressContainer" class="style-scope tp-yt-paper-progress">
+                                <div id="secondaryProgress" class="style-scope tp-yt-paper-progress" hidden=""
+                                    style="transform: scaleX(0);"></div>
+                                <div id="primaryProgress" class="style-scope tp-yt-paper-progress indeterminate"
+                                    style="transform: scaleX(0);"></div>
+                            </div>
+                        </tp-yt-paper-progress>
+                    </div>
+                    <div class="content style-scope ytcp-dialog">
+                        <div class="content style-scope ytcp-rss-video-sync-state-dialog" role="table" slot="content"
+                            no-padding=""><ytcp-table-header
+                                class="table-header style-scope ytcp-rss-video-sync-state-dialog" role="row"
+                                aria-label="Sync state for video fields"><!--css-build:shady--><!--css_build_scope:ytcp-table-header-->
+
+                                <div role="columnheader"
+                                    class=" cell-header style-scope ytcp-table-header style-scope ytcp-table-header"
+                                    style="min-width:100px;padding-left:24px;padding-right:12px;flex:1 0 100px;">
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <h3 class="header-name style-scope ytcp-table-header" id="videoField-header-name"
+                                        aria-label="Video field">
+                                        <span class="style-scope ytcp-table-header">Video field</span>
+                                    </h3>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <ytcp-tooltip position="top" truncation="" class="style-scope ytcp-table-header"
+                                        for="videoField-header-name" style="display: none;">
+                                    </ytcp-tooltip>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                </div>
+
+                                <div role="columnheader"
+                                    class=" cell-header style-scope ytcp-table-header style-scope ytcp-table-header"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;">
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <h3 class="header-name style-scope ytcp-table-header" id="status-header-name"
+                                        aria-label="Status">
+                                        <span class="style-scope ytcp-table-header">Status</span>
+                                    </h3>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <ytcp-tooltip position="top" truncation="" class="style-scope ytcp-table-header"
+                                        for="status-header-name" style="display: none;">
+                                    </ytcp-tooltip>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                </div>
+
+                                <div role="columnheader"
+                                    class=" cell-header style-scope ytcp-table-header style-scope ytcp-table-header"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;">
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <h3 class="header-name style-scope ytcp-table-header" id="rssValue-header-name"
+                                        aria-label="RSS feed">
+                                        <span class="style-scope ytcp-table-header">RSS feed</span>
+                                    </h3>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <ytcp-tooltip position="top" truncation="" class="style-scope ytcp-table-header"
+                                        for="rssValue-header-name" style="display: none;">
+                                    </ytcp-tooltip>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                </div>
+
+                                <div role="columnheader"
+                                    class=" cell-header style-scope ytcp-table-header style-scope ytcp-table-header"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;">
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <h3 class="header-name style-scope ytcp-table-header"
+                                        id="canonicalValue-header-name" aria-label="YouTube">
+                                        <span class="style-scope ytcp-table-header">YouTube</span>
+                                    </h3>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <ytcp-tooltip position="top" truncation="" class="style-scope ytcp-table-header"
+                                        for="canonicalValue-header-name" style="display: none;">
+                                    </ytcp-tooltip>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                </div>
+
+                                <div role="columnheader"
+                                    class=" cell-header style-scope ytcp-table-header style-scope ytcp-table-header"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;">
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <h3 class="header-name style-scope ytcp-table-header" id="action-header-name"
+                                        aria-label="Column without name">
+                                        <span class="style-scope ytcp-table-header"></span>
+                                    </h3>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <ytcp-tooltip position="top" truncation="" class="style-scope ytcp-table-header"
+                                        for="action-header-name" style="display: none;">
+                                    </ytcp-tooltip>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                </div>
+
+                                <div role="columnheader"
+                                    class=" cell-header style-scope ytcp-table-header style-scope ytcp-table-header"
+                                    style="min-width:150px;padding-left:12px;padding-right:24px;flex:1 0 150px;">
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <h3 class="header-name style-scope ytcp-table-header" id="action-header-name"
+                                        aria-label="Column without name">
+                                        <span class="style-scope ytcp-table-header"></span>
+                                    </h3>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                    <ytcp-tooltip position="top" truncation="" class="style-scope ytcp-table-header"
+                                        for="action-header-name" style="display: none;">
+                                    </ytcp-tooltip>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                    <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                                </div>
+                                <dom-repeat as="column" class="style-scope ytcp-table-header"></dom-repeat>
+                                <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+
+                                <dom-if restamp="" class="style-scope ytcp-table-header"></dom-if>
+                            </ytcp-table-header>
+                            <div class="row-container style-scope ytcp-rss-video-sync-state-dialog" role="row">
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:100px;padding-left:24px;padding-right:12px;flex:1 0 100px;">
+                                    <div class="text-column style-scope ytcp-rss-video-sync-state-dialog">Title</div>
+                                    <dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><yt-icon
+                                        id="rss-sync-state-icon" aria-labelledby="sync-state-text"
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"><!--css-build:shady--><!--css_build_scope:yt-icon--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.shared.core.yt_icon.yt.icon.css.js--><span
+                                            class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost">
+                                            <div style="width: 100%; height: 100%; display: block; fill: currentcolor;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24"
+                                                    width="24" focusable="false" aria-hidden="true"
+                                                    style="pointer-events: none; display: inherit; width: 100%; height: 100%;">
+                                                    <path
+                                                        d="M12.276 4.001 12.073 4h-.349c-1.025.005-2.05.022-3.074.052-.885.027-1.829.067-2.655.127-.797.058-1.57.141-2.064.274a3.51 3.51 0 00-2.477 2.476l.966.26-.966-.258-.084.351c-.182.862-.271 1.966-.316 2.846-.03.573-.047 1.147-.053 1.72l-.001.11v.194c.006.573.024 1.147.054 1.72.052 1.004.16 2.303.4 3.197a3.51 3.51 0 002.477 2.477c.494.133 1.267.216 2.064.274.885.06 1.77.102 2.655.127 1.025.03 2.05.047 3.074.052l.203.001h.146l.203-.001c1.025-.005 2.05-.022 3.074-.052a65.9 65.9 0 002.655-.127c.797-.058 1.57-.141 2.064-.274a3.51 3.51 0 002.477-2.475c.24-.895.348-2.195.4-3.2.03-.573.048-1.147.053-1.72l.001-.11v-.082l-.001-.111a41.989 41.989 0 00-.053-1.72c-.052-1.004-.16-2.304-.4-3.198a3.51 3.51 0 00-2.477-2.476c-.494-.133-1.267-.216-2.064-.274a62.01 62.01 0 00-2.655-.127 124.41 124.41 0 00-3.074-.052Zm-.543 2L11.932 6h.335c1.008.005 2.016.022 3.023.052.857.023 1.713.064 2.568.123.813.059 1.406.134 1.692.211h.002a1.51 1.51 0 011.062 1.062v.002c.18.666.282 1.772.335 2.782.021.418.036.836.044 1.255.003.161.006.291.006.379l.001.102v.064l-.001.102c-.005.545-.022 1.09-.05 1.634-.053 1.01-.155 2.116-.335 2.782v.002a1.51 1.51 0 01-1.062 1.063h-.002c-.286.076-.879.15-1.692.21-.855.06-1.711.1-2.568.124-1.007.029-2.014.045-3.023.05l-.199.001h-.136l-.199-.001a122.855 122.855 0 01-3.023-.051 61.138 61.138 0 01-2.568-.123c-.813-.059-1.406-.134-1.692-.211h-.002a1.51 1.51 0 01-1.062-1.062v-.002c-.18-.666-.283-1.772-.335-2.782-.026-.49-.038-.935-.044-1.255-.003-.161-.006-.291-.006-.379L3 12.032v-.166c.006-.545.023-1.09.051-1.634.052-1.01.155-2.116.335-2.782v-.002a1.51 1.51 0 011.062-1.063h.002c.286-.076.879-.15 1.692-.21.855-.059 1.711-.1 2.568-.124 1.007-.03 2.014-.046 3.023-.05ZM15 12l-5-3v6l5-3Z">
+                                                    </path>
+                                                </svg></div>
+                                        </span></yt-icon>
+                                    <div id="status-description-cell"
+                                        class="style-scope ytcp-rss-video-sync-state-dialog">
+                                        <div id="sync-state-text" class="style-scope ytcp-rss-video-sync-state-dialog">
+                                            Set in YouTube</div>
+                                    </div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                    <div class="text-column rss-value style-scope ytcp-rss-video-sync-state-dialog"
+                                        is-unsynced="">–</div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                    <div class="text-column style-scope ytcp-rss-video-sync-state-dialog">AMOREPACIFIC
+                                        Color Control Cushion Compact Broad Spectrum... #UGC #glowup #skintok
+                                        #skincareroutine</div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><ytcp-button
+                                        class="revert-to-rss-button style-scope ytcp-rss-video-sync-state-dialog"
+                                        track-click="" id="title-revert-to-rss-button"
+                                        row="{&quot;videoField&quot;:&quot;title&quot;,&quot;canonicalValue&quot;:&quot;AMOREPACIFIC Color Control Cushion Compact Broad Spectrum... #UGC #glowup #skintok #skincareroutine&quot;,&quot;rssValue&quot;:&quot;–&quot;,&quot;isSynced&quot;:false,&quot;veType&quot;:192005}"
+                                        tabindex="-1" type="tonal" button-style="default" icon-alignment="start"
+                                        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                                                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                                                title="" aria-label="Revert to RSS" aria-disabled="false" tabindex="0"
+                                                style="">
+                                                <div class="ytcpButtonShapeImpl__button-text-content">Revert to RSS
+                                                </div><yt-touch-feedback-shape aria-hidden="true"
+                                                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                                                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                                                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                                                </yt-touch-feedback-shape>
+                                            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if></div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:24px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><ytcp-button
+                                        class="revert-to-rss-button style-scope ytcp-rss-video-sync-state-dialog"
+                                        track-click="" id="title-revert-to-rss-button"
+                                        row="{&quot;videoField&quot;:&quot;title&quot;,&quot;canonicalValue&quot;:&quot;AMOREPACIFIC Color Control Cushion Compact Broad Spectrum... #UGC #glowup #skintok #skincareroutine&quot;,&quot;rssValue&quot;:&quot;–&quot;,&quot;isSynced&quot;:false,&quot;veType&quot;:192005}"
+                                        tabindex="-1" type="tonal" button-style="default" icon-alignment="start"
+                                        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                                                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                                                title="" aria-label="Revert to RSS" aria-disabled="false" tabindex="0"
+                                                style="">
+                                                <div class="ytcpButtonShapeImpl__button-text-content">Revert to RSS
+                                                </div><yt-touch-feedback-shape aria-hidden="true"
+                                                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                                                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                                                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                                                </yt-touch-feedback-shape>
+                                            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if></div><dom-repeat
+                                    as="column" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-repeat>
+                            </div>
+                            <div class="row-container style-scope ytcp-rss-video-sync-state-dialog" role="row">
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:100px;padding-left:24px;padding-right:12px;flex:1 0 100px;">
+                                    <div class="text-column style-scope ytcp-rss-video-sync-state-dialog">Description
+                                    </div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><yt-icon
+                                        id="rss-sync-state-icon" aria-labelledby="sync-state-text"
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"><!--css-build:shady--><!--css_build_scope:yt-icon--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.shared.core.yt_icon.yt.icon.css.js--><span
+                                            class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost">
+                                            <div style="width: 100%; height: 100%; display: block; fill: currentcolor;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24"
+                                                    width="24" focusable="false" aria-hidden="true"
+                                                    style="pointer-events: none; display: inherit; width: 100%; height: 100%;">
+                                                    <path
+                                                        d="M12.276 4.001 12.073 4h-.349c-1.025.005-2.05.022-3.074.052-.885.027-1.829.067-2.655.127-.797.058-1.57.141-2.064.274a3.51 3.51 0 00-2.477 2.476l.966.26-.966-.258-.084.351c-.182.862-.271 1.966-.316 2.846-.03.573-.047 1.147-.053 1.72l-.001.11v.194c.006.573.024 1.147.054 1.72.052 1.004.16 2.303.4 3.197a3.51 3.51 0 002.477 2.477c.494.133 1.267.216 2.064.274.885.06 1.77.102 2.655.127 1.025.03 2.05.047 3.074.052l.203.001h.146l.203-.001c1.025-.005 2.05-.022 3.074-.052a65.9 65.9 0 002.655-.127c.797-.058 1.57-.141 2.064-.274a3.51 3.51 0 002.477-2.475c.24-.895.348-2.195.4-3.2.03-.573.048-1.147.053-1.72l.001-.11v-.082l-.001-.111a41.989 41.989 0 00-.053-1.72c-.052-1.004-.16-2.304-.4-3.198a3.51 3.51 0 00-2.477-2.476c-.494-.133-1.267-.216-2.064-.274a62.01 62.01 0 00-2.655-.127 124.41 124.41 0 00-3.074-.052Zm-.543 2L11.932 6h.335c1.008.005 2.016.022 3.023.052.857.023 1.713.064 2.568.123.813.059 1.406.134 1.692.211h.002a1.51 1.51 0 011.062 1.062v.002c.18.666.282 1.772.335 2.782.021.418.036.836.044 1.255.003.161.006.291.006.379l.001.102v.064l-.001.102c-.005.545-.022 1.09-.05 1.634-.053 1.01-.155 2.116-.335 2.782v.002a1.51 1.51 0 01-1.062 1.063h-.002c-.286.076-.879.15-1.692.21-.855.06-1.711.1-2.568.124-1.007.029-2.014.045-3.023.05l-.199.001h-.136l-.199-.001a122.855 122.855 0 01-3.023-.051 61.138 61.138 0 01-2.568-.123c-.813-.059-1.406-.134-1.692-.211h-.002a1.51 1.51 0 01-1.062-1.062v-.002c-.18-.666-.283-1.772-.335-2.782-.026-.49-.038-.935-.044-1.255-.003-.161-.006-.291-.006-.379L3 12.032v-.166c.006-.545.023-1.09.051-1.634.052-1.01.155-2.116.335-2.782v-.002a1.51 1.51 0 011.062-1.063h.002c.286-.076.879-.15 1.692-.21.855-.059 1.711-.1 2.568-.124 1.007-.03 2.014-.046 3.023-.05ZM15 12l-5-3v6l5-3Z">
+                                                    </path>
+                                                </svg></div>
+                                        </span></yt-icon>
+                                    <div id="status-description-cell"
+                                        class="style-scope ytcp-rss-video-sync-state-dialog">
+                                        <div id="sync-state-text" class="style-scope ytcp-rss-video-sync-state-dialog">
+                                            Set in YouTube</div>
+                                    </div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                    <div class="text-column rss-value style-scope ytcp-rss-video-sync-state-dialog"
+                                        is-unsynced="">–</div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                    <div class="text-column style-scope ytcp-rss-video-sync-state-dialog">Have you tried
+                                        a Korean cushion compact yet? The AMOREPACIFIC Color Control Cushion Compact.
+                                        Broad spectrum SPF fifty, dewy finish, buildable coverage basically skincare and
+                                        makeup in one tap. Lives in your bag, works for touch-ups, glides over makeup
+                                        mid-day. Way more affordable than people expect. Tap the link to grab it on
+                                        Amazon.Shop on Amazon: https://amzn.to/3RroIN2 #UGC #glowup #skintok
+                                        #skincareroutine #shorts</div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><ytcp-button
+                                        class="revert-to-rss-button style-scope ytcp-rss-video-sync-state-dialog"
+                                        track-click="" id="description-revert-to-rss-button"
+                                        row="{&quot;videoField&quot;:&quot;description&quot;,&quot;canonicalValue&quot;:&quot;Have you tried a Korean cushion compact yet? The AMOREPACIFIC Color Control Cushion Compact. Broad spectrum SPF fifty, dewy finish, buildable coverage basically skincare and makeup in one tap. Lives in your bag, works for touch-ups, glides over makeup mid-day. Way more affordable than people expect. Tap the link to grab it on Amazon.Shop on Amazon: https://amzn.to/3RroIN2 #UGC #glowup #skintok #skincareroutine #shorts&quot;,&quot;rssValue&quot;:&quot;–&quot;,&quot;isSynced&quot;:false,&quot;veType&quot;:192006}"
+                                        tabindex="-1" type="tonal" button-style="default" icon-alignment="start"
+                                        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                                                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                                                title="" aria-label="Revert to RSS" aria-disabled="false" tabindex="0"
+                                                style="">
+                                                <div class="ytcpButtonShapeImpl__button-text-content">Revert to RSS
+                                                </div><yt-touch-feedback-shape aria-hidden="true"
+                                                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                                                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                                                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                                                </yt-touch-feedback-shape>
+                                            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if></div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:24px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><ytcp-button
+                                        class="revert-to-rss-button style-scope ytcp-rss-video-sync-state-dialog"
+                                        track-click="" id="description-revert-to-rss-button"
+                                        row="{&quot;videoField&quot;:&quot;description&quot;,&quot;canonicalValue&quot;:&quot;Have you tried a Korean cushion compact yet? The AMOREPACIFIC Color Control Cushion Compact. Broad spectrum SPF fifty, dewy finish, buildable coverage basically skincare and makeup in one tap. Lives in your bag, works for touch-ups, glides over makeup mid-day. Way more affordable than people expect. Tap the link to grab it on Amazon.Shop on Amazon: https://amzn.to/3RroIN2 #UGC #glowup #skintok #skincareroutine #shorts&quot;,&quot;rssValue&quot;:&quot;–&quot;,&quot;isSynced&quot;:false,&quot;veType&quot;:192006}"
+                                        tabindex="-1" type="tonal" button-style="default" icon-alignment="start"
+                                        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                                                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                                                title="" aria-label="Revert to RSS" aria-disabled="false" tabindex="0"
+                                                style="">
+                                                <div class="ytcpButtonShapeImpl__button-text-content">Revert to RSS
+                                                </div><yt-touch-feedback-shape aria-hidden="true"
+                                                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                                                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                                                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                                                </yt-touch-feedback-shape>
+                                            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if></div><dom-repeat
+                                    as="column" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-repeat>
+                            </div>
+                            <div class="row-container style-scope ytcp-rss-video-sync-state-dialog" role="row">
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:100px;padding-left:24px;padding-right:12px;flex:1 0 100px;">
+                                    <div class="text-column style-scope ytcp-rss-video-sync-state-dialog">Release date
+                                    </div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><yt-icon
+                                        id="rss-sync-state-icon" aria-labelledby="sync-state-text"
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"><!--css-build:shady--><!--css_build_scope:yt-icon--><!--css_build_styles:video.youtube.src.web.polymer.shared.ui.styles.yt_base_styles.yt.base.styles.css.js,video.youtube.src.web.polymer.shared.core.yt_icon.yt.icon.css.js--><span
+                                            class="yt-icon-shape style-scope yt-icon ytSpecIconShapeHost">
+                                            <div style="width: 100%; height: 100%; display: block; fill: currentcolor;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24"
+                                                    width="24" focusable="false" aria-hidden="true"
+                                                    style="pointer-events: none; display: inherit; width: 100%; height: 100%;">
+                                                    <path
+                                                        d="M12.276 4.001 12.073 4h-.349c-1.025.005-2.05.022-3.074.052-.885.027-1.829.067-2.655.127-.797.058-1.57.141-2.064.274a3.51 3.51 0 00-2.477 2.476l.966.26-.966-.258-.084.351c-.182.862-.271 1.966-.316 2.846-.03.573-.047 1.147-.053 1.72l-.001.11v.194c.006.573.024 1.147.054 1.72.052 1.004.16 2.303.4 3.197a3.51 3.51 0 002.477 2.477c.494.133 1.267.216 2.064.274.885.06 1.77.102 2.655.127 1.025.03 2.05.047 3.074.052l.203.001h.146l.203-.001c1.025-.005 2.05-.022 3.074-.052a65.9 65.9 0 002.655-.127c.797-.058 1.57-.141 2.064-.274a3.51 3.51 0 002.477-2.475c.24-.895.348-2.195.4-3.2.03-.573.048-1.147.053-1.72l.001-.11v-.082l-.001-.111a41.989 41.989 0 00-.053-1.72c-.052-1.004-.16-2.304-.4-3.198a3.51 3.51 0 00-2.477-2.476c-.494-.133-1.267-.216-2.064-.274a62.01 62.01 0 00-2.655-.127 124.41 124.41 0 00-3.074-.052Zm-.543 2L11.932 6h.335c1.008.005 2.016.022 3.023.052.857.023 1.713.064 2.568.123.813.059 1.406.134 1.692.211h.002a1.51 1.51 0 011.062 1.062v.002c.18.666.282 1.772.335 2.782.021.418.036.836.044 1.255.003.161.006.291.006.379l.001.102v.064l-.001.102c-.005.545-.022 1.09-.05 1.634-.053 1.01-.155 2.116-.335 2.782v.002a1.51 1.51 0 01-1.062 1.063h-.002c-.286.076-.879.15-1.692.21-.855.06-1.711.1-2.568.124-1.007.029-2.014.045-3.023.05l-.199.001h-.136l-.199-.001a122.855 122.855 0 01-3.023-.051 61.138 61.138 0 01-2.568-.123c-.813-.059-1.406-.134-1.692-.211h-.002a1.51 1.51 0 01-1.062-1.062v-.002c-.18-.666-.283-1.772-.335-2.782-.026-.49-.038-.935-.044-1.255-.003-.161-.006-.291-.006-.379L3 12.032v-.166c.006-.545.023-1.09.051-1.634.052-1.01.155-2.116.335-2.782v-.002a1.51 1.51 0 011.062-1.063h.002c.286-.076.879-.15 1.692-.21.855-.059 1.711-.1 2.568-.124 1.007-.03 2.014-.046 3.023-.05ZM15 12l-5-3v6l5-3Z">
+                                                    </path>
+                                                </svg></div>
+                                        </span></yt-icon>
+                                    <div id="status-description-cell"
+                                        class="style-scope ytcp-rss-video-sync-state-dialog">
+                                        <div id="sync-state-text" class="style-scope ytcp-rss-video-sync-state-dialog">
+                                            Set in YouTube</div>
+                                    </div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                    <div class="text-column rss-value style-scope ytcp-rss-video-sync-state-dialog"
+                                        is-unsynced="">–</div><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:200px;padding-left:12px;padding-right:12px;flex:2 0 200px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                    <div class="text-column style-scope ytcp-rss-video-sync-state-dialog">–</div><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if>
+                                </div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:12px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><ytcp-button
+                                        class="revert-to-rss-button style-scope ytcp-rss-video-sync-state-dialog"
+                                        track-click="" id="releaseDate-revert-to-rss-button"
+                                        row="{&quot;videoField&quot;:&quot;releaseDate&quot;,&quot;canonicalValue&quot;:&quot;–&quot;,&quot;rssValue&quot;:&quot;–&quot;,&quot;isSynced&quot;:false,&quot;veType&quot;:192007}"
+                                        tabindex="-1" type="tonal" button-style="default" icon-alignment="start"
+                                        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                                                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                                                title="" aria-label="Revert to RSS" aria-disabled="false" tabindex="0"
+                                                style="">
+                                                <div class="ytcpButtonShapeImpl__button-text-content">Revert to RSS
+                                                </div><yt-touch-feedback-shape aria-hidden="true"
+                                                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                                                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                                                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                                                </yt-touch-feedback-shape>
+                                            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if></div>
+                                <div role="cell"
+                                    class=" column-container style-scope ytcp-rss-video-sync-state-dialog style-scope ytcp-rss-video-sync-state-dialog"
+                                    style="min-width:150px;padding-left:12px;padding-right:24px;flex:1 0 150px;"><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp="" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if
+                                        restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><ytcp-button
+                                        class="revert-to-rss-button style-scope ytcp-rss-video-sync-state-dialog"
+                                        track-click="" id="releaseDate-revert-to-rss-button"
+                                        row="{&quot;videoField&quot;:&quot;releaseDate&quot;,&quot;canonicalValue&quot;:&quot;–&quot;,&quot;rssValue&quot;:&quot;–&quot;,&quot;isSynced&quot;:false,&quot;veType&quot;:192007}"
+                                        tabindex="-1" type="tonal" button-style="default" icon-alignment="start"
+                                        aria-disabled="false"><!--css-build:shady--><!--css_build_scope:ytcp-button--><ytcp-button-shape><button
+                                                class="ytcpButtonShapeImplHost ytcpButtonShapeImpl--tonal ytcpButtonShapeImpl--mono ytcpButtonShapeImpl--size-m ytcpButtonShapeImpl--enable-backdrop-filter-experiment"
+                                                title="" aria-label="Revert to RSS" aria-disabled="false" tabindex="0"
+                                                style="">
+                                                <div class="ytcpButtonShapeImpl__button-text-content">Revert to RSS
+                                                </div><yt-touch-feedback-shape aria-hidden="true"
+                                                    class="ytSpecTouchFeedbackShapeHost ytSpecTouchFeedbackShapeTouchResponse">
+                                                    <div class="ytSpecTouchFeedbackShapeStroke"></div>
+                                                    <div class="ytSpecTouchFeedbackShapeFill"></div>
+                                                </yt-touch-feedback-shape>
+                                            </button></ytcp-button-shape></ytcp-button><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if><dom-if restamp=""
+                                        class="style-scope ytcp-rss-video-sync-state-dialog"></dom-if></div><dom-repeat
+                                    as="column" class="style-scope ytcp-rss-video-sync-state-dialog"></dom-repeat>
+                            </div><dom-repeat as="row"
+                                class="style-scope ytcp-rss-video-sync-state-dialog"></dom-repeat>
+                        </div>
+                    </div>
+                    <div class="footer style-scope ytcp-dialog"></div><dom-if restamp=""
+                        class="style-scope ytcp-dialog"></dom-if>
+                </tp-yt-paper-dialog></ytcp-dialog></ytcp-rss-video-sync-state-dialog><dom-if
+            class="style-scope ytcp-video-overflow-menu"></dom-if></ytcp-video-overflow-menu></div>
