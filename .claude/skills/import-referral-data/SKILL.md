@@ -29,6 +29,10 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 {
   "lifestyle-image-path": "",
   "narration-audio-path": "",
+  "raw-speaker-video-path": "",
+  "stitched-narration-video-path": "",
+  "captioned-video-path": "",
+  "final-with-music-video-path": "",
   "main-product-image-path": "main.jpg",
   "item-auxiliary-information": {
     "brand": "...",
@@ -42,11 +46,21 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
     "description": "..."
   },
   "script-raw-text": "",
-  "commission-percentage": "10.00%"
+  "commission-percentage": "10.00%",
+  "youtube-metadata": {
+    "title": "",
+    "description": "",
+    "tags": [],
+    "category": "22",
+    "privacy": "public",
+    "hashtags": []
+  },
+  "uploaded": false,
+  "uploaded-video-url": ""
 }
 ```
 
-- `lifestyle-image-path` and `narration-audio-path` stay empty — those get filled in by downstream skills.
+- `lifestyle-image-path`, `narration-audio-path`, `raw-speaker-video-path`, `stitched-narration-video-path`, and `captioned-video-path` stay empty — those get filled in by downstream skills (lifestyle image gen, Hedra TTS, the AI video gen output, `/stitch-narration`, and `/caption-video` respectively).
 - `script-raw-text` stays empty — narration is authored later.
 - `category` is inferred from brand + product name. Reasonable buckets: skincare/makeup, fragrance, makeup, jewelry, beauty (fallback).
 - `commission-percentage` keeps the original string from the scrape (e.g. `"10.00%"`).
