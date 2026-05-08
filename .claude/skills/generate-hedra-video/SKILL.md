@@ -79,10 +79,15 @@ Hedra Avatar can sit in `status=queued, progress=0.0` for tens of minutes when t
 If a slug times out:
 
 1. Look at the FAIL row — it includes the generation id (e.g. `8896f94f-c267-4a9b-8952-e0c8d6f701cb`).
-2. Probe `GET https://api.hedra.com/web-app/public/generations/<gen_id>/status`. If `status == "complete"`, fetch the URL via `/assets?type=video&ids=<asset_id>` and download to `products/<slug>/raw-speaker-video.mp4`, then set `manifest["raw-speaker-video-path"] = "raw-speaker-video.mp4"`.
-3. Only re-run the slug if the generation truly failed (`status` ∈ `{error, failed, canceled}`) — re-running while the original is still queued double-bills.
+2. Probe `GET https://api.hedra.com/web-app/public/generations/<gen_id>/status`. If `status` is still `queued`/`processing`, the gen is alive — don't re-run.
+3. Use the bundled recovery script — it tolerates transient HTTP errors, polls until completion, downloads to `products/<slug>/raw-speaker-video.mp4`, and updates the manifest:
+   ```
+   cd hedra-vid-gen
+   poetry run python avatar-video/recover.py <slug> <generation_id>
+   ```
+4. Only re-run the slug via `generate.py` if the generation truly failed (`status` ∈ `{error, failed, canceled}`) — re-running while the original is still queued double-bills.
 
-A one-off recovery script that polls a known generation id and downloads on completion is cheap to spin up; do that before assuming a re-run is needed.
+To list active generations across the account (e.g. to find a stranded job): `GET https://api.hedra.com/web-app/public/generations` and filter for `status` not in `{complete, error, failed, canceled}`.
 
 ## Out of scope
 
