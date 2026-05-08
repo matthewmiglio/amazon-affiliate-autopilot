@@ -1,11 +1,11 @@
 ---
 name: upload-ad
-description: Upload a product's `final-with-music.mp4` to YouTube Shorts. Validates / generates the per-product `youtube-metadata` block in `manifest.json` (title with category-aware hashtags, description, tags), runs `uploader/upload.py`, then flips `uploaded: true` and writes `uploaded-video-url` back to the manifest. Idempotent — already-uploaded products SKIP unless `--overwrite`. Use when the user runs /upload-ad or asks to "upload the ad for X", "publish the video to YouTube", "ship this product", or similar.
+description: Upload a product's `final-with-music.mp4` to all configured platforms (YouTube, Instagram, Facebook, Pinterest). Validates / generates per-platform metadata under `manifest["uploads"][platform].metadata`, runs each platform's uploader script, then flips `uploads.<platform>.uploaded = true` and writes the resulting URL back. Idempotent — already-uploaded platforms SKIP unless `--overwrite`. Today only YouTube actually uploads; Meta and Pinterest skip with "not implemented" until those uploaders land. Use when the user runs /upload-ad or asks to "upload the ad for X", "publish the video", "ship this product", or similar.
 ---
 
 # upload-ad
 
-Validate that the product's YouTube metadata is in its `manifest.json`, generate it if missing, push the final mp4 to YouTube via the existing `uploader/upload.py`, and flip the `uploaded` flag.
+Iterate the four platforms (`youtube`, `instagram`, `facebook`, `pinterest`). For each, validate metadata in `manifest["uploads"][platform].metadata`, generate if missing, invoke that platform's uploader script if it exists, and flip `uploads.<platform>.uploaded = true` on success. Platforms whose uploader script doesn't yet exist (Meta, Pinterest) skip cleanly with `"not implemented"`.
 
 ## Inputs
 
@@ -19,7 +19,7 @@ If the user provides nothing, ask once. Don't guess.
 ## Pre-flight bail
 
 - `products/<slug>/final-with-music.mp4` missing → FAIL with `"missing final-with-music.mp4 - run /overlay-music first"`. Do **not** continue.
-- `uploader/` not configured (no token / no `client_secret.json`) — `upload.py` will surface its own error; pass through.
+- `uploader/youtube/` not configured (no token / no `client_secret.json`) — `youtube/upload.py` will surface its own error; pass through.
 
 ## Workflow
 
@@ -28,27 +28,24 @@ If the user provides nothing, ask once. Don't guess.
    ```
    python scripts/upload_ad.py --product <slug-or-path>
    ```
-   The script:
-   - bails if `final-with-music.mp4` is missing
-   - if `manifest["youtube-metadata"].title` is empty, builds metadata from the manifest:
-     - tagline = brand + product (trimmed to ~60 chars, size/pack noise stripped)
-     - 1 evergreen UGC hashtag + 2 from the matching category pool
-     - description from `script-raw-text` + affiliate link + `#shorts`
-     - YouTube `tags` = hashtag stems + brand/product keywords (max 10)
-     - title is final form including hashtags, capped at 100 chars
-   - skips if `manifest.uploaded` is already `true` (unless `--overwrite`)
-   - runs `python uploader/upload.py <slug> -y`
-   - on success, parses the `uploaded -> https://youtu.be/<id>` line
-   - sets `manifest.uploaded = true`, `manifest["uploaded-video-url"] = <url>`
-3. **Surface the row** the script prints (`<slug>\t<STATUS>\t<detail>`).
+   The script iterates `[youtube, instagram, facebook, pinterest]` and for each:
+   - skips if `manifest["uploads"][platform].uploaded` is already `true` (unless `--overwrite`)
+   - generates platform metadata if missing (regen with `--regen-meta`):
+     - **youtube**: tagline = brand + product trimmed to ~60 chars, 1 evergreen UGC hashtag + 2 category hashtags, description from `script-raw-text` + affiliate link + `#shorts`, tags from hashtag stems + brand/product keywords (max 10), title capped at 100 chars
+     - **instagram / facebook**: empty `caption` + `hashtags` placeholders (real generators land with the Meta uploader)
+     - **pinterest**: empty `title`, `description`, `board`; `destination_url` pre-filled from the affiliate link
+   - invokes `uploader/<platform>/upload.py` (or `meta/upload_<instagram|facebook>.py`) if it exists; otherwise prints `"<platform> not implemented"` and SKIPs
+   - on success, parses `uploaded -> https://...` from stdout and writes `uploads.<platform>.uploaded = true`, `uploads.<platform>.url = <url>`
+3. **Surface each row** the script prints (`<slug>\t<platform>\t<STATUS>\t<detail>`).
 4. **Do NOT** add `--overwrite` unless the user explicitly asks to re-upload.
 
-## State machine (per product)
+## State machine (per product / per platform)
 
-| `manifest.uploaded` | Action |
-|---|---|
-| `true` | SKIP (unless `--overwrite`) |
-| `false` / missing | uploader runs, manifest updated on success |
+| `uploads.<platform>.uploaded` | uploader exists? | Action |
+|---|---|---|
+| `true` | — | SKIP (unless `--overwrite`) |
+| `false` / missing | yes | uploader runs, manifest updated on success |
+| `false` / missing | no  | SKIP with `"not implemented"` |
 
 ## Hashtag bank
 
@@ -58,15 +55,15 @@ Selection rule: 1 evergreen + 2 from the matching category pool, baked into the 
 
 ## Existing helpers (do not duplicate)
 
-- `scripts/upload_ad.py` — owns metadata generation, manifest mutation, uploader invocation, status-line parsing.
-- `uploader/upload.py` — the YouTube upload itself; reads `youtube-metadata` from the product manifest, posts the title verbatim, writes to `uploader/history.json`.
+- `scripts/upload_ad.py` — owns per-platform metadata generation, manifest mutation, uploader invocation per platform, status-line parsing.
+- `uploader/youtube/upload.py` — the YouTube upload itself; reads `uploads.youtube.metadata` from the product manifest, posts the title verbatim, writes to `uploader/youtube/history.json`.
+- `uploader/meta/` and `uploader/pinterest/` — empty placeholders. Drop in `upload_instagram.py`, `upload_facebook.py`, `pinterest/upload.py` to wire those platforms in. Each must accept `<slug> -y` and print `uploaded -> <https-url>` on success.
 
 ## Out of scope
 
 - **No video editing.** The uploaded file is `products/<slug>/final-with-music.mp4` as-is.
-- **No multi-platform upload.** YouTube Shorts only.
-- **No metadata authoring beyond the template.** If the user wants a hand-crafted title, they can edit `manifest["youtube-metadata"]` directly and re-run; this skill won't overwrite a populated title without `--regen-meta`.
+- **No metadata authoring beyond the template.** If the user wants a hand-crafted title, they can edit `manifest["uploads"][platform].metadata` directly and re-run; this skill won't overwrite populated metadata without `--regen-meta`.
 
 ## Cost note
 
-YouTube Data API quota only — no paid-API spend.
+YouTube Data API quota only — no paid-API spend. Future Meta/Pinterest uploaders should also stay quota-only (no paid-API spend).

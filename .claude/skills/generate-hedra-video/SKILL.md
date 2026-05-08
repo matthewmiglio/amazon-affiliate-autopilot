@@ -58,9 +58,23 @@ Hedra Avatar generations are paid. Before kicking off, **always** print the slug
 - Duration: auto — Hedra matches the uploaded audio length
 - Start keyframe: `lifestyle-1.png`
 - Audio: `narration.mp3`
-- Text prompt: `manifest["video-prompt"]` if present, else `manifest["script-raw-text"]`, truncated to 500 chars
+- Text prompt: `manifest["video-prompt"]` if present, else `manifest["script-raw-text"]`, truncated to 500 chars. Hedra Avatar is audio-driven; the text prompt is just a stylistic hint, NOT the spoken script. The narration mp3 drives lipsync.
+- Poll cap: 60 minutes, 15s interval.
+- Asset URL: completed video generations sometimes return `asset_id` with no `download_url`; the script falls back to `GET /assets?type=video&ids=<asset_id>` and reads `[0].asset.url`.
 
 Do NOT change the model, aspect ratio, or resolution without explicit user direction.
+
+## Queue stalls + recovery
+
+Hedra Avatar can sit in `status=queued, progress=0.0` for tens of minutes when the platform queue is busy — even though the generation is otherwise valid. **A timeout from the script does NOT mean the generation failed**; Hedra often finishes it on their side, billed.
+
+If a slug times out:
+
+1. Look at the FAIL row — it includes the generation id (e.g. `8896f94f-c267-4a9b-8952-e0c8d6f701cb`).
+2. Probe `GET https://api.hedra.com/web-app/public/generations/<gen_id>/status`. If `status == "complete"`, fetch the URL via `/assets?type=video&ids=<asset_id>` and download to `products/<slug>/raw-speaker-video.mp4`, then set `manifest["raw-speaker-video-path"] = "raw-speaker-video.mp4"`.
+3. Only re-run the slug if the generation truly failed (`status` ∈ `{error, failed, canceled}`) — re-running while the original is still queued double-bills.
+
+A one-off recovery script that polls a known generation id and downloads on completion is cheap to spin up; do that before assuming a re-run is needed.
 
 ## Out of scope
 

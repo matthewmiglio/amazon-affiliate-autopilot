@@ -48,17 +48,41 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
   "script-raw-text": "",
   "video-prompt": "",
   "commission-percentage": "10.00%",
-  "youtube-metadata": {
-    "title": "",
-    "description": "",
-    "tags": [],
-    "category": "22",
-    "privacy": "public",
-    "hashtags": []
-  },
   "background-music-track": "",
-  "uploaded": false,
-  "uploaded-video-url": ""
+  "uploads": {
+    "youtube": {
+      "uploaded": false,
+      "url": "",
+      "metadata": {
+        "title": "",
+        "description": "",
+        "tags": [],
+        "category": "22",
+        "privacy": "public",
+        "hashtags": []
+      }
+    },
+    "instagram": {
+      "uploaded": false,
+      "url": "",
+      "metadata": { "caption": "", "hashtags": [] }
+    },
+    "facebook": {
+      "uploaded": false,
+      "url": "",
+      "metadata": { "caption": "", "hashtags": [] }
+    },
+    "pinterest": {
+      "uploaded": false,
+      "url": "",
+      "metadata": {
+        "title": "",
+        "description": "",
+        "destination_url": "",
+        "board": ""
+      }
+    }
+  }
 }
 ```
 

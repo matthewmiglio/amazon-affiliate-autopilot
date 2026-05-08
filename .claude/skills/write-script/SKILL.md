@@ -5,7 +5,7 @@ description: Author 15-20 second narration scripts (podcast / social-post tone, 
 
 # write-script
 
-Draft narration scripts for one or more products, lint them, and write to `products/<slug>/script.txt` + the matching `manifest.json` `script-raw-text` field.
+Draft narration scripts for one or more products, lint them, and write them into `products/<slug>/manifest.json` under the `script-raw-text` field. The manifest is the single source of truth — no sibling `script.txt` is created.
 
 ## Inputs
 
@@ -22,7 +22,7 @@ If the user does not specify, ask once. Do not guess.
 These rules are NON-NEGOTIABLE. Lint enforces most of them.
 
 1. **Length:** 45-60 words / 280-380 chars. Aim for ~50 words. The lint will fail outside this range.
-2. **Voice:** conversational, talking to ONE hidden listener across a table — like sharing a tip with a friend. Not QVC. Not a press release. Read 1-2 existing `script.txt` files first to anchor the tone.
+2. **Voice:** conversational, talking to ONE hidden listener across a table — like sharing a tip with a friend. Not QVC. Not a press release. Read 1-2 existing populated `manifest.json["script-raw-text"]` values first to anchor the tone.
 3. **NEVER STATE PRICE.** Amazon Associates Operating Agreement (see `docs/rules.md` HARD RULE 4) forbids exact price claims in audio/video — prices change hourly and a stale price can terminate the account. NEVER say "seventy-five dollars," "fifty bucks," "thirty cents," or any specific number-of-dollars phrase. Replace with vague tier language:
    - Cheaper end → "affordable", "shockingly affordable", "approachably priced"
    - Mid → "an everyday luxury", "fairly priced", "worth the spend"
@@ -43,7 +43,7 @@ These rules are NON-NEGOTIABLE. Lint enforces most of them.
 1. **Resolve target slugs.**
    - For `--all-needing`: run `python scripts/status.py --needs-script --json` and parse the JSON list.
    - For an explicit slug list: validate each `products/<slug>/manifest.json` exists.
-2. **Read tone references.** Read 1-2 existing populated scripts (e.g. `products/concealer-spf-27/script.txt`) into context to anchor voice. Do this once, not per product.
+2. **Read tone references.** Read 1-2 existing populated `script-raw-text` values from manifests (e.g. `products/concealer-spf-27/manifest.json`) into context to anchor voice. Do this once, not per product.
 3. **Read each target's manifest** for brand, product, price, description. Use `ctx_execute` (shell + node) if reading >3 manifests, to keep raw context small — print only the compact `{slug, brand, product, price, description}` JSON.
 4. **Draft scripts.** Author the full set in one pass. Build a `{slug: script_text}` dict.
 5. **Stage to a temp JSON file.** Write the dict to `scripts/_pending_scripts.json` via the Write tool.
@@ -54,7 +54,7 @@ These rules are NON-NEGOTIABLE. Lint enforces most of them.
 ## Helper scripts (in `scripts/`)
 
 - `status.py --needs-script --json` — list of slugs missing scripts as JSON array.
-- `apply_scripts.py <json> [--overwrite]` — atomically writes both `script.txt` and the manifest field per slug. Skips already-populated unless `--overwrite`.
+- `apply_scripts.py <json> [--overwrite]` — writes the manifest's `script-raw-text` field per slug. Skips already-populated unless `--overwrite`.
 - `script_lint.py [slugs...]` — checks word count, char count, no `$`, no digits, contains "Tap the link". Exits non-zero on failure.
 
 ## Out of scope
