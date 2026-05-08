@@ -1,0 +1,287 @@
+"""
+Hedra image generator: character ref(s) + product image -> composed
+"podcast / UGC ad" starting frame at 9:16.
+
+Per slug, this script:
+  1. Loads character ref paths from $HEDRA_CHARACTER_REF_PATHS (comma-list of
+     paths relative to repo root). The first ref is the canonical face.
+  2. Loads the product image at products/<slug>/<main-product-image-path>
+     (falls back to main.png / main.jpg / main.webp).
+  3. Builds a starting-image prompt via prompt_builder.build_prompt.
+  4. POSTs /generations with type:"image" and reference_image_ids = [chars..., product]
+     using $HEDRA_IMAGE_MODEL_ID.
+  5. Polls, downloads the result to <output-dir>/<slug>/<output-name>
+     (default <products>/<slug>/lifestyle-1.png) and updates the manifest's
+     `lifestyle-image-path`.
+
+Idempotent: skips slugs whose target file already exists unless --overwrite.
+
+Usage:
+  python generate.py --products <slug>[,<slug>,...]
+  python generate.py --all-needing
+  python generate.py --products <slug> --overwrite
+  python generate.py --products <slug> --output-dir ../../hedra-starting-image-benchmarking/outputs
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import random
+import sys
+from pathlib import Path
+
+import requests
+
+HERE = Path(__file__).resolve().parent
+PARENT = HERE.parent
+sys.path.insert(0, str(PARENT))
+import _common as hc  # noqa: E402
+
+from prompt_builder import build_prompt  # noqa: E402  (same dir)
+
+REPO_ROOT = PARENT.parent
+PRODUCTS_DIR = REPO_ROOT / "products"
+CHARACTER_DIR = REPO_ROOT / "assets" / "character"
+
+OUTPUT_NAME = "lifestyle-1.png"
+MANIFEST_KEY = "lifestyle-image-path"
+
+PRODUCT_IMAGE_CANDIDATES = ["main.png", "main.jpg", "main.jpeg", "main.webp"]
+CHARACTER_REF_COUNT = 3
+IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
+
+# Whitelist of face-anchor character refs — the empirically-strongest set.
+# Curated from QA: each one of these landed in outputs that the user verified
+# matched her face. Refs that appeared in "not her" / "close-but-off" outputs
+# (white-pantsuit-power-pose, champagne-slip-head-tilted-dreamy,
+# smoky-eyes-extreme-closeup, cream-slip-three-quarter-soft) are intentionally
+# excluded — they're still her, but their pose / camera / framing confuses
+# the I2I model and drags consistency down.
+FACE_ANCHOR_REFS = {
+    "cable-knit-mug-laughing-warm",
+    "laughing-white-tee-daylight",
+    "pink-sweater-chin-on-hand",
+    "lavender-sweater-whisper-pink",
+    "cream-sweater-knees-up-contemplative",
+    "crouched-tank-shorts-looking-up",
+}
+
+# Nano Banana Pro I2I — image-to-image variant. Strong multi-reference
+# character lock. T2I variants ignore the uploaded references.
+DEFAULT_IMAGE_MODEL_ID = "c81e401b-6036-4e1f-9165-60eafcee9dd3"
+
+
+def _model_id(key: str) -> str:
+    """Use HEDRA_IMAGE_MODEL_ID if set; otherwise default to Nano Banana Pro I2I.
+    `key` is unused now but kept for signature compat with callers."""
+    return os.getenv("HEDRA_IMAGE_MODEL_ID", "").strip() or DEFAULT_IMAGE_MODEL_ID
+
+
+def _all_character_images() -> list[Path]:
+    if not CHARACTER_DIR.is_dir():
+        sys.exit(f"character dir not found: {CHARACTER_DIR}")
+    # Only include files in the FACE_ANCHOR_REFS whitelist (matched by stem).
+    paths = sorted(
+        p for p in CHARACTER_DIR.iterdir()
+        if p.is_file() and p.suffix.lower() in IMAGE_EXTS and p.stem in FACE_ANCHOR_REFS
+    )
+    if not paths:
+        sys.exit(
+            f"no whitelisted character images in {CHARACTER_DIR}. "
+            f"Expected stems: {sorted(FACE_ANCHOR_REFS)}"
+        )
+    return paths
+
+
+def _pick_character_refs(slug: str, reroll: int, n: int = CHARACTER_REF_COUNT) -> list[Path]:
+    """Pick `n` random character images, seeded by (slug, reroll) so the same
+    slug+reroll always picks the same 3 (stable re-runs), but different slugs
+    almost never collide. Falls back to all if fewer than n exist."""
+    pool = _all_character_images()
+    if len(pool) <= n:
+        return pool
+    seed = int.from_bytes(hashlib.sha256(f"{slug}|{reroll}".encode()).digest()[:8], "big")
+    rng = random.Random(seed)
+    return rng.sample(pool, n)
+
+
+def _product_image(folder: Path, manifest: dict) -> Path:
+    rel = (manifest.get("main-product-image-path") or "").strip()
+    if rel:
+        cand = folder / rel
+        if cand.exists():
+            return cand
+    for name in PRODUCT_IMAGE_CANDIDATES:
+        cand = folder / name
+        if cand.exists():
+            return cand
+    sys.exit(f"no product image in {folder} (looked for main.png/jpg/jpeg/webp)")
+
+
+def _load_manifest(p: Path) -> dict:
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _save_manifest(p: Path, d: dict) -> None:
+    p.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _resolve_slugs(args: argparse.Namespace) -> list[str]:
+    if args.all_needing:
+        slugs = []
+        for child in sorted(PRODUCTS_DIR.iterdir()):
+            if not child.is_dir():
+                continue
+            if not (child / "manifest.json").exists():
+                continue
+            if (child / OUTPUT_NAME).exists():
+                continue
+            slugs.append(child.name)
+        return slugs
+    if not args.products:
+        sys.exit("provide --products <slug[,slug,...]> or --all-needing")
+    return [s.strip() for s in args.products.split(",") if s.strip()]
+
+
+def generate_one(
+    slug: str,
+    *,
+    key: str,
+    char_paths: list[Path] | None = None,
+    output_path: Path,
+    reroll: int = 0,
+    update_manifest: bool = True,
+) -> tuple[str, str]:
+    """Core: one slug -> one image. Used by CLI and benchmark.
+    If char_paths is None, picks 3 random refs from assets/character/ seeded by (slug, reroll)."""
+    folder = PRODUCTS_DIR / slug
+    manifest_path = folder / "manifest.json"
+    if not manifest_path.exists():
+        return ("FAIL", f"missing {manifest_path}")
+    manifest = _load_manifest(manifest_path)
+
+    if char_paths is None:
+        char_paths = _pick_character_refs(slug, reroll)
+
+    product_img = _product_image(folder, manifest)
+
+    print(
+        f"[{slug}] uploading {len(char_paths)} character ref(s): "
+        f"{', '.join(p.name for p in char_paths)}",
+        file=sys.stderr,
+    )
+    char_ids = [hc.upload_file(key, p, "image") for p in char_paths]
+
+    print(f"[{slug}] uploading product image…", file=sys.stderr)
+    product_id = hc.upload_file(key, product_img, "image")
+
+    prompt = build_prompt(slug, manifest, reroll=reroll, n_character_refs=len(char_paths))
+    print(f"[{slug}] prompt: {prompt[:200]}…", file=sys.stderr)
+
+    body = {
+        "type": "image",
+        "ai_model_id": _model_id(key),
+        "text_prompt": prompt,
+        "reference_image_ids": char_ids + [product_id],
+        "aspect_ratio": "9:16",
+        "resolution": "1K",
+    }
+    print(f"[{slug}] starting image generation…", file=sys.stderr)
+    gen_id = hc.start_generation(key, body)
+
+    completed = hc.poll(key, gen_id, interval_s=5, timeout_s=10 * 60)
+    url = hc.extract_download_url(completed)
+    if not url:
+        asset_id = completed.get("asset_id")
+        if asset_id:
+            url = hc.fetch_asset_url(key, asset_id)
+    if not url:
+        return ("FAIL", f"completed but no download_url: {completed}")
+
+    print(f"[{slug}] downloading png…", file=sys.stderr)
+    hc.download(url, output_path)
+
+    if update_manifest:
+        rel = output_path.name if output_path.parent == folder else str(output_path.relative_to(folder)) if output_path.is_relative_to(folder) else None
+        if rel is not None:
+            manifest[MANIFEST_KEY] = rel
+            _save_manifest(manifest_path, manifest)
+
+    return ("OK", f"generation {gen_id} -> {output_path}")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--products", help="comma-separated slugs")
+    ap.add_argument("--all-needing", action="store_true")
+    ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument(
+        "--output-dir",
+        help="If set, write each slug's image to <output-dir>/<slug>.png instead of "
+             "the product folder. Useful for benchmarking.",
+    )
+    ap.add_argument("--reroll", type=int, default=0,
+                    help="Bump to get a different prompt combo for the same slug.")
+    args = ap.parse_args()
+
+    key = hc.api_key()
+    _ = _model_id(key)  # fail-fast / surface auto-discovery once up front
+    slugs = _resolve_slugs(args)
+    if not slugs:
+        print("nothing to do.", file=sys.stderr)
+        return 0
+
+    out_dir = Path(args.output_dir).resolve() if args.output_dir else None
+    if out_dir is not None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    counts = {"OK": 0, "FIXED": 0, "SKIP": 0, "FAIL": 0}
+    for slug in slugs:
+        if out_dir is not None:
+            output_path = out_dir / f"{slug}.png"
+            update_manifest = False
+        else:
+            output_path = PRODUCTS_DIR / slug / OUTPUT_NAME
+            update_manifest = True
+
+        if output_path.exists() and not args.overwrite:
+            # If running against the product folder, also fix manifest if drifted.
+            if update_manifest:
+                manifest_path = PRODUCTS_DIR / slug / "manifest.json"
+                if manifest_path.exists():
+                    m = _load_manifest(manifest_path)
+                    if m.get(MANIFEST_KEY) != OUTPUT_NAME:
+                        m[MANIFEST_KEY] = OUTPUT_NAME
+                        _save_manifest(manifest_path, m)
+                        counts["FIXED"] += 1
+                        print(f"{slug}\tFIXED\tmanifest synced")
+                        continue
+            counts["SKIP"] += 1
+            print(f"{slug}\tSKIP\timage already exists")
+            continue
+
+        try:
+            status, detail = generate_one(
+                slug,
+                key=key,
+                output_path=output_path,
+                reroll=args.reroll,
+                update_manifest=update_manifest,
+            )
+        except Exception as exc:  # noqa: BLE001
+            status, detail = "FAIL", f"{type(exc).__name__}: {exc}"
+        counts[status] = counts.get(status, 0) + 1
+        print(f"{slug}\t{status}\t{detail}")
+
+    print(
+        f"\n{counts['OK']} generated, {counts['FIXED']} manifest-fixed, "
+        f"{counts['SKIP']} skipped, {counts['FAIL']} failed.",
+        file=sys.stderr,
+    )
+    return 1 if counts["FAIL"] else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
