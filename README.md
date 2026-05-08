@@ -1,76 +1,48 @@
 # amazon-affiliate-autopilot
 
-Pipeline that picks Amazon products, generates AI talking-head YouTube Shorts, and uploads them with affiliate links — end-to-end, hands-off.
+End-to-end pipeline that turns Amazon affiliate products into AI talking-head YouTube Shorts — one consistent host, one product per video, affiliate link in the description.
 
-## The Character
-
-A consistent AI-generated host fronts every Short. Same face, same voice, different products — so the channel feels like a single creator instead of a content farm.
-
-<p align="center">
-  <img src="docs/images/character-1.png" width="32%" alt="Host character — pose 1" />
-  <img src="docs/images/character-2.png" width="32%" alt="Host character — pose 2" />
-  <img src="docs/images/character-3.png" width="32%" alt="Host character — pose 3" />
-</p>
-
-## Lifestyle Scenes
-
-Each product gets dropped into a lifestyle composite — kitchen, vanity, desk — so the Short looks like a real recommendation, not a stock listing.
-
-<p align="center">
-  <img src="docs/images/lifestyle-1.png" width="32%" alt="Lifestyle scene 1" />
-  <img src="docs/images/lifestyle-2.png" width="32%" alt="Lifestyle scene 2" />
-  <img src="docs/images/lifestyle-3.png" width="32%" alt="Lifestyle scene 3" />
-</p>
+Each pipeline stage is a slash-command skill — idempotent, manifest-driven, and accepts a single slug, a comma-list, or `--all-needing`.
 
 ## Pipeline
 
-```
-Amazon product page
-    ↓ amazon-product-page-scraper (Chrome extension)
-products/<slug>/manifest.json
-    ↓ scripts/apply_scripts.py  (15–20s narration)
-    ↓ ElevenLabs TTS
-narration.mp3
-    ↓ Hedra Character-3  (image + audio → talking head)
-talking-head.mp4  (9:16, lip-synced)
-    ↓ HyperFrames + captioning/
-final-short.mp4  (captions, branding, B-roll)
-    ↓ uploader/upload.py
-Posted YouTube Short  (affiliate link in description)
-```
+| # | Stage | Skill / tool | Visual |
+|---|---|---|---|
+| 1 | **Character refs** — pin a host face + voice per channel | manual `characters/<channel>/` | <img src="docs/readme-assets/character-1.png" width="120" /> <img src="docs/readme-assets/character-2.png" width="120" /> <img src="docs/readme-assets/character-3.png" width="120" /> |
+| 2 | **Scrape Amazon** — link + product details + main image | `amazon-product-page-scraper/` (Chrome ext) | <img src="docs/readme-assets/02-scraped-product.jpg" width="200" /> |
+| 3 | **Starting frame** — Hedra image-gen, 9:16 lifestyle composite | `/generate-starting-image` | <img src="docs/readme-assets/03-starting-frame.png" width="200" /> |
+| 4 | **Narration script** — 15–20s podcast-tone voiceover | `/write-script` | _"Listen, your cleanser matters way more than people give it credit for. The Clé de Peau Beauté Clarifying Cleansing Foam — made in Japan, built around their Skin Intelligence research that's been their signature for over forty years. Clears the day off without that tight, stripped feeling. An affordable luxury, honestly. Tap the link to grab it on Amazon."_ |
+| 5 | **Narration audio** — ElevenLabs TTS, channel voice pinned | `/generate-narration` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/05-narration.mp3" controls></video> |
+| 6 | **UGC talking head** — starting image + narration → Hedra Avatar | `/generate-hedra-video` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/06-raw-speaker-video.mp4" controls width="240"></video> |
+| 7 | **Audio restitch** — swap Hedra's baked audio for the clean local mp3 | `/stitch-narration` (ffmpeg) | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/07-stitched-narration.mp4" controls width="240"></video> |
+| 8 | **Captions** — WhisperX word-level + auto-picked style preset | `/caption-video` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/08-captioned-video.mp4" controls width="240"></video> |
+| 9 | **Background music** — ducked random track from `music/` library | `/overlay-music` | <video src="https://github.com/matthewmiglio/amazon-affiliate-autopilot/raw/master/docs/readme-assets/09-final-with-music.mp4" controls width="240"></video> |
+| 10 | **Upload** — YouTube Shorts via multi-channel OAuth | `/upload-ad` | Posted Short — affiliate link in first line of description, paid-promotion toggle ON |
 
 ## Layout
 
 | Path | Purpose |
 |---|---|
-| `amazon-product-page-scraper/` | Chrome extension that scrapes product pages → `manifest.json` |
-| `docs/` | Channel strategy, niche, video pipeline, compliance rules |
-| `scripts/` | Narration script generator, linter, status dashboard |
-| `narration/` | TTS audio generation |
-| `captioning/` | Whisper transcription + caption render |
+| `characters/` | Per-channel character refs + pinned voice (the host identity) |
+| `amazon-product-page-scraper/` | Chrome extension — scrapes Amazon product pages into manifests |
+| `products/` | Per-product folders — manifest + all generated media (gitignored) |
+| `hedra-vid-gen/` | Hedra API client — starting-image + avatar-video generation |
+| `narration/` | ElevenLabs TTS generation |
+| `captioning/` | WhisperX transcription + word-level caption renderer + style presets |
+| `music/` | Background music library (`<adjective>-<animal>.mp3`) |
+| `scripts/` | Per-stage CLIs: import_music, stitch_narration, overlay_music, upload_ad, status |
 | `uploader/` | Multi-channel YouTube OAuth + upload CLI |
-| `products/` | Per-product folders (gitignored — large media) |
-
-## Status
-
-Pre-Associates approval. Need a YouTube channel with 8–10 Shorts posted before applying.
-
-1. Pick a niche (see `docs/niche.md`)
-2. Set up channel — name, handle, banner, description
-3. Generate 8–10 Shorts before applying
-4. Apply with the channel URL listed
-5. Replace placeholder links with tagged affiliate URLs once approved
-6. Hit 3 qualifying sales within 180 days to keep the account active
+| `.claude/skills/` | Slash-command wrappers for every pipeline stage |
+| `docs/` | Channel strategy, niche, compliance rules |
 
 ## Stack
 
-- **Talking head:** Hedra Character-3 (image + audio → lip-synced 9:16, ~$0.30–$0.90/Short)
-- **TTS:** ElevenLabs Turbo v2.5 (~$0.03/Short)
-- **B-roll:** Kling 2.6 for non-dialogue motion clips
-- **Compositing/captions:** HyperFrames
-- **Upload:** YouTube Data API via `uploader/`
-
-See `docs/video-pipeline.md` for cost breakdown and provider comparison.
+- **Starting frame + talking head:** Hedra (image-gen + Character-3 avatar)
+- **TTS:** ElevenLabs Turbo v2.5 (channel voice pinned per character)
+- **Audio restitch:** ffmpeg (swap Hedra's baked audio for the clean ElevenLabs mp3)
+- **Captions:** WhisperX word-level transcription + local caption renderer with auto-picked style presets
+- **Background music:** local `music/` library, ducked under narration
+- **Upload:** YouTube Data API via `uploader/upload.py`
 
 ## Compliance
 
