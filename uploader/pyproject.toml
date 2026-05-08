@@ -1,0 +1,21 @@
+[project]
+name = "uploader"
+version = "0.1.0"
+description = "Amazon-affiliate product video to YouTube Shorts uploader"
+authors = [
+    { name = "Matt", email = "matmigg0804@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "google-api-python-client (>=2.187.0,<3.0.0)",
+    "google-auth (>=2.15,<2.42)",
+    "google-auth-oauthlib (==1.2.3)",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false

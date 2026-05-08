@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Amazon Affiliate Scraper",
+  "version": "1.0.0",
+  "description": "Scrape Amazon product page info, image, and affiliate short link into a per-product folder in Downloads.",
+  "permissions": ["downloads", "scripting", "activeTab", "storage"],
+  "host_permissions": [
+    "https://*.amazon.com/*",
+    "https://*.media-amazon.com/*",
+    "https://*.amazon.co.uk/*",
+    "https://*.amazon.ca/*"
+  ],
+  "action": {
+    "default_title": "Amazon Affiliate Scraper",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.ca/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
