@@ -35,6 +35,15 @@ Pre-flight bail per product (FAIL row):
 
 Hedra Avatar generations are paid, but the user has standing approval — proceed without per-call confirmation. Never run with `--overwrite` unless the user explicitly asked to re-render.
 
+## Credit accounting (mandatory)
+
+Before AND after the generation step, run `python scripts/credits.py` and capture the Hedra `tokens left` value. After the run, report the delta to the user:
+
+- Single slug: `"Burned <N> Hedra credits (<before> → <after>)."`
+- Batch (>1 slug, including `--all-needing`): `"Burned <N> Hedra credits across <K> videos (<before> → <after>, avg <N/K>/video)."`
+
+If 0 videos were generated (all SKIP/FIXED), you can omit the line. Don't run the credits check if the run fails before making any API call.
+
 ## Workflow
 
 1. **Resolve slugs.** Validate each `products/<slug>/manifest.json` exists. If a full folder path was supplied, take the basename.

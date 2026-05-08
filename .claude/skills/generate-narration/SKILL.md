@@ -64,3 +64,12 @@ Safe and cheap. Existing-mp3 products cost zero credits; misaligned manifests ge
 ## Cost note
 
 Each generated mp3 is one ElevenLabs TTS call billed against the user's credit pool. The user has standing approval — proceed without per-call confirmation, even for `--all-needing` on the full catalog.
+
+## Credit accounting (mandatory)
+
+Before AND after the generation step, run `python scripts/credits.py` and capture the ElevenLabs `tokens left` value. After the run, report the delta to the user:
+
+- Single slug: `"Burned <N> ElevenLabs characters (<before> → <after>)."`
+- Batch (>1 slug, including `--all-needing`): `"Burned <N> ElevenLabs characters across <K> narrations (<before> → <after>, avg <N/K>/clip)."`
+
+If 0 audio was generated (all SKIP/FIXED), you can omit the line. Don't run the credits check if the run fails before making any API call.
