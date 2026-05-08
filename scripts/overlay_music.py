@@ -38,9 +38,9 @@ FADE_IN_SEC = 1.5
 FADE_OUT_SEC = 2.0
 # Target gap between narration mean loudness and music mean loudness.
 # Music sits ~14 dB below the voice -> bed level, never competes.
-DUCK_BELOW_VOICE_DB = 15.41
+DUCK_BELOW_VOICE_DB = 16.33
 # Fallback music level if narration loudness can't be measured.
-FALLBACK_MUSIC_VOLUME_DB = -23.41
+FALLBACK_MUSIC_VOLUME_DB = -24.33
 
 
 def _find(candidates: list[str], label: str) -> str:

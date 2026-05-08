@@ -1,17 +1,22 @@
 """
-Hedra image generator: character ref(s) + product image -> composed
+Hedra image generator: 3 character refs + product image -> composed
 "podcast / UGC ad" starting frame at 9:16.
 
 Per slug, this script:
-  1. Loads character ref paths from $HEDRA_CHARACTER_REF_PATHS (comma-list of
-     paths relative to repo root). The first ref is the canonical face.
+  1. Picks 3 random images from the FACE_ANCHOR_REFS whitelist in
+     assets/character/ (slug-seeded for stable re-runs). Whitelist is
+     curated from QA — refs that hurt face lock are excluded.
   2. Loads the product image at products/<slug>/<main-product-image-path>
      (falls back to main.png / main.jpg / main.webp).
   3. Builds a starting-image prompt via prompt_builder.build_prompt.
-  4. POSTs /generations with type:"image" and reference_image_ids = [chars..., product]
-     using $HEDRA_IMAGE_MODEL_ID.
-  5. Polls, downloads the result to <output-dir>/<slug>/<output-name>
-     (default <products>/<slug>/lifestyle-1.png) and updates the manifest's
+     The prompt leads with hard rules (face lock, mic in front, torso
+     squared to camera, no vignette) before the scene description.
+  4. POSTs /generations with type:"image" and reference_image_ids =
+     [3 char refs..., product]. Uses Nano Banana Pro I2I by default
+     ($HEDRA_IMAGE_MODEL_ID overrides). Resolution: 1K, aspect: 9:16.
+  5. Polls, fetches the asset URL from /assets, downloads to
+     <output-dir>/<slug>/<output-name> (default
+     products/<slug>/lifestyle-1.png), and updates the manifest's
      `lifestyle-image-path`.
 
 Idempotent: skips slugs whose target file already exists unless --overwrite.
@@ -20,6 +25,7 @@ Usage:
   python generate.py --products <slug>[,<slug>,...]
   python generate.py --all-needing
   python generate.py --products <slug> --overwrite
+  python generate.py --products <slug> --reroll 1
   python generate.py --products <slug> --output-dir ../../hedra-starting-image-benchmarking/outputs
 """
 from __future__ import annotations
@@ -30,9 +36,9 @@ import json
 import os
 import random
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-
-import requests
 
 HERE = Path(__file__).resolve().parent
 PARENT = HERE.parent
@@ -62,7 +68,6 @@ IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 FACE_ANCHOR_REFS = {
     "cable-knit-mug-laughing-warm",
     "laughing-white-tee-daylight",
-    "pink-sweater-chin-on-hand",
     "lavender-sweater-whisper-pink",
     "cream-sweater-knees-up-contemplative",
     "crouched-tank-shorts-looking-up",
@@ -191,7 +196,8 @@ def generate_one(
     print(f"[{slug}] starting image generation…", file=sys.stderr)
     gen_id = hc.start_generation(key, body)
 
-    completed = hc.poll(key, gen_id, interval_s=5, timeout_s=10 * 60)
+    # Banana I2I usually finishes in ~30-60s but occasionally stalls; 20 min cap.
+    completed = hc.poll(key, gen_id, interval_s=5, timeout_s=20 * 60)
     url = hc.extract_download_url(completed)
     if not url:
         asset_id = completed.get("asset_id")
@@ -212,6 +218,51 @@ def generate_one(
     return ("OK", f"generation {gen_id} -> {output_path}")
 
 
+_PRINT_LOCK = threading.Lock()
+
+
+def _process_one(
+    slug: str,
+    *,
+    key: str,
+    out_dir: Path | None,
+    overwrite: bool,
+    reroll: int,
+) -> tuple[str, str, str]:
+    """Per-slug worker. Returns (slug, status, detail). Idempotency check
+    runs here so the SKIP / FIXED paths do zero API work even when called
+    in a thread pool."""
+    if out_dir is not None:
+        output_path = out_dir / f"{slug}.png"
+        update_manifest = False
+    else:
+        output_path = PRODUCTS_DIR / slug / OUTPUT_NAME
+        update_manifest = True
+
+    if output_path.exists() and not overwrite:
+        if update_manifest:
+            manifest_path = PRODUCTS_DIR / slug / "manifest.json"
+            if manifest_path.exists():
+                m = _load_manifest(manifest_path)
+                if m.get(MANIFEST_KEY) != OUTPUT_NAME:
+                    m[MANIFEST_KEY] = OUTPUT_NAME
+                    _save_manifest(manifest_path, m)
+                    return (slug, "FIXED", "manifest synced")
+        return (slug, "SKIP", "image already exists")
+
+    try:
+        status, detail = generate_one(
+            slug,
+            key=key,
+            output_path=output_path,
+            reroll=reroll,
+            update_manifest=update_manifest,
+        )
+    except Exception as exc:  # noqa: BLE001
+        status, detail = "FAIL", f"{type(exc).__name__}: {exc}"
+    return (slug, status, detail)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--products", help="comma-separated slugs")
@@ -224,10 +275,12 @@ def main() -> int:
     )
     ap.add_argument("--reroll", type=int, default=0,
                     help="Bump to get a different prompt combo for the same slug.")
+    ap.add_argument("--workers", type=int, default=4,
+                    help="Concurrent slug workers. Hedra's per-account concurrency "
+                         "cap is around 5-10; 4 is a safe default.")
     args = ap.parse_args()
 
     key = hc.api_key()
-    _ = _model_id(key)  # fail-fast / surface auto-discovery once up front
     slugs = _resolve_slugs(args)
     if not slugs:
         print("nothing to do.", file=sys.stderr)
@@ -237,43 +290,27 @@ def main() -> int:
     if out_dir is not None:
         out_dir.mkdir(parents=True, exist_ok=True)
 
+    workers = max(1, min(args.workers, len(slugs)))
+    print(f"[hedra] {len(slugs)} slug(s), {workers} worker(s)", file=sys.stderr)
+
     counts = {"OK": 0, "FIXED": 0, "SKIP": 0, "FAIL": 0}
-    for slug in slugs:
-        if out_dir is not None:
-            output_path = out_dir / f"{slug}.png"
-            update_manifest = False
-        else:
-            output_path = PRODUCTS_DIR / slug / OUTPUT_NAME
-            update_manifest = True
-
-        if output_path.exists() and not args.overwrite:
-            # If running against the product folder, also fix manifest if drifted.
-            if update_manifest:
-                manifest_path = PRODUCTS_DIR / slug / "manifest.json"
-                if manifest_path.exists():
-                    m = _load_manifest(manifest_path)
-                    if m.get(MANIFEST_KEY) != OUTPUT_NAME:
-                        m[MANIFEST_KEY] = OUTPUT_NAME
-                        _save_manifest(manifest_path, m)
-                        counts["FIXED"] += 1
-                        print(f"{slug}\tFIXED\tmanifest synced")
-                        continue
-            counts["SKIP"] += 1
-            print(f"{slug}\tSKIP\timage already exists")
-            continue
-
-        try:
-            status, detail = generate_one(
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(
+                _process_one,
                 slug,
                 key=key,
-                output_path=output_path,
+                out_dir=out_dir,
+                overwrite=args.overwrite,
                 reroll=args.reroll,
-                update_manifest=update_manifest,
-            )
-        except Exception as exc:  # noqa: BLE001
-            status, detail = "FAIL", f"{type(exc).__name__}: {exc}"
-        counts[status] = counts.get(status, 0) + 1
-        print(f"{slug}\t{status}\t{detail}")
+            ): slug
+            for slug in slugs
+        }
+        for fut in as_completed(futures):
+            slug, status, detail = fut.result()
+            counts[status] = counts.get(status, 0) + 1
+            with _PRINT_LOCK:
+                print(f"{slug}\t{status}\t{detail}", flush=True)
 
     print(
         f"\n{counts['OK']} generated, {counts['FIXED']} manifest-fixed, "

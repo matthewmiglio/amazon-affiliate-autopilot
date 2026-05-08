@@ -39,7 +39,7 @@ Hedra image generations are paid. Before kicking off, **always** print the slugs
 ## Workflow
 
 1. **Resolve slugs.** Validate each `products/<slug>/manifest.json` exists. If a full folder path was supplied, take the basename.
-2. **Verify env.** `hedra-vid-gen/.env` must have `HEDRA_API_KEY`. `HEDRA_IMAGE_MODEL_ID` is optional — if blank, the script auto-discovers a Nano-Banana / image-capable model from `GET /models` on first run and prints which one it picked. Character references are pulled automatically: **3 random images from `assets/character/` per slug**, seeded by `(slug, reroll)` so re-runs are stable. Don't set or expect `HEDRA_CHARACTER_REF_PATHS`.
+2. **Verify env.** `hedra-vid-gen/.env` must have `HEDRA_API_KEY`. `HEDRA_IMAGE_MODEL_ID` is optional — when blank the script defaults to Nano Banana Pro I2I (`c81e401b-6036-4e1f-9165-60eafcee9dd3`), the empirically-best model for character lock on this pipeline. Character references are pulled automatically: **3 random images per slug from a hand-curated 5-ref whitelist** (`FACE_ANCHOR_REFS` in `starting-image/generate.py`), seeded by `(slug, reroll)` so re-runs are stable.
 3. **Confirm cost** with the user (see above).
 4. **Delegate to `hedra-vid-gen/starting-image/generate.py`.** Run:
    ```
@@ -47,20 +47,24 @@ Hedra image generations are paid. Before kicking off, **always** print the slugs
    poetry run python starting-image/generate.py --products <comma-joined-slugs>
    # or
    poetry run python starting-image/generate.py --all-needing
+   # tune parallelism (default 4):
+   poetry run python starting-image/generate.py --all-needing --workers 4
    ```
-   The script implements the full state machine. Each row of output is `<slug>\t<STATUS>\t<detail>` where STATUS ∈ {OK, FIXED, SKIP, FAIL}.
+   The script implements the full state machine and runs slugs in parallel via a `ThreadPoolExecutor` (default 4 workers). Each row of output is `<slug>\t<STATUS>\t<detail>` where STATUS ∈ {OK, FIXED, SKIP, FAIL}; rows arrive as each future completes (not in submission order). Bump `--workers` only if you've confirmed Hedra's per-account concurrency cap allows it (typically 5-10).
 5. **Surface the summary** the script prints (e.g. `3 generated, 1 manifest-fixed, 0 skipped, 0 failed.`). On any FAIL, repeat that row to the user with the reason.
 
 ## Pinned generation parameters
 
 - Endpoint: `POST /web-app/public/generations` with `type:"image"`
-- Model: whatever `HEDRA_IMAGE_MODEL_ID` is pinned to in `.env`
+- Model: **Nano Banana Pro I2I** (`c81e401b-6036-4e1f-9165-60eafcee9dd3`). T2I variants ignore reference images and produce drift — never use them. `HEDRA_IMAGE_MODEL_ID` overrides for experiments.
 - Aspect ratio: `9:16`
-- Resolution: `1080p`
-- Reference images: 3 random character images from `assets/character/` first (for face lock, seeded by slug for stable re-runs), then the product image — passed as `reference_image_ids`
-- Text prompt: built by `hedra-vid-gen/starting-image/prompt_builder.build_prompt(slug, manifest)` — picks one coherent (room, outfit, body angle, camera angle, hold, tone) combo seeded by slug so re-runs are stable. Hard rules from the channel style (facing camera, mic in front, holding closed product label-out, real-photo realism, NOT illustrated, NOT applying/dispensing/spraying) are baked into every prompt. Don't author a prompt by hand — use the builder.
+- Resolution: `1K` (Hedra rejects `1080p` / `2K` is overkill — accepted values are `1K` / `2K` / `4K`)
+- Reference images: **3 random images** from the curated 5-ref `FACE_ANCHOR_REFS` whitelist in `starting-image/generate.py` for face lock (seeded by `(slug, reroll)`), followed by **1** product image — all passed as `reference_image_ids` in that order.
+- Asset URL: completed `type:"image"` generations don't include the URL inline. The script falls back to `GET /assets?type=image&ids=<asset_id>` and reads `[0].asset.url`.
+- Poll cap: 20 minutes. Banana I2I usually finishes in ~30-60s but occasionally stalls server-side at 10% — when that happens, retry the slug.
+- Text prompt: built by `hedra-vid-gen/starting-image/prompt_builder.build_prompt(slug, manifest, reroll, n_character_refs)`. The builder leads with hard rules (refs 1-N are the SAME woman, torso squared to camera, mic in front of her, holding closed product label-out, real-photo realism, no vignette / circle crop / soft-edge oval), then layers the scene (room/outfit/lighting/camera). Don't author a prompt by hand — use the builder.
 
-Do NOT change the aspect ratio, the reference-image order, or the prompt-builder hard rules without explicit user direction.
+Do NOT change the model, aspect ratio, resolution, reference-image order, or the prompt-builder hard rules without explicit user direction.
 
 ## Variation / re-rolls
 
@@ -69,7 +73,7 @@ If a generated image is OK but the user wants a different combo (different outfi
 ## Out of scope
 
 - **No script authoring or video generation.** Subsequent stages (`/generate-narration`, `/generate-hedra-video`) own those.
-- **No character-reference selection.** The reference is whatever `HEDRA_CHARACTER_REF_PATHS` is pinned to. The skill does not change `.env`.
+- **No character-reference selection.** Refs are pulled from the `FACE_ANCHOR_REFS` whitelist in `starting-image/generate.py`. To change which faces qualify, edit that set — don't bypass it. Removing a ref or adding one requires the same kind of QA round we ran during initial curation (generate, eyeball, correlate output quality back to which refs were used).
 - **No regeneration of good output.** Honor existing `lifestyle-1.png` files strictly. `--overwrite` exists for forced re-renders but only when the user explicitly asks.
 
 ## Re-runs

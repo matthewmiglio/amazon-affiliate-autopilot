@@ -245,7 +245,9 @@ def build_prompt(
         "(3) She is HOLDING the product label-out at chest height, cap on, lid closed. NEVER applying, "
         "dispensing, swiping, spraying, or mid-use. "
         "(4) Real-photo realism. NOT illustrated, NOT 3D-render, NOT anime, NOT painted. "
-        "(5) 9:16 vertical framing. "
+        "(5) 9:16 vertical framing, full rectangular frame edge-to-edge. "
+        "NO vignette, NO circular crop, NO soft-edge oval border, NO darkened corners, "
+        "NO Instagram-style round frame. The image fills the full 9:16 rectangle. "
         # ── Now the scene ──
         f"Scene: she is in {room}, wearing {outfit}, {body_angle}, holding the closed {product_phrase} "
         f"{hold} so the brand label is clearly readable to camera. "

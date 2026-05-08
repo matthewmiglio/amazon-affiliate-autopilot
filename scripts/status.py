@@ -60,13 +60,33 @@ COL_HEADERS = {
 }
 
 
+GREEN = "\033[32m"
+RESET = "\033[0m"
+
+DONE_VALUES = {"yes"}
+
+
+def _colorize(col: str, value: str, width: int) -> str:
+    padded = str(value).ljust(width)
+    if str(value) in DONE_VALUES:
+        return f"{GREEN}{padded}{RESET}"
+    return padded
+
+
 def print_matrix(rows: list[dict]) -> None:
+    # Columns ordered to match the pipeline progression (steps 2-10).
     cols = [
-        "item", "commission", "script", "video-prompt", "description",
-        "affiliate-link", "category",
-        "main-product-image", "narration-audio",
-        "lifestyle-image", "raw-speaker-video", "stitched-narration-video",
-        "captioned-video", "final-with-music", "uploaded",
+        "item", "commission", "category", "affiliate-link",
+        "description", "main-product-image",
+        "video-prompt",              # step 2: video prompt
+        "script",                    # step 3: script
+        "narration-audio",           # step 4: narration
+        "lifestyle-image",           # step 5: starting image
+        "raw-speaker-video",         # step 6: raw hedra video
+        "stitched-narration-video",  # step 7: stitched narration
+        "captioned-video",           # step 8: captions
+        "final-with-music",          # step 9: bg music
+        "uploaded",                  # step 10: youtube
     ]
     headers = [COL_HEADERS.get(c, c) for c in cols]
     display = [{**r, "item": (r["item"][:27] + "...") if len(r["item"]) > 30 else r["item"]}
@@ -75,13 +95,16 @@ def print_matrix(rows: list[dict]) -> None:
               for c, h in zip(cols, headers)} if display \
         else {c: len(h) for c, h in zip(cols, headers)}
 
-    def fmt(values):
+    def fmt_header(values):
         return "| " + " | ".join(str(v).ljust(widths[c]) for c, v in zip(cols, values)) + " |"
 
-    print(fmt(headers))
+    def fmt_row(values):
+        return "| " + " | ".join(_colorize(c, v, widths[c]) for c, v in zip(cols, values)) + " |"
+
+    print(fmt_header(headers))
     print("|" + "|".join("-" * (widths[c] + 2) for c in cols) + "|")
     for r in display:
-        print(fmt([r[c] for c in cols]))
+        print(fmt_row([r[c] for c in cols]))
 
 
 NEEDS_FLAGS = {
@@ -132,6 +155,12 @@ def main() -> int:
     elif args.json:
         print(json.dumps([r["item"] for r in rows]))
     elif args.matrix:
+        progress_cols = [
+            "video-prompt", "script", "narration-audio", "lifestyle-image",
+            "raw-speaker-video", "stitched-narration-video", "captioned-video",
+            "final-with-music", "uploaded",
+        ]
+        rows.sort(key=lambda r: -sum(1 for c in progress_cols if r.get(c) == "yes"))
         print_matrix(rows)
     else:
         print(f"{len(rows)} product(s) in {PRODUCTS_DIR}")
