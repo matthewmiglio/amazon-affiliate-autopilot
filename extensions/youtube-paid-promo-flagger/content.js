@@ -6,6 +6,10 @@
 
 const LOG = (...a) => console.log('[ppp-flagger]', ...a);
 
+function remoteLog(text, cls) {
+  try { chrome.runtime.sendMessage({ type: 'LOG', text: '  · ' + text, cls: cls || '' }); } catch (e) {}
+}
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function waitFor(predicate, { timeoutMs = 15000, intervalMs = 200 } = {}) {
@@ -92,20 +96,37 @@ async function ensurePaidPromotionChecked() {
   return { ok: true, changed: true };
 }
 
+function findSaveButton({ enabledOnly = false } = {}) {
+  // Preferred: the canonical wrapper used by ytcp-video-details-section.
+  const primary = document.querySelector('ytcp-button#save');
+  if (primary) {
+    const disabled = primary.getAttribute('aria-disabled') === 'true';
+    if (!enabledOnly || !disabled) return { btn: primary, disabled };
+  }
+  // Fallback: any ytcp-button or native button labeled "Save".
+  const seen = new Set();
+  const candidates = [
+    ...document.querySelectorAll('ytcp-button'),
+    ...document.querySelectorAll('button[aria-label="Save"]'),
+  ];
+  for (const b of candidates) {
+    if (seen.has(b)) continue;
+    seen.add(b);
+    const label = (b.getAttribute('aria-label') || '').trim().toLowerCase();
+    const text = (b.textContent || '').trim().toLowerCase();
+    if (label !== 'save' && text !== 'save') continue;
+    const disabled = b.getAttribute('aria-disabled') === 'true' || b.disabled === true;
+    if (enabledOnly && disabled) continue;
+    return { btn: b, disabled };
+  }
+  return null;
+}
+
 async function clickSave() {
-  // Hunt for a Save button — YouTube Studio uses ytcp-button with text "Save"
-  const btn = await waitFor(() => {
-    const all = document.querySelectorAll('ytcp-button');
-    for (const b of all) {
-      const t = (b.textContent || '').trim().toLowerCase();
-      if (t === 'save' && b.getAttribute('aria-disabled') !== 'true' && !b.disabled) {
-        return b;
-      }
-    }
-    return null;
-  }, { timeoutMs: 10000 });
-  if (!btn) return false;
-  btn.click();
+  const found = await waitFor(() => findSaveButton({ enabledOnly: true }), { timeoutMs: 10000 });
+  if (!found) return false;
+  remoteLog('save button found, clicking');
+  found.btn.click();
   return true;
 }
 
@@ -124,20 +145,19 @@ async function clickExitToChannel() {
 }
 
 async function waitForSaveComplete() {
-  // After save, the Save button typically becomes disabled or a "Changes saved"
-  // message appears. We poll for either.
-  return await waitFor(() => {
-    const all = document.querySelectorAll('ytcp-button');
-    for (const b of all) {
-      const t = (b.textContent || '').trim().toLowerCase();
-      if (t === 'save') {
-        if (b.getAttribute('aria-disabled') === 'true' || b.disabled) return true;
-      }
-    }
-    // fallback — text "saved"
-    if (/saved/i.test(document.body.innerText)) return true;
-    return false;
-  }, { timeoutMs: 10000 });
+  // After save, YouTube Studio greys out the Save button (aria-disabled=true)
+  // until the next edit. That's the most reliable signal.
+  const ok = await waitFor(() => {
+    const found = findSaveButton();
+    if (!found) return false;
+    return found.disabled ? true : false;
+  }, { timeoutMs: 15000 });
+  if (ok) {
+    remoteLog('save confirmed (button disabled)');
+    return true;
+  }
+  remoteLog('save NOT confirmed within 15s — button still enabled', 'err');
+  return false;
 }
 
 let lastFailReason = '';
@@ -145,47 +165,64 @@ let lastFailReason = '';
 async function processEditPage() {
   lastFailReason = '';
   LOG('processing edit page', location.pathname);
+  remoteLog('waiting for editor shell');
   // Wait for editor shell
-  await waitFor(() => document.querySelector('ytcp-video-metadata-editor'), { timeoutMs: 20000 });
+  const shell = await waitFor(() => document.querySelector('ytcp-video-metadata-editor'), { timeoutMs: 20000 });
+  if (!shell) {
+    lastFailReason = 'editor shell never appeared';
+    remoteLog(lastFailReason, 'err');
+    chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'failed', reason: lastFailReason });
+    return;
+  }
   await sleep(500);
 
   // 1. Click "Show more" to reveal advanced
+  remoteLog('clicking Show more');
   const opened = await clickShowMore();
   if (!opened) {
     lastFailReason = 'show-more not found';
-    LOG('show-more not found');
+    remoteLog(lastFailReason, 'err');
     chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'failed', reason: lastFailReason });
     return;
   }
   await sleep(500);
 
   // 2. Tick the paid-promotion checkbox if needed
+  remoteLog('locating paid-promotion checkbox');
   const state = await ensurePaidPromotionChecked();
   if (!state.ok) {
     lastFailReason = 'checkbox: ' + (state.reason || 'unknown');
-    LOG('checkbox failed', state.reason);
+    remoteLog(lastFailReason, 'err');
     chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'failed', reason: lastFailReason });
     return;
   }
   if (!state.changed) {
-    LOG('already on');
+    remoteLog('already on — no save needed');
     chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'already' });
     return;
   }
+  remoteLog('checkbox toggled ON');
 
   // 3. Save
   const saved = await clickSave();
   if (!saved) {
-    lastFailReason = 'save button not found';
-    LOG('save button not found');
+    lastFailReason = 'save button never enabled';
+    remoteLog(lastFailReason, 'err');
     chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'failed', reason: lastFailReason });
     return;
   }
-  await waitForSaveComplete();
+  const confirmed = await waitForSaveComplete();
+  if (!confirmed) {
+    lastFailReason = 'save did not complete';
+    chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'failed', reason: lastFailReason });
+    return;
+  }
   // After a successful save, click the "Channel content" back button so we
   // exit cleanly before the background advances the queue.
   await sleep(400);
-  await clickExitToChannel();
+  remoteLog('clicking Channel content (exit)');
+  const exited = await clickExitToChannel();
+  if (!exited) remoteLog('exit button not found (continuing anyway)', 'err');
   LOG('flagged + saved');
   chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'flagged' });
 }
