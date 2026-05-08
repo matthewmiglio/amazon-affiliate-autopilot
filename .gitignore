@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets & auth (NEVER commit)
+.env
+*.token
+token.json
+client_secret.json
+credentials.json
+uploader/tokens/
+uploader/channels.json
+
+# OS / editor
+.DS_Store
+.claude/
+
+# Node
+node_modules/
+
+# Project data — large media / generated output / per-machine
+videos/
+products/
+narration-benchmarking/
+narration/voice-benchmarking/
+assets/
+uploader/metadata.json
+uploader/history.json
+
+# Hyperframes pipeline — regenerated state, large external clones, junctions
+hyperframes/_archive/
+hyperframes/_inspiration/
+hyperframes/projects/
+hyperframes/rendered/
+hyperframes/music
+hyperframes/assets/
+hyperframes/
+
+# One-off / migration scripts (not part of the recurring pipeline)
+hyperframes/scripts/update_plans.py
