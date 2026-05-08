@@ -69,13 +69,6 @@ Ducked random track from the `music/` library, with fade-in / fade-out under the
 
 https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b
 
-BG track used:
-
-https://github.com/user-attachments/assets/9c36811c-777b-49c1-8935-b4b9cd1e05af
-
-### 10. Upload — `/upload-ad`
-YouTube Shorts via multi-channel OAuth (`uploader/upload.py`). Affiliate link in first line of the description, paid-promotion toggle ON, "uploaded" flag flipped in the manifest.
-
 ## Layout
 
 | Path | Purpose |
