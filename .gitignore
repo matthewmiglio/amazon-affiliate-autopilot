@@ -12,6 +12,9 @@ client_secret.json
 credentials.json
 uploader/tokens/
 uploader/channels.json
+uploader/*/tokens/
+uploader/*/channels.json
+uploader/*/history.json
 
 # OS / editor
 .DS_Store

@@ -15,8 +15,8 @@ Every subsequent upload:
   python upload.py --channels                                   # show registered channels
 
 Metadata for each product lives in `products/<slug>/manifest.json` under the
-`youtube-metadata` key (title, description, tags, category, privacy). The video
-file is read directly from `products/<slug>/final-with-music.mp4`.
+`uploads.youtube.metadata` key (title, description, tags, category, privacy).
+The video file is read directly from `products/<slug>/final-with-music.mp4`.
 
 Multi-channel rotation:
   Each authenticated account has a token saved in tokens/<name>.json and a
@@ -48,7 +48,7 @@ from youtube_auth import (
 )
 
 HERE = Path(__file__).resolve().parent
-PRODUCTS = HERE.parent / "products"
+PRODUCTS = HERE.parent.parent / "products"
 HISTORY_FILE = HERE / "history.json"
 
 CATEGORY_PEOPLE_BLOGS = "22"
@@ -210,9 +210,9 @@ def upload_one(product_slug: str, dry_run: bool, force: bool, assume_yes: bool =
     if manifest is None:
         print(f"  [skip] {product_slug}: no manifest at {manifest_path(product_slug)}")
         return None
-    entry = manifest.get("youtube-metadata") or {}
+    entry = ((manifest.get("uploads") or {}).get("youtube") or {}).get("metadata") or {}
     if not entry.get("title"):
-        print(f"  [skip] {product_slug}: manifest has no youtube-metadata.title - run /upload-ad first")
+        print(f"  [skip] {product_slug}: manifest has no uploads.youtube.metadata.title - run /upload-ad first")
         return None
     if not force and product_slug in history:
         prev = history[product_slug]
@@ -305,7 +305,7 @@ def list_status() -> None:
     for name in all_names:
         manifest = load_product_manifest(name) or {}
         rendered = (PRODUCTS / name / FINAL_VIDEO_NAME).exists()
-        has_meta = bool((manifest.get("youtube-metadata") or {}).get("title"))
+        has_meta = bool((((manifest.get("uploads") or {}).get("youtube") or {}).get("metadata") or {}).get("title"))
         up = history.get(name)
         up_when = up["uploaded_at"][:10] if up else "-"
         ch = up.get("channel", "") if up else ""
