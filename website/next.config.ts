@@ -15,6 +15,7 @@ const longCache = {
 };
 
 const nextConfig: NextConfig = {
+  trailingSlash: false,
   images: {
     formats: ["image/avif", "image/webp"],
   },
