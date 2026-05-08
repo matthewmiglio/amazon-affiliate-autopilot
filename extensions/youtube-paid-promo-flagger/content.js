@@ -109,6 +109,20 @@ async function clickSave() {
   return true;
 }
 
+async function clickExitToChannel() {
+  const item = await waitFor(() => {
+    const items = document.querySelectorAll('tp-yt-paper-icon-item.ytcp-navigation-drawer, ytcp-navigation-drawer tp-yt-paper-icon-item');
+    for (const el of items) {
+      const txt = (el.textContent || '').trim();
+      if (/channel content/i.test(txt)) return el;
+    }
+    return null;
+  }, { timeoutMs: 5000 });
+  if (!item) return false;
+  item.click();
+  return true;
+}
+
 async function waitForSaveComplete() {
   // After save, the Save button typically becomes disabled or a "Changes saved"
   // message appears. We poll for either.
@@ -168,6 +182,10 @@ async function processEditPage() {
     return;
   }
   await waitForSaveComplete();
+  // After a successful save, click the "Channel content" back button so we
+  // exit cleanly before the background advances the queue.
+  await sleep(400);
+  await clickExitToChannel();
   LOG('flagged + saved');
   chrome.runtime.sendMessage({ type: 'EDIT_DONE', result: 'flagged' });
 }
