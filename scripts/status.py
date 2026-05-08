@@ -141,6 +141,8 @@ NEEDS_FLAGS = {
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--matrix", action="store_true", help="Print the full status matrix.")
+    parser.add_argument("--slug", type=str, default=None,
+                        help="Show the matrix row for a single product slug.")
     parser.add_argument("--json", action="store_true",
                         help="Emit machine-readable JSON of matching slugs (combine with --needs-* flags).")
     for flag in NEEDS_FLAGS:
@@ -155,6 +157,17 @@ def main() -> int:
         r = row_for(sub)
         if r is not None:
             rows.append(r)
+
+    if args.slug:
+        match = next((r for r in rows if r["item"] == args.slug), None)
+        if match is None:
+            print(f"no product folder named {args.slug!r} in {PRODUCTS_DIR}")
+            return 1
+        if args.json:
+            print(json.dumps(match))
+        else:
+            print_matrix([match])
+        return 0
 
     active_needs = [col for flag, col in NEEDS_FLAGS.items()
                     if getattr(args, flag.replace("-", "_"))]

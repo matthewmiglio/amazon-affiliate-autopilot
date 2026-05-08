@@ -63,4 +63,4 @@ Safe and cheap. Existing-mp3 products cost zero credits; misaligned manifests ge
 
 ## Cost note
 
-Each generated mp3 is one Hedra TTS call billed against the user's credit pool. For batch runs (>5 products), confirm with the user before kicking off — especially for `--all-needing` on a large catalog.
+Each generated mp3 is one ElevenLabs TTS call billed against the user's credit pool. The user has standing approval — proceed without per-call confirmation, even for `--all-needing` on the full catalog.

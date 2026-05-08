@@ -32,16 +32,15 @@ Pre-flight bail per product (FAIL row):
 - product image missing (no `main.png` / `main.jpg` / `main.webp`) → `"no product image — run /import-referral-data first"`
 - env missing (see below) → script aborts globally before any API call
 
-## Cost confirmation (mandatory)
+## Cost note
 
-Hedra image generations are paid. Before kicking off, **always** print the slugs that will hit the API and ask the user to confirm. True for a single slug, a comma-list, and especially `--all-needing`. Never run the script with `--overwrite` unless the user explicitly asked to re-render an existing image.
+Hedra image generations are paid, but the user has standing approval — proceed without per-call confirmation. Never run with `--overwrite` unless the user explicitly asked to re-render.
 
 ## Workflow
 
 1. **Resolve slugs.** Validate each `products/<slug>/manifest.json` exists. If a full folder path was supplied, take the basename.
 2. **Verify env.** `hedra-vid-gen/.env` must have `HEDRA_API_KEY`. `HEDRA_IMAGE_MODEL_ID` is optional — when blank the script defaults to Nano Banana Pro I2I (`c81e401b-6036-4e1f-9165-60eafcee9dd3`), the empirically-best model for character lock on this pipeline. Character references are pulled automatically: **3 random images per slug from a hand-curated 5-ref whitelist** (`FACE_ANCHOR_REFS` in `starting-image/generate.py`), seeded by `(slug, reroll)` so re-runs are stable.
-3. **Confirm cost** with the user (see above).
-4. **Delegate to `hedra-vid-gen/starting-image/generate.py`.** Run:
+3. **Delegate to `hedra-vid-gen/starting-image/generate.py`.** Run:
    ```
    cd hedra-vid-gen
    poetry run python starting-image/generate.py --products <comma-joined-slugs>
@@ -51,7 +50,7 @@ Hedra image generations are paid. Before kicking off, **always** print the slugs
    poetry run python starting-image/generate.py --all-needing --workers 4
    ```
    The script implements the full state machine and runs slugs in parallel via a `ThreadPoolExecutor` (default 4 workers). Each row of output is `<slug>\t<STATUS>\t<detail>` where STATUS ∈ {OK, FIXED, SKIP, FAIL}; rows arrive as each future completes (not in submission order). Bump `--workers` only if you've confirmed Hedra's per-account concurrency cap allows it (typically 5-10).
-5. **Surface the summary** the script prints (e.g. `3 generated, 1 manifest-fixed, 0 skipped, 0 failed.`). On any FAIL, repeat that row to the user with the reason.
+4. **Surface the summary** the script prints (e.g. `3 generated, 1 manifest-fixed, 0 skipped, 0 failed.`). On any FAIL, repeat that row to the user with the reason.
 
 ## Pinned generation parameters
 

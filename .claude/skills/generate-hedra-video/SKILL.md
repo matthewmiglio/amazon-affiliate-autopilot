@@ -31,16 +31,15 @@ Pre-flight bail per product (FAIL row):
 - `lifestyle-1.png` missing → `"missing lifestyle-1.png — generate the starting frame first"`
 - `narration.mp3` missing → `"missing narration.mp3 — run /generate-narration first"`
 
-## Cost confirmation (mandatory)
+## Cost note
 
-Hedra Avatar generations are paid. Before kicking off, **always** print the slugs that will hit the API and ask the user to confirm. This is true for a single slug, a comma-list, and especially `--all-needing`. Never run the script with `--overwrite` unless the user explicitly asked to re-render an existing video.
+Hedra Avatar generations are paid, but the user has standing approval — proceed without per-call confirmation. Never run with `--overwrite` unless the user explicitly asked to re-render.
 
 ## Workflow
 
 1. **Resolve slugs.** Validate each `products/<slug>/manifest.json` exists. If a full folder path was supplied, take the basename.
 2. **Verify env.** `hedra-vid-gen/.env` must have `HEDRA_API_KEY`. Abort if missing — do not invent one.
-3. **Confirm cost** with the user (see above).
-4. **Delegate to `hedra-vid-gen/avatar-video/generate.py`.** Run:
+3. **Delegate to `hedra-vid-gen/avatar-video/generate.py`.** Run:
    ```
    cd hedra-vid-gen
    poetry run python avatar-video/generate.py --products <comma-joined-slugs>
@@ -48,7 +47,7 @@ Hedra Avatar generations are paid. Before kicking off, **always** print the slug
    poetry run python avatar-video/generate.py --all-needing
    ```
    The script implements the full state machine. Each row of output is `<slug>\t<STATUS>\t<detail>` where STATUS ∈ {OK, FIXED, SKIP, FAIL}.
-5. **Surface the summary** the script prints (e.g. `3 generated, 1 manifest-fixed, 0 skipped, 0 failed.`). On any FAIL, repeat that row to the user with the reason.
+4. **Surface the summary** the script prints (e.g. `3 generated, 1 manifest-fixed, 0 skipped, 0 failed.`). On any FAIL, repeat that row to the user with the reason.
 
 ## Pinned generation parameters
 
