@@ -28,13 +28,15 @@ def main() -> int:
         print("ERROR: HEDRA_API_KEY missing from .env", file=sys.stderr)
         return 1
 
-    r = requests.get(HEDRA_VOICES_URL, headers={"X-API-Key": api_key}, timeout=30)
-    if r.status_code >= 300:
-        print(f"ERROR: GET /voices {r.status_code}: {r.text}", file=sys.stderr)
-        return 1
-
-    payload = r.json()
-    voices = payload if isinstance(payload, list) else payload.get("voices") or payload.get("data") or []
+    voices: list[dict] = []
+    for url in (HEDRA_VOICES_URL, "https://api.hedra.com/web-app/public/assets?type=voice"):
+        r = requests.get(url, headers={"X-API-Key": api_key}, timeout=30)
+        if r.status_code >= 300:
+            print(f"ERROR: GET {url} {r.status_code}: {r.text}", file=sys.stderr)
+            return 1
+        payload = r.json()
+        chunk = payload if isinstance(payload, list) else payload.get("voices") or payload.get("data") or []
+        voices.extend(chunk)
 
     def label(asset: dict, key: str) -> str:
         for lbl in (asset or {}).get("labels", []) or []:

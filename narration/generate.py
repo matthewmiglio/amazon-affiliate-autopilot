@@ -136,8 +136,14 @@ def generate_one(slug: str, voice_id: str, api_key: str, overwrite: bool) -> tup
         return "FAIL", "empty script-raw-text — run /write-script first"
 
     out_path = pdir / "narration.mp3"
+    manifest_points_to_mp3 = (manifest.get("narration-audio-path") or "").strip() == "narration.mp3"
+
     if out_path.exists() and not overwrite:
-        return "SKIP", "narration.mp3 already exists"
+        if manifest_points_to_mp3:
+            return "SKIP", "narration.mp3 already exists, manifest aligned"
+        manifest["narration-audio-path"] = "narration.mp3"
+        mpath.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return "FIXED", "narration.mp3 existed, manifest updated"
 
     gen_id = post_tts(script, voice_id, api_key)
     payload = poll_until_complete(gen_id, api_key)
@@ -175,7 +181,7 @@ def main() -> int:
         print("ERROR: pass --products <slug>[,<slug>...] or --all-needing", file=sys.stderr)
         return 1
 
-    ok = skipped = failed = 0
+    ok = skipped = fixed = failed = 0
     for slug in slugs:
         try:
             status, detail = generate_one(slug, voice_id, api_key, args.overwrite)
@@ -186,10 +192,12 @@ def main() -> int:
             ok += 1
         elif status == "SKIP":
             skipped += 1
+        elif status == "FIXED":
+            fixed += 1
         else:
             failed += 1
 
-    print(f"\n{ok} generated, {skipped} skipped, {failed} failed.")
+    print(f"\n{ok} generated, {fixed} manifest-fixed, {skipped} skipped, {failed} failed.")
     return 0 if failed == 0 else 1
 
 
