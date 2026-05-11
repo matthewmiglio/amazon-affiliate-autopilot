@@ -103,7 +103,7 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 2. **Dedupe:** read every existing `<dest>/<folder>/manifest.json` and collect each `item-auxiliary-information.asin` into a Set. Skip a source if its ASIN is already present. Add newly-imported ASINs to the Set as you go so two source folders for the same ASIN don't both copy.
 3. **Don't move, don't mutate the source.** The Downloads scrape folder must stay intact for re-runs.
 4. **Image handling:** copy `product.<ext>` from the scrape folder → `product.<ext>` in the destination (preserve extension exactly — don't transcode).
-5. **Folder naming:** keep the source folder name verbatim (it's already a slug).
+5. **Folder naming:** keep the source folder name as the slug, BUT strip trailing punctuation and dangling stop-words before creating the destination folder. Specifically: peel off any trailing `-`, `_`, `.`, `,`, AND any trailing `-and`, `-with`, `-or`, `-to`, `-for`, `-the`, `-of`, `-in`, `-on` until the slug ends on a content word. Reason: YouTube's mobile auto-linkifier eats the next word across a newline boundary into URLs that end with `-`, breaking `theluxedrawer.com/p/<slug>` links. There's a helper at `scripts/sanitize_slugs.py` — use the `clean_slug()` function in it as the canonical implementation; do not reinvent. Skip-if-empty: never end with an empty string; if cleaning produces "", fall back to the original (something is better than nothing).
 6. **No `data.json` / `row.json` in the destination.** All info must be folded into `manifest.json`.
 
 ## Steps
