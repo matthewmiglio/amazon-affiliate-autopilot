@@ -128,6 +128,7 @@ export default async function ProductDetail({
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-contain p-8"
               priority
+              fetchPriority="high"
             />
           </div>
         </div>

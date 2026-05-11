@@ -33,6 +33,18 @@ const nextConfig: NextConfig = {
         source: "/products-nobg/:path*",
         headers: [longCache],
       },
+      {
+        source: "/products.json",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+      {
+        source: "/:path*.json",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+      {
+        source: "/:path*.webmanifest",
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
     ];
   },
 };

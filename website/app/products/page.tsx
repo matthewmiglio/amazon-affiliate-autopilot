@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Shop the edit",
     url: `${siteUrl}/products`,
     type: "website",
+    images: [`${siteUrl}/opengraph-image`],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shop the edit",
+    description:
+      "Every The Luxe Drawer pick — beauty, fragrance, fashion, and jewelry — sourced from Amazon and curated for the quiet luxury woman.",
+    images: [`${siteUrl}/opengraph-image`],
   },
 };
 
@@ -23,7 +31,7 @@ export default function ProductsPage() {
     "@type": "ItemList",
     name: `${siteName} — The full edit`,
     numberOfItems: products.length,
-    itemListElement: products.slice(0, 50).map((p, i) => ({
+    itemListElement: products.map((p, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: `${p.brand} ${p.product}`,

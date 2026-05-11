@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { breadcrumbLd, jsonLd } from "@/lib/seo";
+import { breadcrumbLd, jsonLd, siteUrl } from "@/lib/seo";
+
+const aboutTitle = "About";
+const aboutDescription =
+  "The Luxe Drawer is a small, personal edit of Amazon luxury finds for women — beauty, fragrance, fashion, and jewelry.";
 
 export const metadata: Metadata = {
-  title: "About",
-  description:
-    "The Luxe Drawer is a small, personal edit of Amazon luxury finds for women — beauty, fragrance, fashion, and jewelry.",
+  title: aboutTitle,
+  description: aboutDescription,
   alternates: { canonical: "/about" },
+  openGraph: {
+    title: aboutTitle,
+    description: aboutDescription,
+    url: `${siteUrl}/about`,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: aboutTitle,
+    description: aboutDescription,
+  },
 };
 
 export default function AboutPage() {

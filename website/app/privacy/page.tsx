@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
-import { breadcrumbLd, jsonLd } from "@/lib/seo";
+import { breadcrumbLd, jsonLd, siteUrl } from "@/lib/seo";
+
+const privacyTitle = "Privacy Policy";
+const privacyDescription =
+  "Privacy policy for the The Luxe Drawer Uploader application — Pinterest API integration.";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description:
-    "Privacy policy for the The Luxe Drawer Uploader application — Pinterest API integration.",
+  title: privacyTitle,
+  description: privacyDescription,
   alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: privacyTitle,
+    description: privacyDescription,
+    url: `${siteUrl}/privacy`,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: privacyTitle,
+    description: privacyDescription,
+  },
 };
 
 export default function PrivacyPage() {

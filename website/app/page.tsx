@@ -8,7 +8,16 @@ import { jsonLd, siteName, siteUrl } from "@/lib/seo";
 const PILLARS = ["Beauty", "Fragrance", "Fashion", "Jewelry"];
 
 export const metadata: Metadata = {
+  title: "The Luxe Drawer — Daily Amazon luxury finds for women",
+  description:
+    "Daily Amazon luxury picks for women — quiet-luxury beauty, French fragrance, Japanese skincare and fashion staples curated into one small, honest edit.",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "The Luxe Drawer",
+    url: siteUrl,
+    type: "website",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function Home() {
@@ -91,6 +100,7 @@ export default function Home() {
                 sizes="(max-width: 768px) 100vw, 40vw"
                 className="object-cover"
                 priority
+                fetchPriority="high"
               />
             </div>
           </div>
