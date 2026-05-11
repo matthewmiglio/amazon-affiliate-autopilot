@@ -48,3 +48,4 @@ hyperframes/scripts/update_plans.py
 
 # Hedra starting-image benchmarking (local experiments, not pipeline)
 hedra-starting-image-benchmarking/
+same-face-benchmarking/
