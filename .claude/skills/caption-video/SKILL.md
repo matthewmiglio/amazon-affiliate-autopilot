@@ -5,6 +5,10 @@ description: Auto-pick a caption style and burn word-level captions onto a produ
 
 # caption-video
 
+## Background invocation gotcha
+
+If you launch the captioner as a backgrounded bash task, **use the absolute path** — backgrounded shells reset cwd to the repo root, so `cd captioning && poetry run ...` will fail. Use `cd /c/My_Files/my_programs/amazon-affiliate/captioning && poetry run python caption_video.py --products <slug>`. Foreground invocations are fine.
+
 Take one or more product slugs, transcribe each product's `stitched-narration-speaker-video.mp4`, choose a caption preset whose color contrasts well with that specific video's background, render burned-in word-level captions, and write `captioned-video.mp4` into the same product folder. Keep `manifest.json["captioned-video-path"]` aligned. Idempotent and free to re-run — rendering only fires when the output is genuinely missing.
 
 ## Inputs

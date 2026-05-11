@@ -64,6 +64,10 @@ Selection rule: 1 evergreen + 2 from the matching category pool, baked into the 
 - **No video editing.** The uploaded file is `products/<slug>/final-with-music.mp4` as-is.
 - **No metadata authoring beyond the template.** If the user wants a hand-crafted title, they can edit `manifest["uploads"][platform].metadata` directly and re-run; this skill won't overwrite populated metadata without `--regen-meta`.
 
+## Pinterest exit code is noisy (harmless)
+
+`upload_ad.py` exits 1 whenever any platform row is FAIL — but today every product hits a benign FAIL on pinterest because that uploader doesn't exist yet and the metadata stub bails. **If the youtube row is OK, the upload succeeded** — read the rows, not the exit code. Don't re-run on this kind of failure.
+
 ## Cost note
 
 YouTube Data API quota only — no paid-API spend. Future Meta/Pinterest uploaders should also stay quota-only (no paid-API spend).

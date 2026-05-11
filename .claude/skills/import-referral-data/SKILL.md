@@ -11,14 +11,14 @@ Take newly scraped Amazon affiliate products from the scraper extension's Downlo
 
 - **Source:** `C:\Users\matt\Downloads\amazon-product-scrape\`
   - One subfolder per product (slugified product name)
-  - Each subfolder contains: `data.json`, `row.json`, `image.<ext>` (jpg/png/etc.)
-  - `data.json` top-level fields: `product-name`, `description`, `image-path`, `affiliate-link`, `commission-rate`, `product-page-url`
+  - Each subfolder contains: `data.json`, `row.json`, `product.<ext>` (jpg/png/etc.)
+  - `data.json` top-level fields: `product-name`, `description`, `product-pic-path`, `affiliate-link`, `commission-rate`, `product-page-url`
   - `data.json` `meta`: `{ brand, price, asin, featureBullets, scrapedAt, ... }`
 
 - **Destination:** `C:\My_Files\my_programs\amazon-affiliate\products\`
   - One subfolder per imported product, **same folder name as the source folder**
   - Each destination folder contains:
-    - `main.<ext>` — the product image, renamed from `image.<ext>` (keep original extension; do NOT convert)
+    - `product.<ext>` — the product image, copied from the scraper's `product.<ext>` (keep original extension; do NOT convert)
     - `manifest.json` — see schema below
 
 ## Destination manifest.json schema
@@ -27,13 +27,13 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 
 ```json
 {
-  "lifestyle-image-path": "",
+  "starting-pic-path": "",
   "narration-audio-path": "",
   "raw-speaker-video-path": "",
   "stitched-narration-video-path": "",
   "captioned-video-path": "",
   "final-with-music-video-path": "",
-  "main-product-image-path": "main.jpg",
+  "product-pic-path": "product.jpg",
   "item-auxiliary-information": {
     "brand": "...",
     "product": "...",
@@ -86,7 +86,7 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 }
 ```
 
-- `lifestyle-image-path`, `narration-audio-path`, `raw-speaker-video-path`, `stitched-narration-video-path`, and `captioned-video-path` stay empty — those get filled in by downstream skills (lifestyle image gen, Hedra TTS, the AI video gen output, `/stitch-narration`, and `/caption-video` respectively).
+- `starting-pic-path`, `narration-audio-path`, `raw-speaker-video-path`, `stitched-narration-video-path`, and `captioned-video-path` stay empty — those get filled in by downstream skills (starting-pic generation, Hedra TTS, the AI video gen output, `/stitch-narration`, and `/caption-video` respectively).
 - `script-raw-text` and `video-prompt` stay empty — narration and the Hedra video prompt are authored later.
 - `background-music-track` stays empty — populated by `/overlay-music` once a track is mixed in.
 - `category` is inferred from brand + product name. Reasonable buckets: skincare/makeup, fragrance, makeup, jewelry, beauty (fallback).
@@ -97,7 +97,7 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 1. **Commission filter:** strip `%` from `data.commission-rate`, parse as float; skip if `< 10` or unparseable.
 2. **Dedupe:** read every existing `<dest>/<folder>/manifest.json` and collect each `item-auxiliary-information.asin` into a Set. Skip a source if its ASIN is already present. Add newly-imported ASINs to the Set as you go so two source folders for the same ASIN don't both copy.
 3. **Don't move, don't mutate the source.** The Downloads scrape folder must stay intact for re-runs.
-4. **Image handling:** copy `image.<ext>` → `main.<ext>` (preserve extension exactly — don't transcode).
+4. **Image handling:** copy `product.<ext>` from the scrape folder → `product.<ext>` in the destination (preserve extension exactly — don't transcode).
 5. **Folder naming:** keep the source folder name verbatim (it's already a slug).
 6. **No `data.json` / `row.json` in the destination.** All info must be folded into `manifest.json`.
 
@@ -112,14 +112,14 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
    - Check ASIN. Skip if dupe.
    - Otherwise:
      - `mkdir <dest>/<folder>`
-     - Copy `image.<ext>` → `main.<ext>` if present.
+     - Copy `product.<ext>` from scrape → `product.<ext>` in destination if present.
      - Write `manifest.json` per the schema above.
      - Add ASIN to the Set.
-5. Print a concise summary: counts (imported / skipped-low-commission / skipped-dupe / errored) + per-item line `"<folder> — IMPORTED (pct%, ASIN, main.<ext>) | SKIPPED (reason)"`.
+5. Print a concise summary: counts (imported / skipped-low-commission / skipped-dupe / errored) + per-item line `"<folder> — IMPORTED (pct%, ASIN, product.<ext>) | SKIPPED (reason)"`.
 
 ## Re-runs and migrations
 
-If the destination still contains old-format folders from an earlier (broken) run — i.e. folders with `data.json` + `image.<ext>` instead of `manifest.json` + `main.<ext>` — delete those folders first before importing. Only do this for folders that match the raw-scrape signature; leave anything that already has `manifest.json` alone.
+If the destination still contains old-format folders from an earlier (broken) run — i.e. folders with `data.json` + raw image instead of `manifest.json` + `product.<ext>` — delete those folders first before importing. Only do this for folders that match the raw-scrape signature; leave anything that already has `manifest.json` alone.
 
 ## Implementation tips
 
@@ -130,5 +130,5 @@ If the destination still contains old-format folders from an earlier (broken) ru
 ## Out of scope
 
 - Don't re-fetch, re-scrape, or re-validate any product data.
-- Don't author scripts, narration, or lifestyle imagery — those belong to other skills.
+- Don't author scripts, narration, or starting-pic imagery — those belong to other skills.
 - Don't delete from the source folder.

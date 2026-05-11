@@ -1,11 +1,11 @@
 ---
 name: generate-starting-image
-description: Generate the 9:16 starting-frame image for Amazon affiliate products via Hedra's image-generation endpoint. For each product slug, uploads the channel's pinned character reference(s) plus the product's main image to Hedra, calls `type:"image"` generation with a prompt built from the SKILL.md axes (room / outfit / mic / hold / camera angle), downloads the result to `<product>/lifestyle-1.png`, and syncs `lifestyle-image-path` in the manifest. Idempotent — existing images are never re-rendered without `--overwrite`. Accepts a single slug, a comma-list, or `--all-needing`. Use when the user runs /generate-starting-image, says "generate starting image for X", "make the lifestyle frame", or supplies a product folder and asks for the next-stage image.
+description: Generate the 9:16 starting-frame image for Amazon affiliate products via Hedra's image-generation endpoint. For each product slug, uploads the channel's pinned character reference(s) plus the product pic to Hedra, calls `type:"image"` generation with a prompt built from the SKILL.md axes (room / outfit / mic / hold / camera angle), downloads the result to `<product>/starting-pic.png`, and syncs `starting-pic-path` in the manifest. Idempotent — existing images are never re-rendered without `--overwrite`. Accepts a single slug, a comma-list, or `--all-needing`. Use when the user runs /generate-starting-image, says "generate starting image for X", "make the starting pic", or supplies a product folder and asks for the next-stage image.
 ---
 
 # generate-starting-image
 
-Take one or more product slugs, render each into a 9:16 "podcast / UGC ad" starting frame via Hedra's multi-reference image generation, and write `lifestyle-1.png` into each product folder. Keep `manifest.json["lifestyle-image-path"]` aligned. Each genuinely-missing image is one Hedra image generation billed to the user's account.
+Take one or more product slugs, render each into a 9:16 "podcast / UGC ad" starting frame via Hedra's multi-reference image generation, and write `starting-pic.png` into each product folder. Keep `manifest.json["starting-pic-path"]` aligned. Each genuinely-missing image is one Hedra image generation billed to the user's account.
 
 ## Inputs
 
@@ -14,22 +14,22 @@ Take one or more product slugs, render each into a 9:16 "podcast / UGC ad" start
 - A single slug: `/generate-starting-image concealer-spf-27`
 - A comma-list: `/generate-starting-image slug-a, slug-b`
 - A full path to a product folder (e.g. `C:\...\products\<slug>`) — extract the slug from the last path component
-- The literal flag `--all-needing` — every product that has a `manifest.json` but no `lifestyle-1.png`
+- The literal flag `--all-needing` — every product that has a `manifest.json` but no `starting-pic.png`
 
 If the user provides nothing, ask once. Don't guess.
 
 ## State machine (per product)
 
-| `lifestyle-1.png` exists? | manifest has `"lifestyle-1.png"`? | Action | Cost |
+| `starting-pic.png` exists? | manifest has `"starting-pic.png"`? | Action | Cost |
 |---|---|---|---|
 | ✅ | ✅ | Do nothing | free |
-| ✅ | ❌ | Fix manifest only — set `lifestyle-image-path` to `"lifestyle-1.png"` | free |
+| ✅ | ❌ | Fix manifest only — set `starting-pic-path` to `"starting-pic.png"` | free |
 | ❌ | ✅ | Run Hedra image generation, download png (manifest already correct) | 1 Hedra image generation |
-| ❌ | ❌ | Run Hedra image generation, download png, set `lifestyle-image-path` | 1 Hedra image generation |
+| ❌ | ❌ | Run Hedra image generation, download png, set `starting-pic-path` | 1 Hedra image generation |
 
 Pre-flight bail per product (FAIL row):
 - `manifest.json` missing → `"missing manifest.json"`
-- product image missing (no `main.png` / `main.jpg` / `main.webp`) → `"no product image — run /import-referral-data first"`
+- product image missing (no `product.png` / `product.jpg` / `product.webp`) → `"no product image — run /import-referral-data first"`
 - env missing (see below) → script aborts globally before any API call
 
 ## Cost note
@@ -74,6 +74,16 @@ If 0 images were generated (all SKIP/FIXED), you can omit the line. Don't run th
 
 Do NOT change the model, aspect ratio, resolution, reference-image order, or the prompt-builder hard rules without explicit user direction.
 
+## Mic rule (HARD)
+
+The avatar **never holds the mic** — both hands stay on the product. Allowed mic types in the prompt builder:
+
+- desktop boom-arm condenser on a stand
+- short-stand / table-stand condenser sitting on the surface in front of her
+- clip-on lapel mic on her collar
+
+**Forbidden:** handheld mics, mics-at-chin, anything she's gripping. Enforced in `prompt_builder.build_prompt` HARD RULE (2). If you tweak the rooms list, don't reintroduce "small handheld mic she's holding…" — use a stand variant instead.
+
 ## Variation / re-rolls
 
 If a generated image is OK but the user wants a different combo (different outfit / room / camera) for the same slug, re-run with `--overwrite` plus `--reroll 1` (or 2, 3, …). The seed changes, so the builder picks a new combo while keeping the same hard rules.
@@ -82,7 +92,7 @@ If a generated image is OK but the user wants a different combo (different outfi
 
 - **No script authoring or video generation.** Subsequent stages (`/generate-narration`, `/generate-hedra-video`) own those.
 - **No character-reference selection.** Refs are pulled from the `FACE_ANCHOR_REFS` whitelist in `starting-image/generate.py`. To change which faces qualify, edit that set — don't bypass it. Removing a ref or adding one requires the same kind of QA round we ran during initial curation (generate, eyeball, correlate output quality back to which refs were used).
-- **No regeneration of good output.** Honor existing `lifestyle-1.png` files strictly. `--overwrite` exists for forced re-renders but only when the user explicitly asks.
+- **No regeneration of good output.** Honor existing `starting-pic.png` files strictly. `--overwrite` exists for forced re-renders but only when the user explicitly asks.
 
 ## Re-runs
 

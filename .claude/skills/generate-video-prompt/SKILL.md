@@ -1,7 +1,7 @@
 ---
 name: generate-video-prompt
 description: |
-  Author the AI video-gen prompt that animates a product's existing lifestyle starting-frame into a 15–20 second talking-head UGC ad clip aligned with its narration script. Reads the product folder's `manifest.json` (specifically `script-raw-text` and `lifestyle-image-path`), produces one concise prompt suitable for a Sora-class image-to-video tool, and writes it back to `manifest.json` under the `video-prompt` key. Use when the user runs `/generate-video-prompt`, says "write a video prompt for X", "draft the video animation prompt", or supplies a product folder and asks for the next-stage video prompt.
+  Author the AI video-gen prompt that animates a product's existing starting-pic into a 15–20 second talking-head UGC ad clip aligned with its narration script. Reads the product folder's `manifest.json` (specifically `script-raw-text` and `starting-pic-path`), produces one concise prompt suitable for a Sora-class image-to-video tool, and writes it back to `manifest.json` under the `video-prompt` key. Use when the user runs `/generate-video-prompt`, says "write a video prompt for X", "draft the video animation prompt", or supplies a product folder and asks for the next-stage video prompt.
 allowed-tools: Read, Glob, Bash, Edit, Write
 ---
 
@@ -9,7 +9,7 @@ allowed-tools: Read, Glob, Bash, Edit, Write
 
 ## What this skill does
 
-Given a product folder (e.g. `products/<slug>/`), produce a single video-generation prompt that animates the product's existing `lifestyle-1.png` (the starting frame produced by `/generate-starting-image`) into a short UGC-style talking-head clip lip-synced to the existing `narration.mp3` and `script-raw-text`.
+Given a product folder (e.g. `products/<slug>/`), produce a single video-generation prompt that animates the product's existing `starting-pic.png` (the starting frame produced by `/generate-starting-image`) into a short UGC-style talking-head clip lip-synced to the existing `narration.mp3` and `script-raw-text`.
 
 The output is a single ~80–120 word paragraph that the user pastes into a Sora-class first-frame-to-video tool (Sora 2, Runway Gen-3, Luma Dream Machine, Pika, Kling, etc.) along with the lifestyle image and (where supported) the narration audio. The skill ALSO writes the prompt back into the product's `manifest.json` under the `video-prompt` key so we don't have to re-author it next time.
 
@@ -22,17 +22,17 @@ When invoked, look for / ask for:
    - a bare slug — resolve under `products/` first; if not found, try `assets/products/`
 2. **Optional gesture override** — the user can pass a one-line gesture cue ("she taps the cap on the punchline") that the skill folds into the gesture beats.
 
-Verify the folder exists and contains both `manifest.json` and the file referenced by its `lifestyle-image-path`. If `script-raw-text` is empty or `lifestyle-image-path` is missing/blank/nonexistent, stop and ask the user — don't fabricate.
+Verify the folder exists and contains both `manifest.json` and the file referenced by its `starting-pic-path`. If `script-raw-text` is empty or `starting-pic-path` is missing/blank/nonexistent, stop and ask the user — don't fabricate.
 
 ## HARD RULES (carry forward from /generate-starting-image)
 
 These describe the clip — apply to every prompt:
 
-1. **One first-frame, one shot.** No scene changes, no cuts, no camera moves between rooms. The animation continues directly from `lifestyle-1.png`. Keep the same woman, same outfit, same hair, same room, same mic placement, same lighting.
+1. **One first-frame, one shot.** No scene changes, no cuts, no camera moves between rooms. The animation continues directly from `starting-pic.png`. Keep the same woman, same outfit, same hair, same room, same mic placement, same lighting.
 2. **She faces camera.** Body angle stays roughly straight-on / slight 3/4 toward camera, just like in the starting frame. NEVER profile, NEVER over-the-shoulder, NEVER away.
 3. **Mic stays in front of her or clipped to her collar** — same placement as in the starting frame. Do not have the mic disappear.
 4. **She HOLDS the product. She does NOT use it.** Cap on, lid on, kit closed. No applying, no swiping, no spraying, no dispensing, no opening the box. She may *lift it slightly*, *tilt it toward camera*, or *re-grip with the other hand* — never use it.
-5. **Only one product on screen.** The product visible in `lifestyle-1.png` is the only product. Don't introduce a second bottle, a swatch, or a kit fan-out.
+5. **Only one product on screen.** The product visible in `starting-pic.png` is the only product. Don't introduce a second bottle, a swatch, or a kit fan-out.
 6. **Real-photo realism**, never illustrated, anime, painted, or 3D-render look.
 7. **9:16 vertical**, ~15–20 seconds, lip-synced to the narration.
 8. **Pretty face + done makeup**, polished even in casual outfits. Never "tired" / "no-makeup".
@@ -74,7 +74,7 @@ Keep it under ~120 words. One paragraph. No extra preamble, no caption copy, no 
 ## Workflow
 
 1. Resolve the product folder. Read `manifest.json`.
-2. Pull `script-raw-text` (string) and `lifestyle-image-path` (relative file in the folder). Validate both — non-empty + image file exists. If either fails, tell the user what's missing and stop.
+2. Pull `script-raw-text` (string) and `starting-pic-path` (relative file in the folder). Validate both — non-empty + image file exists. If either fails, tell the user what's missing and stop.
 3. Pull the product description from `item-auxiliary-information` (`brand`, `product`, `category`) so the prompt can name the product naturally (e.g. "the closed Charlotte Tilbury Pillow Talk Dreams Come True 15-piece makeup kit").
 4. Identify 2–4 trigger phrases from the script — one for the brand, one for the main claim, one for the close. Map each to a gesture beat from the variation list (or the user's override).
 5. Compose the paragraph from the template.
@@ -85,7 +85,7 @@ Keep it under ~120 words. One paragraph. No extra preamble, no caption copy, no 
 ## Out of scope
 
 - **Don't author the script.** That's `/write-script`. If `script-raw-text` is missing, tell the user to run that first.
-- **Don't author or regenerate the starting frame.** That's `/generate-starting-image`. If `lifestyle-1.png` is missing, tell the user.
+- **Don't author or regenerate the starting frame.** That's `/generate-starting-image`. If `starting-pic.png` is missing, tell the user.
 - **Don't emit a separate `script.txt` or `video-prompt.txt`** — `manifest.json` is the single source of truth. Never write sibling text files.
 - **Don't render or invoke the video tool yourself.** This skill produces the prompt only. The user runs the video model.
 

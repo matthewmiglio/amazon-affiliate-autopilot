@@ -5,6 +5,10 @@ description: Generate narration mp3s for Amazon affiliate products via ElevenLab
 
 # generate-narration
 
+## Background invocation gotcha
+
+If you launch the generator as a backgrounded bash task, **use the absolute path** — backgrounded shells reset cwd to the repo root, so `cd narration && poetry run ...` will fail. Use `cd /c/My_Files/my_programs/amazon-affiliate/narration && poetry run python generate.py --products <slug>`. Foreground invocations are fine.
+
 Take one or more product slugs, run their `script-raw-text` through Hedra TTS, save `narration.mp3` into each product folder, and keep `manifest.json["narration-audio-path"]` aligned. Idempotent and cheap to re-run — only the truly-missing-audio cases burn credits.
 
 ## Inputs
