@@ -70,6 +70,9 @@ export default async function ProductDetail({
   const title = `${p.brand ? p.brand + " " : ""}${p.product}`.trim();
   const related = relatedProducts(products, p, 4);
   const priceNum = priceToNumber(p.price);
+  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
 
   const productLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -84,6 +87,7 @@ export default async function ProductDetail({
       url: p.affiliateLink,
       priceCurrency: "USD",
       price: priceNum || undefined,
+      priceValidUntil,
       availability: "https://schema.org/InStock",
     },
   };

@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.7,
+    images: [`${siteUrl}${p.image}`],
   }));
 
   return [...staticRoutes, ...productRoutes];
