@@ -85,7 +85,7 @@ async function main() {
       brand: aux.brand || "",
       product: aux.product || slug,
       category: aux.category || "beauty",
-      price: aux.price || "",
+      price: (aux.price || "").replace(/\.{2,}/g, "."),
       description: aux.description || "",
       asin: aux.asin || "",
       affiliateLink: aux["affiliate-link"] || "",

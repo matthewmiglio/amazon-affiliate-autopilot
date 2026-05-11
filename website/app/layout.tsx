@@ -75,11 +75,11 @@ function Nav() {
     <header className="sticky top-0 z-30 border-b border-line/70 bg-[color:var(--background)]/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="group flex items-center gap-2">
-          <span className="font-serif-display text-2xl tracking-tight text-ink">
+          <span className="whitespace-nowrap font-serif-display text-lg tracking-tight text-ink sm:text-2xl">
             The Luxe Drawer
           </span>
         </Link>
-        <nav className="flex items-center gap-7 text-sm text-muted">
+        <nav className="flex items-center gap-4 text-xs text-muted sm:gap-7 sm:text-sm">
           <Link className="transition hover:text-ink" href="/">
             Home
           </Link>
