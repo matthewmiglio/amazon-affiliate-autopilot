@@ -86,7 +86,7 @@ Pinterest video-pin creation is **two-step**: register a media upload, upload by
 
 ### 3c — Cover image hosting
 
-Pinterest requires a public HTTPS URL for the cover. Reuse the same temp S3 bucket the Meta uploader uses (see `docs/meta-upload.md`). Falls under "shared infra" — done once, used by both platforms.
+Pinterest requires a public HTTPS URL for the cover. Reuse the same temp S3 bucket the Meta uploader uses (see `docs/upload-meta.md`). Falls under "shared infra" — done once, used by both platforms.
 
 - [ ] Reuse `starting-pic.png` as cover (already 9:16, on-brand, optimized)
 - [ ] Upload to temp S3 with 1-hour presigned URL, delete after pin is created
