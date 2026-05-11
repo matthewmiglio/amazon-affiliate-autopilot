@@ -19,6 +19,11 @@ ENV_FILE = Path(__file__).resolve().parent / ".env"
 HEDRA_URL = "https://api.hedra.com/web-app/public/billing/credits"
 ELEVEN_URL = "https://api.elevenlabs.io/v1/user/subscription"
 
+# Empirical per-asset costs measured over recent batches.
+HEDRA_CREDITS_PER_VIDEO = 151
+HEDRA_CREDITS_PER_IMAGE = 15
+ELEVENLABS_CHARS_PER_NARRATION = 146
+
 
 def fetch_hedra(key: str) -> dict:
     r = requests.get(HEDRA_URL, headers={"X-API-Key": key}, timeout=20)
@@ -48,10 +53,6 @@ def main() -> int:
     hedra = fetch_hedra(hedra_key)
     eleven = fetch_eleven(eleven_key)
 
-    if args.json:
-        print(json.dumps({"hedra": hedra, "elevenlabs": eleven}, indent=2))
-        return 0
-
     used = eleven.get("character_count", 0)
     limit = eleven.get("character_limit", 0)
     eleven_remaining = max(limit - used, 0)
@@ -62,8 +63,32 @@ def main() -> int:
     )
     hedra_remaining = sum((hedra.get("workspace_credits") or {}).values())
 
+    approx_hedra_vids_left = hedra_remaining // HEDRA_CREDITS_PER_VIDEO
+    approx_narrations_left = eleven_remaining // ELEVENLABS_CHARS_PER_NARRATION
+    approx_hedra_images_left = (
+        hedra_remaining // HEDRA_CREDITS_PER_IMAGE
+        if HEDRA_CREDITS_PER_IMAGE else None
+    )
+
+    if args.json:
+        print(json.dumps({
+            "hedra": hedra,
+            "elevenlabs": eleven,
+            "approx_hedra_vids_left": approx_hedra_vids_left,
+            "approx_narrations_left": approx_narrations_left,
+            "approx_hedra_image_gen_left": approx_hedra_images_left,
+        }, indent=2))
+        return 0
+
     print(f"ElevenLabs : {eleven_remaining:>8,} tokens left  (resets {reset_str})")
     print(f"Hedra      : {hedra_remaining:>8,} tokens left  (resets {reset_str})")
+    print()
+    print(f"  approx_hedra_vids_left     : {approx_hedra_vids_left:>5,}  (~{HEDRA_CREDITS_PER_VIDEO} credits/vid)")
+    print(f"  approx_narrations_left     : {approx_narrations_left:>5,}  (~{ELEVENLABS_CHARS_PER_NARRATION} chars/narration)")
+    if approx_hedra_images_left is None:
+        print(f"  approx_hedra_image_gen_left:    ??  (rate not measured yet -- TODO)")
+    else:
+        print(f"  approx_hedra_image_gen_left: {approx_hedra_images_left:>5,}  (~{HEDRA_CREDITS_PER_IMAGE} credits/image)")
     return 0
 
 

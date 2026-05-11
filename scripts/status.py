@@ -39,9 +39,9 @@ def row_for(product_dir: Path) -> dict | None:
         "product-page-url": info.get("product-page-url", "") or "",
         "affiliate-link": info.get("affiliate-link", "") or "",
         "category": info.get("category", "") or "",
-        "main-product-image": yn(has_file(m.get("main-product-image-path", ""))),
+        "product-pic": yn(has_file(m.get("product-pic-path", ""))),
         "narration-audio": yn(has_file(m.get("narration-audio-path", ""))),
-        "lifestyle-image": yn(has_file(m.get("lifestyle-image-path", ""))),
+        "starting-pic": yn(has_file(m.get("starting-pic-path", ""))),
         "raw-speaker-video": yn(has_file(m.get("raw-speaker-video-path", ""))),
         "stitched-narration-video": yn(has_file(m.get("stitched-narration-video-path", ""))),
         "captioned-video": yn(has_file(m.get("captioned-video-path", ""))),
@@ -57,9 +57,9 @@ COL_HEADERS = {
     "commission": "comm%",
     "video-prompt": "vid prompt",
     "description": "desc",
-    "main-product-image": "product img",
+    "product-pic": "product pic",
     "narration-audio": "narr",
-    "lifestyle-image": "1st img",
+    "starting-pic": "start pic",
     "raw-speaker-video": "hedra-vid",
     "stitched-narration-video": "redo-narr",
     "captioned-video": "captions",
@@ -90,10 +90,10 @@ def print_matrix(rows: list[dict]) -> None:
     # platform upload status.
     cols = [
         "item", "commission", "category",
-        "description", "main-product-image", "affiliate-link",
+        "description", "product-pic", "affiliate-link",
         "script",                    # step 1: script written
         "narration-audio",           # step 2: narration mp3
-        "lifestyle-image",           # step 3: starting image
+        "starting-pic",              # step 3: starting image
         "video-prompt",              # step 4: video prompt
         "raw-speaker-video",         # step 5: raw hedra video
         "stitched-narration-video",  # step 6: clean audio swapped in
@@ -124,9 +124,9 @@ NEEDS_FLAGS = {
     "needs-script": "script",
     "needs-video-prompt": "video-prompt",
     "needs-description": "description",
-    "needs-main-image": "main-product-image",
+    "needs-product-pic": "product-pic",
     "needs-narration": "narration-audio",
-    "needs-lifestyle-pic": "lifestyle-image",
+    "needs-starting-pic": "starting-pic",
     "needs-raw-speaker-video": "raw-speaker-video",
     "needs-stitched-narration": "stitched-narration-video",
     "needs-captioned": "captioned-video",
@@ -185,7 +185,7 @@ def main() -> int:
         print(json.dumps([r["item"] for r in rows]))
     elif args.matrix:
         progress_cols = [
-            "script", "narration-audio", "lifestyle-image", "video-prompt",
+            "script", "narration-audio", "starting-pic", "video-prompt",
             "raw-speaker-video", "stitched-narration-video", "captioned-video",
             "final-with-music", "yt-up", "insta-up", "fb-up", "pint-up",
         ]
