@@ -19,9 +19,19 @@ async function main() {
   try {
     entries = await fs.readdir(productsRoot, { withFileTypes: true });
   } catch (err) {
-    console.warn(`[generate-products] products dir missing: ${productsRoot}`);
-    await fs.writeFile(outJsonPath, "[]");
-    return;
+    // Source /products/ is local-only (gitignored). On Vercel it's absent —
+    // keep whatever is already baked into the repo instead of wiping it.
+    try {
+      await fs.access(outJsonPath);
+      console.warn(
+        `[generate-products] source dir missing (${productsRoot}); preserving committed ${path.relative(websiteRoot, outJsonPath)}`,
+      );
+      return;
+    } catch {
+      console.warn(`[generate-products] products dir missing: ${productsRoot}`);
+      await fs.writeFile(outJsonPath, "[]");
+      return;
+    }
   }
 
   const records = [];
