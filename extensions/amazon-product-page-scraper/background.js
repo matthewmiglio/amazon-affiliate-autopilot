@@ -86,7 +86,7 @@ async function saveImage(imageUrl, folder) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const blob = await res.blob();
     const ext = extFromUrl(imageUrl, (blob.type.split('/')[1] || 'jpg').toLowerCase());
-    const filename = `${ROOT}/${folder}/image.${ext}`;
+    const filename = `${ROOT}/${folder}/product.${ext}`;
     const url = await blobToDataUrl(blob);
     await startDownloadAndWait(url, filename);
     return filename;
@@ -108,7 +108,7 @@ async function handleSave(data) {
   const record = {
     'product-name': data.productName,
     'description': data.description,
-    'image-path': imagePath,
+    'product-pic-path': imagePath,
     'affiliate-link': data.affiliateLink,
     'commission-rate': data.commissionRate || '',
     'product-page-url': data.sourceUrl || '',
@@ -131,7 +131,7 @@ async function handleSave(data) {
   const row = {
     'product-name': data.productName || '',
     'description': data.description || '',
-    'image-path': imagePath || '',
+    'product-pic-path': imagePath || '',
     'affiliate-link': data.affiliateLink || '',
     'commission-rate': data.commissionRate || '',
     'product-page-url': data.sourceUrl || ''

@@ -17,9 +17,9 @@ Scrapes the current Amazon product page, downloads the main image, grabs the Sit
 4. Files land in:
    ```
    C:\Users\<you>\Downloads\amazon-product-scrape\<product-slug>\
-       image.<ext>
+       product.<ext>
        data.json
-       row.txt   (pipe-delimited row: |name|description|image-path|affiliate-link|)
+       row.txt   (pipe-delimited row: |name|description|product-pic-path|affiliate-link|)
    ```
 
 Repeat for each product page.
