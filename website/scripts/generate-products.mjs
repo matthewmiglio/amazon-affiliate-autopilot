@@ -41,9 +41,9 @@ async function main() {
       continue;
     }
 
-    const imgRel = manifest["main-product-image-path"];
+    const imgRel = manifest["product-pic-path"];
     if (!imgRel) {
-      skipped.push({ slug, reason: "no main-product-image-path" });
+      skipped.push({ slug, reason: "no product-pic-path" });
       continue;
     }
     const imgSrc = path.join(productsRoot, slug, imgRel);
