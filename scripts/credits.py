@@ -22,7 +22,7 @@ ELEVEN_URL = "https://api.elevenlabs.io/v1/user/subscription"
 # Empirical per-asset costs measured over recent batches.
 HEDRA_CREDITS_PER_VIDEO = 151
 HEDRA_CREDITS_PER_IMAGE = 15
-ELEVENLABS_CHARS_PER_NARRATION = 146
+ELEVENLABS_CHARS_PER_NARRATION = 143  # 73-narration batch on 2026-05-11: 10,404 chars / 73 = 142.5
 
 
 def fetch_hedra(key: str) -> dict:
