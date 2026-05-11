@@ -30,6 +30,7 @@ node_modules/
 /videos/
 /products/
 /music/
+/supabase/
 
 # Website product data — generated locally from /products/, committed so
 # Vercel can build without access to the (gitignored) source product folders.

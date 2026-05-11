@@ -39,6 +39,8 @@ PLATFORMS = ("youtube", "instagram", "facebook", "pinterest")
 
 FINAL_VIDEO_NAME = "final-with-music.mp4"
 
+WEBSITE_URL = "https://theluxedrawer.com"
+
 YT_TITLE_MAX = 100
 YT_DEFAULT_CATEGORY = "22"  # People & Blogs
 YT_DEFAULT_PRIVACY = "public"
@@ -141,10 +143,10 @@ def build_title(tagline: str, hashtags: list[str]) -> str:
     return title
 
 
-def build_description(brand: str, product: str, script: str, link: str, hashtags: list[str]) -> str:
+def build_description(brand: str, product: str, script: str, slug: str, hashtags: list[str]) -> str:
     parts = []
-    if link:
-        parts.append(f"Shop on Amazon: {link}")
+    site_link = f"{WEBSITE_URL}/p/{slug}" if slug else WEBSITE_URL
+    parts.append(f"Shop on theluxedrawer.com: {site_link}")
     if script:
         parts.append(script.strip())
     elif product:
@@ -176,7 +178,7 @@ def build_yt_tags(brand: str, product: str, category: str, hashtags: list[str]) 
 # Per-platform metadata generators
 # ---------------------------------------------------------------------------
 
-def _info(manifest: OrderedDict) -> dict:
+def _info(manifest: OrderedDict, slug: str = "") -> dict:
     info = manifest.get("item-auxiliary-information") or {}
     return {
         "brand":    (info.get("brand") or "").strip(),
@@ -184,17 +186,18 @@ def _info(manifest: OrderedDict) -> dict:
         "category": (info.get("category") or "").strip(),
         "link":     (info.get("affiliate-link") or "").strip(),
         "script":   (manifest.get("script-raw-text") or "").strip(),
+        "slug":     slug,
     }
 
 
-def _gen_youtube(manifest: OrderedDict) -> OrderedDict:
-    i = _info(manifest)
+def _gen_youtube(manifest: OrderedDict, slug: str = "") -> OrderedDict:
+    i = _info(manifest, slug)
     tagline = short_tagline(i["brand"], i["product"])
     hashtags_budget = max(0, YT_TITLE_MAX - len(tagline) - 1)
     hashtags = pick_hashtags(i["category"], hashtags_budget)
     return OrderedDict([
         ("title",       build_title(tagline, hashtags)),
-        ("description", build_description(i["brand"], i["product"], i["script"], i["link"], hashtags)),
+        ("description", build_description(i["brand"], i["product"], i["script"], i["slug"], hashtags)),
         ("tags",        build_yt_tags(i["brand"], i["product"], i["category"], hashtags)),
         ("category",    YT_DEFAULT_CATEGORY),
         ("privacy",     YT_DEFAULT_PRIVACY),
@@ -202,20 +205,21 @@ def _gen_youtube(manifest: OrderedDict) -> OrderedDict:
     ])
 
 
-def _gen_instagram(manifest: OrderedDict) -> OrderedDict:
+def _gen_instagram(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     return OrderedDict([("caption", ""), ("hashtags", [])])
 
 
-def _gen_facebook(manifest: OrderedDict) -> OrderedDict:
+def _gen_facebook(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     return OrderedDict([("caption", ""), ("hashtags", [])])
 
 
-def _gen_pinterest(manifest: OrderedDict) -> OrderedDict:
-    i = _info(manifest)
+def _gen_pinterest(manifest: OrderedDict, slug: str = "") -> OrderedDict:
+    i = _info(manifest, slug)
+    site_link = f"{WEBSITE_URL}/p/{slug}" if slug else WEBSITE_URL
     return OrderedDict([
         ("title", ""),
         ("description", ""),
-        ("destination_url", i["link"]),
+        ("destination_url", site_link),
         ("board", ""),
     ])
 
@@ -236,13 +240,13 @@ def get_platform_block(manifest: OrderedDict, platform: str) -> dict:
     return ((manifest.get("uploads") or {}).get(platform) or {})
 
 
-def ensure_platform_metadata(manifest: OrderedDict, platform: str, regen: bool) -> tuple[OrderedDict, bool]:
+def ensure_platform_metadata(manifest: OrderedDict, slug: str, platform: str, regen: bool) -> tuple[OrderedDict, bool]:
     block = get_platform_block(manifest, platform)
     metadata = block.get("metadata") or {}
     has_content = bool(metadata.get("title") or metadata.get("caption"))
     if has_content and not regen:
         return manifest, False
-    new_meta = _GENERATORS[platform](manifest)
+    new_meta = _GENERATORS[platform](manifest, slug)
     uploads = manifest.setdefault("uploads", OrderedDict())
     pblock = uploads.setdefault(platform, OrderedDict([("uploaded", False), ("url", ""), ("metadata", OrderedDict())]))
     pblock["metadata"] = new_meta
@@ -298,7 +302,7 @@ def process_platform(manifest_path: Path, slug: str, platform: str,
         url = block.get("url") or "(no url)"
         return "SKIP", f"already uploaded: {url}"
 
-    manifest, changed = ensure_platform_metadata(manifest, platform, regen=regen_meta)
+    manifest, changed = ensure_platform_metadata(manifest, slug, platform, regen=regen_meta)
     if changed:
         save_manifest(manifest_path, manifest)
 
@@ -328,6 +332,13 @@ def process(product_arg: str, overwrite: bool, regen_meta: bool) -> int:
         print(f"{slug}\t-\tFAIL\tmissing {FINAL_VIDEO_NAME} - run /overlay-music first")
         return 1
 
+    # Pre-flight: make sure the product is in website/public/products.json so
+    # that https://theluxedrawer.com/p/<slug> resolves once Vercel deploys.
+    # The YouTube description points viewers at that URL, so we refuse to
+    # upload until the build artifact contains the slug.
+    if not ensure_product_on_website(slug):
+        return 1
+
     any_failed = False
     any_uploaded = False
     for platform in PLATFORMS:
@@ -339,22 +350,21 @@ def process(product_arg: str, overwrite: bool, regen_meta: bool) -> int:
             any_uploaded = True
 
     if any_uploaded:
-        sync_website(slug)
+        print(f"{slug}\t-\tOK\tcommit + push website/ now so /p/{slug} goes live before viewers click")
 
     return 1 if any_failed else 0
 
 
-def sync_website(slug: str) -> None:
-    """Regenerate the baked website product data so Vercel picks up the new ad.
+def ensure_product_on_website(slug: str) -> bool:
+    """Regenerate website/public/products.json and verify the slug is included.
 
-    Runs `npm run prebuild` in website/ which rebuilds public/products.json
-    and copies images into public/products/. Does not commit or push — the
-    /upload-ad skill is responsible for invoking /commit-nextjs after this.
+    Returns True if the slug now appears in products.json (safe to upload).
+    Prints a FAIL row and returns False otherwise.
     """
     website_dir = ROOT / "website"
     if not website_dir.exists():
-        print(f"{slug}\t-\tSKIP\tno website/ dir; sync skipped")
-        return
+        print(f"{slug}\t-\tSKIP\tno website/ dir; pre-flight sync skipped")
+        return True
     npm = "npm.cmd" if sys.platform == "win32" else "npm"
     try:
         result = subprocess.run(
@@ -365,13 +375,28 @@ def sync_website(slug: str) -> None:
             check=False,
         )
     except FileNotFoundError:
-        print(f"{slug}\t-\tFAIL\tnpm not found; sync skipped (install Node.js to regenerate website data)")
-        return
+        print(f"{slug}\t-\tFAIL\tnpm not found; cannot verify product is on website")
+        return False
     if result.returncode != 0:
         tail = (result.stderr or result.stdout or "").strip().splitlines()[-3:]
         print(f"{slug}\t-\tFAIL\tnpm run prebuild exited {result.returncode}: {' | '.join(tail)}")
-        return
-    print(f"{slug}\t-\tOK\twebsite artifacts regenerated; commit + push to deploy")
+        return False
+    products_json = website_dir / "public" / "products.json"
+    if not products_json.exists():
+        print(f"{slug}\t-\tFAIL\twebsite/public/products.json missing after prebuild")
+        return False
+    try:
+        data = json.loads(products_json.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"{slug}\t-\tFAIL\tcould not parse products.json: {e}")
+        return False
+    items = data.get("products") if isinstance(data, dict) else data
+    slugs_on_site = {p.get("slug") for p in (items or []) if isinstance(p, dict)}
+    if slug not in slugs_on_site:
+        print(f"{slug}\t-\tFAIL\tslug not in website/public/products.json after prebuild; aborting upload to keep /p/{slug} from 404ing")
+        return False
+    print(f"{slug}\t-\tOK\tproduct present on website; commit + push so /p/{slug} ships before viewers click")
+    return True
 
 
 def main() -> int:

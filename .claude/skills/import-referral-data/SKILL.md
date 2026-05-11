@@ -43,6 +43,11 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
     "price": "$...",
     "affiliate-link": "https://amzn.to/...",
     "product-page-url": "https://www.amazon.com/...",
+    // ↑ INTERNAL lookup only. These never appear in generated scripts /
+    //   captions / YouTube descriptions / Pinterest destinations. The funnel
+    //   goes through https://theluxedrawer.com/p/<slug>, which redirects to
+    //   `affiliate-link` server-side. Downstream skills must NOT quote these
+    //   raw Amazon URLs in viewer-facing content.
     "description": "..."
   },
   "script-raw-text": "",

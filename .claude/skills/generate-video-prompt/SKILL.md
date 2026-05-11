@@ -93,7 +93,7 @@ Keep it under ~120 words. One paragraph. No extra preamble, no caption copy, no 
 
 ### Skincare, Korean cushion compact
 
-`script-raw-text`: "Have you tried a Korean cushion compact yet? The AMOREPACIFIC Color Control Cushion Compact has SPF 50 plus, a buildable dewy finish, and it's the one I throw in my bag every morning. Glassy skin, ten seconds. Link's in the description."
+`script-raw-text`: "Have you tried a Korean cushion compact yet? The AMOREPACIFIC Color Control Cushion Compact has SPF 50 plus, a buildable dewy finish, and it's the one I throw in my bag every morning. Glassy skin, ten seconds. Tap the link in my bio to grab it."
 
 ```
 Animate this first-frame image into a 16-second 9:16 vertical UGC talking-head clip.
@@ -101,14 +101,14 @@ The same woman stays in the same room, same outfit, same lighting, same mic plac
 no scene change, no camera cut, no zoom. She is facing camera and speaking the following
 narration with natural lip-sync: "Have you tried a Korean cushion compact yet? The
 AMOREPACIFIC Color Control Cushion Compact has SPF 50 plus, a buildable dewy finish,
-and it's the one I throw in my bag every morning. Glassy skin, ten seconds. Link's in
-the description."
+and it's the one I throw in my bag every morning. Glassy skin, ten seconds. Tap the
+link in my bio to grab it."
 She is HOLDING the closed AmorePacific Color Control Cushion Compact (lid shut, NOT
 using it). Subtle base motion throughout: natural blinks, gentle head bob, light
 breathing, occasional small weight shift. Specific gesture beats:
 - on "AMOREPACIFIC" — small upward lift of the compact toward camera
 - on "Glassy skin, ten seconds" — slight head tilt + soft smile
-- on "Link's in the description" — single soft nod, relaxed exhale
+- on "Tap the link in my bio" — single soft nod, brief glance up toward the bio area
 Real-photo realism, NOT illustrated. Hair and makeup stay polished. Same woman as the
 starting frame — do not change her face, hair, skin tone, or eyebrows.
 ```

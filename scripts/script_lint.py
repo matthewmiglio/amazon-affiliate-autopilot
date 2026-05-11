@@ -6,6 +6,8 @@ Checks each <products>/<slug>/manifest.json `script-raw-text` against rules:
   - no '$' character (TTS reads inconsistently — spell out prices)
   - no bare digits other than years embedded in words handled separately (warn on any \\d)
   - must contain CTA phrase 'Tap the link'
+  - must contain 'in my bio' (link-in-bio funnel via theluxedrawer.com)
+  - must NOT mention 'on Amazon' directly
 
 Usage:
   python script_lint.py                    # lint all
@@ -24,6 +26,7 @@ PRODUCTS = ROOT / "products"
 WORD_MIN, WORD_MAX = 45, 60
 CHAR_MIN, CHAR_MAX = 280, 380
 CTA = "Tap the link"
+BIO_PHRASE = "in my bio"
 
 
 def lint(text: str) -> list[str]:
@@ -42,6 +45,10 @@ def lint(text: str) -> list[str]:
         issues.append("mentions price (dollars/bucks/cents) — Amazon Associates rule: no exact prices, use 'affordable', 'splurge', 'under X' instead")
     if CTA.lower() not in text.lower():
         issues.append(f"missing CTA phrase '{CTA}'")
+    if BIO_PHRASE.lower() not in text.lower():
+        issues.append(f"missing bio phrase '{BIO_PHRASE}' — CTA must point to link-in-bio (theluxedrawer.com)")
+    if re.search(r"\bon Amazon\b", text, re.IGNORECASE):
+        issues.append("CTA mentions Amazon directly — point to link-in-bio instead")
     return issues
 
 

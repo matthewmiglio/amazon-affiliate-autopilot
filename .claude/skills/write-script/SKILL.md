@@ -76,7 +76,7 @@ These rules are NON-NEGOTIABLE. Lint enforces most of them.
    - Brand + product name (natural, can be partial — e.g. "the Clé de Peau Eye Contour Cream Supreme")
    - One concrete differentiator pulled from the description
    - Optional vague price-tier line ("affordable", "a serious splurge") — NEVER an exact figure
-   - CTA: must contain the literal phrase **"Tap the link"** — recommended ending: "Tap the link to grab it on Amazon."
+   - CTA: must contain BOTH the literal phrase **"Tap the link"** AND **"in my bio"**. The funnel goes through our site (theluxedrawer.com) — never tell viewers to "grab it on Amazon" directly. Recommended endings: "Tap the link in my bio to grab it." / "Tap the link in my bio." / "Tap the link in my bio, locked in." Do NOT say "on Amazon" anywhere in the script — the lint hard-fails on that phrase. The website handles the Amazon redirect after the click.
 7. **Skip-if-present:** if `manifest["script-raw-text"]` is non-empty, skip unless the user passes `--overwrite`. Surface every skip in the summary.
 
 ## Workflow

@@ -19,6 +19,7 @@ If the user provides nothing, ask once. Don't guess.
 ## Pre-flight bail
 
 - `products/<slug>/final-with-music.mp4` missing → FAIL with `"missing final-with-music.mp4 - run /overlay-music first"`. Do **not** continue.
+- `scripts/upload_ad.py` runs `npm run prebuild` in `website/` **before** any platform upload and verifies the slug is present in `website/public/products.json`. If it isn't, the upload aborts with `slug not in website/public/products.json after prebuild` — the script's CTA points viewers at `https://theluxedrawer.com/p/<slug>`, and we refuse to publish a video whose CTA URL will 404. Fix: confirm `products/<slug>/manifest.json` has populated `item-auxiliary-information.brand` / `product` / `description` / `affiliate-link` / `product-pic-path` (those are what the website generator reads), then re-run.
 - `uploader/youtube/` not configured (no token / no `client_secret.json`) — `youtube/upload.py` will surface its own error; pass through.
 
 ## Workflow
@@ -31,14 +32,14 @@ If the user provides nothing, ask once. Don't guess.
    The script iterates `[youtube, instagram, facebook, pinterest]` and for each:
    - skips if `manifest["uploads"][platform].uploaded` is already `true` (unless `--overwrite`)
    - generates platform metadata if missing (regen with `--regen-meta`):
-     - **youtube**: tagline = brand + product trimmed to ~60 chars, 1 evergreen UGC hashtag + 2 category hashtags, description from `script-raw-text` + affiliate link + `#shorts`, tags from hashtag stems + brand/product keywords (max 10), title capped at 100 chars
+     - **youtube**: tagline = brand + product trimmed to ~60 chars, 1 evergreen UGC hashtag + 2 category hashtags, description leads with `Shop on theluxedrawer.com: https://theluxedrawer.com/p/<slug>` (NOT the raw `amzn.to` link — funnel goes through our site), then `script-raw-text`, then hashtags + `#shorts`, tags from hashtag stems + brand/product keywords (max 10), title capped at 100 chars
      - **instagram / facebook**: empty `caption` + `hashtags` placeholders (real generators land with the Meta uploader)
-     - **pinterest**: empty `title`, `description`, `board`; `destination_url` pre-filled from the affiliate link
+     - **pinterest**: empty `title`, `description`, `board`; `destination_url` pre-filled with `https://theluxedrawer.com/p/<slug>` (NOT the raw affiliate link — our page handles the redirect)
    - invokes `uploader/<platform>/upload.py` (or `meta/upload_<instagram|facebook>.py`) if it exists; otherwise prints `"<platform> not implemented"` and SKIPs
    - on success, parses `uploaded -> https://...` from stdout and writes `uploads.<platform>.uploaded = true`, `uploads.<platform>.url = <url>`
-3. **Surface each row** the script prints (`<slug>\t<platform>\t<STATUS>\t<detail>`). The script auto-runs `npm run prebuild` in `website/` at the very end if any platform actually uploaded — that row appears as `<slug>\t-\tOK\twebsite artifacts regenerated; commit + push to deploy`. No action needed from you for the regen step.
+3. **Surface each row** the script prints (`<slug>\t<platform>\t<STATUS>\t<detail>`). The script auto-runs `npm run prebuild` in `website/` **before** the upload (the pre-flight) and emits `<slug>\t-\tOK\tproduct present on website; commit + push so /p/<slug> ships before viewers click`. No action needed for the regen itself.
 4. **Do NOT** add `--overwrite` unless the user explicitly asks to re-upload.
-5. **Deploy the website artifacts.** If the previous step emitted the `website artifacts regenerated` row, invoke `/commit-nextjs` to build, commit, and push `website/public/products.json` + `website/public/products/`. That's what makes the new product visible on `https://theluxedrawer.com/products` and at `/p/<slug>`. If no platform uploaded on this run (every row was SKIP), there's nothing to sync — skip the commit.
+5. **Deploy the website artifacts immediately.** After every successful upload, invoke `/commit-nextjs` to commit + push `website/public/products.json` + `website/public/products/`. The YouTube description already points viewers at `https://theluxedrawer.com/p/<slug>` — if you delay the push, viewers tapping the link before Vercel deploys will hit a 404. If no platform actually uploaded (every row was SKIP) the website may still have local changes from the pre-flight regen — commit those anyway so the working tree stays clean.
 
 ## State machine (per product / per platform)
 
