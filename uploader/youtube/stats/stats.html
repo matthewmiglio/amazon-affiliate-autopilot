@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Affiliate Stats</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; font-size: 14px; }
+  h1 { font-size: 18px; font-weight: 600; }
+  h2 { font-size: 14px; font-weight: 600; color: #444; margin-bottom: 12px; }
+
+  #loader {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; gap: 12px;
+  }
+  #loader p { color: #666; font-size: 13px; }
+  #loader input[type=file] { font-size: 13px; }
+
+  #dashboard { display: none; padding: 20px; max-width: 1400px; margin: 0 auto; }
+  #header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #ddd; }
+  #header span { font-size: 12px; color: #888; }
+
+  .kpi-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .kpi {
+    background: #fff; border: 1px solid #ddd; border-radius: 4px;
+    padding: 14px 18px; min-width: 160px; flex: 1;
+  }
+  .kpi .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .kpi .value { font-size: 28px; font-weight: 700; color: #111; }
+  .kpi .sub { font-size: 11px; color: #999; margin-top: 4px; }
+
+  #funnelRow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0; padding: 8px 0; }
+  .funnel-step { text-align: center; padding: 16px 22px; border-radius: 4px; min-width: 130px; }
+  .funnel-step .f-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .funnel-step .f-value { font-size: 26px; font-weight: 700; }
+  .funnel-step .f-sub { font-size: 11px; color: #999; margin-top: 4px; }
+  .funnel-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 6px; color: #ccc; }
+  .funnel-arrow .fa-sym { font-size: 22px; line-height: 1; }
+  .funnel-arrow .fa-rate { font-size: 10px; color: #aaa; }
+
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .charts-grid.wide { grid-template-columns: 1fr; }
+  .chart-box {
+    background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px;
+  }
+  .chart-box canvas { max-height: 300px; }
+
+  .table-box {
+    background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px;
+    margin-bottom: 16px; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 600; color: #555; padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 11px; text-transform: uppercase; }
+  td { padding: 6px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  tr.video-row { cursor: pointer; }
+  tr.comments-row { display: none; }
+  tr.comments-row.open { display: table-row; }
+  tr.comments-row td { background: #f9f9f9; padding: 10px 14px; }
+  .comments-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+  .comment { font-size: 12px; border-left: 3px solid #ddd; padding-left: 8px; }
+  .comment .cmeta { color: #999; font-size: 11px; margin-bottom: 2px; }
+  .comment .ctext { color: #333; white-space: pre-wrap; }
+
+  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <h1>Amazon Affiliate Stats</h1>
+  <p id="loaderMsg">Loading stats.csv…</p>
+</div>
+
+<div id="dashboard">
+  <div id="header">
+    <h1>Amazon Affiliate Stats</h1>
+    <span id="snapshotInfo"></span>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="charts-grid wide">
+    <div class="chart-box"><h2>Views per Channel (Latest Snapshot)</h2><canvas id="chartChannelViews" style="max-height:220px"></canvas></div>
+  </div>
+
+  <div class="charts-grid wide">
+    <div class="chart-box"><h2>Total Views Over Time</h2><canvas id="chartTotalViews"></canvas></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-box"><h2>Views per Video (Latest Snapshot)</h2><canvas id="chartVideoViews"></canvas></div>
+    <div class="chart-box"><h2>Views/Day per Video (Latest Snapshot)</h2><canvas id="chartVpd"></canvas></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-box"><h2>Days Since Upload (Video Age)</h2><canvas id="chartAge"></canvas></div>
+    <div class="chart-box"><h2>Likes per 1k Views (Latest Snapshot)</h2><canvas id="chartLikes"></canvas></div>
+  </div>
+
+  <div class="table-box">
+    <h2>Recent Comments</h2>
+    <table id="commentsTable">
+      <thead><tr>
+        <th>Video</th><th>Date</th><th>Comment</th>
+      </tr></thead>
+      <tbody id="commentsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="table-box">
+    <h2>Video Leaderboard (Latest Snapshot)</h2>
+    <table id="leaderTable">
+      <thead><tr>
+        <th>#</th><th>Ad Name</th><th>Account</th><th>Views</th><th>Likes</th>
+        <th>Views/Day</th><th>Likes/1k Views</th><th>Days Old</th><th>Comments</th>
+      </tr></thead>
+      <tbody id="leaderBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const PALETTE = [
+  '#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f',
+  '#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac'
+];
+
+let commentsData = {};
+
+Promise.all([
+  fetch('stats.csv').then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+  fetch('comments.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+]).then(([csv, comments]) => {
+  commentsData = comments;
+  buildDashboard(csv);
+}).catch(err => {
+  document.getElementById('loaderMsg').textContent = 'Failed to load stats.csv: ' + err.message + '. Open via view_stats.py.';
+});
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const vals = line.split(',');
+    const row = {};
+    headers.forEach((h, i) => row[h] = vals[i]?.trim() ?? '');
+    row.snapshot_epoch = parseInt(row.snapshot_epoch);
+    row.views = parseInt(row.views) || 0;
+    row.likes = parseInt(row.likes) || 0;
+    row.comments = parseInt(row.comments) || 0;
+    row.views_per_day = parseFloat(row.views_per_day) || 0;
+    row.likes_per_1k_views = parseFloat(row.likes_per_1k_views) || 0;
+    row.duration_seconds = parseInt(row.duration_seconds) || 0;
+    row.days_since_upload = parseFloat(row.days_since_upload) || 0;
+    return row;
+  });
+}
+
+function epochToDate(epoch) {
+  return new Date(epoch * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function epochToShort(epoch) {
+  return new Date(epoch * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function buildDashboard(csvText) {
+  const rows = parseCSV(csvText);
+  const snapshots = [...new Set(rows.map(r => r.snapshot_epoch))].sort((a,b) => a-b);
+  const latestEpoch = snapshots[snapshots.length - 1];
+  const latest = rows.filter(r => r.snapshot_epoch === latestEpoch);
+  const accounts = [...new Set(rows.map(r => r.channel))];
+  const adNames = [...new Set(latest.map(r => r.ad_name))].sort();
+
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  document.getElementById('snapshotInfo').textContent =
+    `${snapshots.length} snapshot${snapshots.length !== 1 ? 's' : ''} · latest: ${epochToDate(latestEpoch)}`;
+
+  // KPIs
+  const totalViews = latest.reduce((s, r) => s + r.views, 0);
+  const totalLikes = latest.reduce((s, r) => s + r.likes, 0);
+  const totalVpd = latest.reduce((s, r) => s + r.views_per_day, 0);
+  const topVideo = latest.reduce((a, b) => a.views > b.views ? a : b, latest[0]);
+  const kpis = [
+    { label: 'Total Views', value: totalViews.toLocaleString(), sub: 'latest snapshot' },
+    { label: 'Total Likes', value: totalLikes.toLocaleString(), sub: 'latest snapshot' },
+    { label: 'Active Videos', value: latest.length, sub: `across ${accounts.length} account${accounts.length !== 1 ? 's' : ''}` },
+    { label: 'Total Views/Day', value: Math.round(totalVpd).toLocaleString(), sub: 'combined rate' },
+    { label: 'Top Video', value: topVideo?.ad_name?.replace('fishbot-ad-','') ?? '—', sub: `${topVideo?.views.toLocaleString()} views` },
+  ];
+  const kpiRow = document.getElementById('kpiRow');
+  kpiRow.innerHTML = kpis.map(k => `
+    <div class="kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="sub">${k.sub}</div>
+    </div>`).join('');
+
+  // Chart: Views per channel (latest snapshot)
+  const channelViews = {};
+  latest.forEach(r => { channelViews[r.channel] = (channelViews[r.channel] || 0) + r.views; });
+  const channelsSorted = Object.entries(channelViews).sort((a, b) => b[1] - a[1]);
+  makeBarChart(
+    'chartChannelViews',
+    channelsSorted.map(([ch]) => ch.split('@')[0]),
+    channelsSorted.map(([, v]) => v),
+    PALETTE[0],
+    true
+  );
+
+  // Helper: deduplicate snapshots to one per day for time charts
+  // Group snapshots by day
+  const snapByDay = {};
+  snapshots.forEach(ep => {
+    const day = new Date(ep * 1000).toDateString();
+    if (!snapByDay[day]) snapByDay[day] = ep; // keep first of day
+  });
+  const dedupedSnaps = Object.values(snapByDay).sort((a,b) => a-b);
+  const snapLabels = dedupedSnaps.map(epochToShort);
+
+  // Chart 1: Total views over time
+  const totalViewsBySnap = dedupedSnaps.map(ep => {
+    const snapshotRows = rows.filter(r => r.snapshot_epoch === ep);
+    return snapshotRows.reduce((s, r) => s + r.views, 0);
+  });
+  makeLineChart('chartTotalViews', snapLabels, [{ label: 'Total Views', data: totalViewsBySnap, color: PALETTE[0] }]);
+
+  // Chart 3: Views per video bar (latest)
+  const sorted = [...latest].sort((a,b) => b.views - a.views);
+  makeBarChart('chartVideoViews',
+    sorted.map(r => r.ad_name.replace('fishbot-ad-','')),
+    sorted.map(r => r.views), PALETTE[0]);
+
+  // Chart 4: Views/day bar
+  const sortedVpd = [...latest].sort((a,b) => b.views_per_day - a.views_per_day);
+  makeBarChart('chartVpd',
+    sortedVpd.map(r => r.ad_name.replace('fishbot-ad-','')),
+    sortedVpd.map(r => r.views_per_day), PALETTE[1]);
+
+  // Chart 5: Days since upload (age)
+  const sortedAge = [...latest].sort((a,b) => b.days_since_upload - a.days_since_upload);
+  makeBarChart('chartAge',
+    sortedAge.map(r => r.ad_name.replace('fishbot-ad-','')),
+    sortedAge.map(r => r.days_since_upload), PALETTE[2]);
+
+  // Chart 6: Likes per 1k views
+  const sortedL1k = [...latest].sort((a,b) => b.likes_per_1k_views - a.likes_per_1k_views);
+  makeBarChart('chartLikes',
+    sortedL1k.map(r => r.ad_name.replace('fishbot-ad-','')),
+    sortedL1k.map(r => r.likes_per_1k_views), PALETTE[3]);
+
+  // Leaderboard table
+  const nameColorMap = {};
+  accounts.forEach((acc, i) => { nameColorMap[acc] = PALETTE[i % PALETTE.length]; });
+  const tbody = document.getElementById('leaderBody');
+  tbody.innerHTML = sorted.map((r, i) => {
+    const nameColor = nameColorMap[r.channel] || '#888';
+    const shortName = r.channel.split('@')[0];
+    const vid = r.video_id;
+    const vidComments = commentsData[vid] || [];
+    const commentsHtml = vidComments.length === 0
+      ? '<span style="color:#aaa;font-size:12px">No comments</span>'
+      : `<div class="comments-list">${vidComments.map(c => `
+          <div class="comment">
+            <div class="cmeta">${c.author} · ${c.likes} likes · ${c.published_at ? new Date(c.published_at).toLocaleDateString() : ''}</div>
+            <div class="ctext">${c.text.split('<').join('&lt;')}</div>
+          </div>`).join('')}</div>`;
+    return `<tr class="video-row" onclick="this.nextElementSibling.classList.toggle('open')">
+      <td>${i+1}</td>
+      <td>${r.ad_name.replace('fishbot-ad-','')}</td>
+      <td style="color:${nameColor};font-weight:600">${shortName}</td>
+      <td>${r.views.toLocaleString()}</td>
+      <td>${r.likes}</td>
+      <td>${r.views_per_day.toFixed(1)}</td>
+      <td>${r.likes_per_1k_views.toFixed(2)}</td>
+      <td>${r.days_since_upload.toFixed(1)}</td>
+      <td>${vidComments.length}</td>
+    </tr>
+    <tr class="comments-row"><td colspan="9">${commentsHtml}</td></tr>`;
+  }).join('');
+
+  // Recent comments table
+  const vidIdToName = {};
+  latest.forEach(r => { vidIdToName[r.video_id] = r.ad_name.replace('fishbot-ad-', ''); });
+  const allComments = [];
+  Object.entries(commentsData).forEach(([vid, comments]) => {
+    comments.forEach(c => {
+      if (c.published_at) allComments.push({ vid, name: vidIdToName[vid] || vid, ...c });
+    });
+  });
+  allComments.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+  document.getElementById('commentsBody').innerHTML = allComments.slice(0, 100).map(c => `
+    <tr>
+      <td style="white-space:nowrap">${c.name}</td>
+      <td style="white-space:nowrap;color:#888">${new Date(c.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td style="color:#333">${c.text.split('<').join('&lt;')}</td>
+    </tr>`).join('');
+}
+
+function makeLineChart(id, labels, series) {
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: series.map(s => ({
+        label: s.label,
+        data: s.data,
+        borderColor: s.color,
+        backgroundColor: s.color + '22',
+        borderWidth: 2,
+        pointRadius: labels.length < 5 ? 4 : 2,
+        tension: 0.3,
+        spanGaps: true,
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: { ticks: { font: { size: 10 } }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function makeBarChart(id, labels, data, color, showValues = false) {
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: color + 'cc', borderColor: color, borderWidth: 1 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { size: showValues ? 12 : 9 }, maxRotation: 20 } },
+        y: { ticks: { font: { size: 10 }, callback: v => v.toLocaleString() }, beginAtZero: true }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
