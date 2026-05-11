@@ -41,6 +41,8 @@ narration/voice-benchmarking/
 assets/
 uploader/metadata.json
 uploader/history.json
+uploader/youtube/stats/stats.csv
+uploader/youtube/stats/comments.json
 
 # Hyperframes pipeline — regenerated state, large external clones, junctions
 hyperframes/_archive/
