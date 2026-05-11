@@ -36,8 +36,9 @@ If the user provides nothing, ask once. Don't guess.
      - **pinterest**: empty `title`, `description`, `board`; `destination_url` pre-filled from the affiliate link
    - invokes `uploader/<platform>/upload.py` (or `meta/upload_<instagram|facebook>.py`) if it exists; otherwise prints `"<platform> not implemented"` and SKIPs
    - on success, parses `uploaded -> https://...` from stdout and writes `uploads.<platform>.uploaded = true`, `uploads.<platform>.url = <url>`
-3. **Surface each row** the script prints (`<slug>\t<platform>\t<STATUS>\t<detail>`).
+3. **Surface each row** the script prints (`<slug>\t<platform>\t<STATUS>\t<detail>`). The script auto-runs `npm run prebuild` in `website/` at the very end if any platform actually uploaded — that row appears as `<slug>\t-\tOK\twebsite artifacts regenerated; commit + push to deploy`. No action needed from you for the regen step.
 4. **Do NOT** add `--overwrite` unless the user explicitly asks to re-upload.
+5. **Deploy the website artifacts.** If the previous step emitted the `website artifacts regenerated` row, invoke `/commit-nextjs` to build, commit, and push `website/public/products.json` + `website/public/products/`. That's what makes the new product visible on `https://theluxedrawer.com/products` and at `/p/<slug>`. If no platform uploaded on this run (every row was SKIP), there's nothing to sync — skip the commit.
 
 ## State machine (per product / per platform)
 
@@ -63,6 +64,7 @@ Selection rule: 1 evergreen + 2 from the matching category pool, baked into the 
 
 - **No video editing.** The uploaded file is `products/<slug>/final-with-music.mp4` as-is.
 - **No metadata authoring beyond the template.** If the user wants a hand-crafted title, they can edit `manifest["uploads"][platform].metadata` directly and re-run; this skill won't overwrite populated metadata without `--regen-meta`.
+- **No content edits to the website.** The post-upload sync only regenerates `products.json` + images from the manifest. If the live site needs design changes, that's a separate task.
 
 ## Pinterest exit code is noisy (harmless)
 

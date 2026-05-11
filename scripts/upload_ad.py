@@ -143,17 +143,15 @@ def build_title(tagline: str, hashtags: list[str]) -> str:
 
 def build_description(brand: str, product: str, script: str, link: str, hashtags: list[str]) -> str:
     parts = []
+    if link:
+        parts.append(f"Shop on Amazon: {link}")
     if script:
         parts.append(script.strip())
     elif product:
         parts.append(f"{brand + ' ' if brand else ''}{product}.")
     tail_tags = list(hashtags) + ["#shorts"]
-    tail = " ".join(tail_tags)
-    if link:
-        parts.append(f"\nShop on Amazon: {link} {tail}")
-    else:
-        parts.append(f"\n{tail}")
-    return "\n".join(parts).strip()
+    parts.append(" ".join(tail_tags))
+    return "\n\n".join(p for p in parts if p).strip()
 
 
 def build_yt_tags(brand: str, product: str, category: str, hashtags: list[str]) -> list[str]:
@@ -331,12 +329,49 @@ def process(product_arg: str, overwrite: bool, regen_meta: bool) -> int:
         return 1
 
     any_failed = False
+    any_uploaded = False
     for platform in PLATFORMS:
         status, detail = process_platform(manifest_path, slug, platform, overwrite, regen_meta)
         print(f"{slug}\t{platform}\t{status}\t{detail}")
         if status == "FAIL":
             any_failed = True
+        if status == "OK":
+            any_uploaded = True
+
+    if any_uploaded:
+        sync_website(slug)
+
     return 1 if any_failed else 0
+
+
+def sync_website(slug: str) -> None:
+    """Regenerate the baked website product data so Vercel picks up the new ad.
+
+    Runs `npm run prebuild` in website/ which rebuilds public/products.json
+    and copies images into public/products/. Does not commit or push — the
+    /upload-ad skill is responsible for invoking /commit-nextjs after this.
+    """
+    website_dir = ROOT / "website"
+    if not website_dir.exists():
+        print(f"{slug}\t-\tSKIP\tno website/ dir; sync skipped")
+        return
+    npm = "npm.cmd" if sys.platform == "win32" else "npm"
+    try:
+        result = subprocess.run(
+            [npm, "run", "prebuild"],
+            cwd=website_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        print(f"{slug}\t-\tFAIL\tnpm not found; sync skipped (install Node.js to regenerate website data)")
+        return
+    if result.returncode != 0:
+        tail = (result.stderr or result.stdout or "").strip().splitlines()[-3:]
+        print(f"{slug}\t-\tFAIL\tnpm run prebuild exited {result.returncode}: {' | '.join(tail)}")
+        return
+    print(f"{slug}\t-\tOK\twebsite artifacts regenerated; commit + push to deploy")
 
 
 def main() -> int:
