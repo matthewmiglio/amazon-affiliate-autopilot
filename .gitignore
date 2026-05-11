@@ -6,6 +6,7 @@ venv/
 
 # Secrets & auth (NEVER commit)
 .env
+.env.local
 *.token
 token.json
 client_secret.json
@@ -15,6 +16,7 @@ uploader/channels.json
 uploader/*/tokens/
 uploader/*/channels.json
 uploader/*/history.json
+docs/website-analytics-plan.md
 
 # OS / editor
 .DS_Store
@@ -29,9 +31,10 @@ node_modules/
 /products/
 /music/
 
-# Website generated artifacts (rebuilt by scripts/generate-products.mjs)
-website/public/products/
-website/public/products.json
+# Website product data — generated locally from /products/, committed so
+# Vercel can build without access to the (gitignored) source product folders.
+# Regenerate locally via `npm run prebuild` in website/ before committing.
+# (intentionally NOT ignored: website/public/products/, website/public/products.json)
 narration-benchmarking/
 narration/voice-benchmarking/
 assets/
