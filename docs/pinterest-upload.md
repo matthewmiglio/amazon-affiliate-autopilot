@@ -77,7 +77,7 @@ Pinterest video-pin creation is **two-step**: register a media upload, upload by
     "link": "<amazon affiliate URL>",
     "media_source": {
       "source_type": "video_id",
-      "cover_image_url": "<public URL of lifestyle-1.png>",
+      "cover_image_url": "<public URL of starting-pic.png>",
       "media_id": "<from step 1>"
     }
   }
@@ -88,7 +88,7 @@ Pinterest video-pin creation is **two-step**: register a media upload, upload by
 
 Pinterest requires a public HTTPS URL for the cover. Reuse the same temp S3 bucket the Meta uploader uses (see `docs/meta-upload.md`). Falls under "shared infra" — done once, used by both platforms.
 
-- [ ] Reuse `lifestyle-1.png` as cover (already 9:16, on-brand, optimized)
+- [ ] Reuse `starting-pic.png` as cover (already 9:16, on-brand, optimized)
 - [ ] Upload to temp S3 with 1-hour presigned URL, delete after pin is created
 
 ### 3d — Board selection
@@ -181,7 +181,7 @@ python uploader/pinterest/upload.py <product-slug> -y
 
 1. Read `products/<slug>/manifest.json`
 2. Read `products/<slug>/final-with-music.mp4`
-3. Read `products/<slug>/lifestyle-1.png` (cover)
+3. Read `products/<slug>/starting-pic.png` (cover)
 4. Read `manifest["uploads"]["pinterest"]["metadata"]`
 5. Resolve board ID via `boards.json`
 6. Upload media → poll → create pin

@@ -10,12 +10,12 @@ Tracking ID: `theluxedrawer-20`
 
 Each product has its own folder under `assets/products/{slug}/` containing all associated images, video clips, and reference media. Slug format: lowercase, brand-then-product, hyphen-separated.
 
-Example: `assets/products/houbigant-quelques-fleurs-royale-shower-gel/main.jpg`
+Example: `assets/products/houbigant-quelques-fleurs-royale-shower-gel/product.jpg`
 
 Suggested filenames inside each product folder:
-- `main.jpg` — primary product image (hero shot)
+- `product.jpg` — primary product image (hero shot)
 - `alt-1.jpg`, `alt-2.jpg`, ... — additional product photos
-- `lifestyle-1.jpg`, ... — in-context / lifestyle shots
+- `starting-pic.png` — generated 9:16 starting frame (avatar + product)
 - `texture.jpg` — close-up of product texture/swatch
 - `clip-1.mp4` — generated video clips for Shorts
 
