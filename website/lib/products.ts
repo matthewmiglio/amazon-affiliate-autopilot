@@ -10,7 +10,31 @@ export type Product = {
   asin: string;
   affiliateLink: string;
   image: string;
+  narrationScript: string;
+  productUrl: string;
 };
+
+export function relatedProducts(
+  all: Product[],
+  current: Product,
+  limit = 4,
+): Product[] {
+  const sameCat = all.filter(
+    (p) => p.slug !== current.slug && p.category === current.category,
+  );
+  if (sameCat.length >= limit) {
+    // simple deterministic shuffle by slug
+    return sameCat.slice(0, limit);
+  }
+  const rest = all.filter(
+    (p) => p.slug !== current.slug && p.category !== current.category,
+  );
+  return [...sameCat, ...rest].slice(0, limit);
+}
+
+export function findProductBySlug(slug: string): Product | undefined {
+  return products.find((p) => p.slug === slug);
+}
 
 export const products: Product[] = productsData as Product[];
 

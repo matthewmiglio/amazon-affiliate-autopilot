@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Soft Luxe Daily — Daily Amazon luxury finds for women";
+export const alt = "The Luxe Drawer — Daily Amazon luxury finds for women";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -42,7 +42,7 @@ export default function OpengraphImage() {
             fontWeight: 500,
           }}
         >
-          Soft Luxe Daily
+          The Luxe Drawer
         </div>
         <div
           style={{

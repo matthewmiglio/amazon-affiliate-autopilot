@@ -79,7 +79,9 @@ async function main() {
       description: aux.description || "",
       asin: aux.asin || "",
       affiliateLink: aux["affiliate-link"] || "",
+      productUrl: aux["product-page-url"] || "",
       image: imagePublicPath,
+      narrationScript: manifest["script-raw-text"] || "",
     });
   }
 

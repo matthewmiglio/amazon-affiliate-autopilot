@@ -5,7 +5,7 @@ import { breadcrumbLd, jsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Soft Luxe Daily is a small, personal edit of Amazon luxury finds for women — beauty, fragrance, fashion, and jewelry.",
+    "The Luxe Drawer is a small, personal edit of Amazon luxury finds for women — beauty, fragrance, fashion, and jewelry.",
   alternates: { canonical: "/about" },
 };
 
@@ -25,7 +25,7 @@ export default function AboutPage() {
           Our story
         </p>
         <h1 className="font-serif-display mt-2 text-4xl text-ink md:text-5xl">
-          About Soft Luxe Daily
+          About The Luxe Drawer
         </h1>
       </header>
 
@@ -34,7 +34,7 @@ export default function AboutPage() {
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-line">
             <Image
               src="/character/cream-sweater-profile-serene.png"
-              alt="Soft Luxe Daily"
+              alt="The Luxe Drawer"
               fill
               sizes="(max-width: 768px) 100vw, 40vw"
               className="object-cover"
@@ -43,7 +43,7 @@ export default function AboutPage() {
         </div>
         <div className="prose prose-stone max-w-none md:col-span-3">
           <p className="text-lg leading-relaxed text-ink">
-            Soft Luxe Daily started as a personal list — a private cabinet of
+            The Luxe Drawer started as a personal list — a private cabinet of
             the products that quietly do the work. Japanese skincare that
             actually changes a face. French fragrance that doesn't shout. The
             small fashion details that make an outfit feel considered.
@@ -66,7 +66,7 @@ export default function AboutPage() {
             Affiliate disclosure
           </h2>
           <p className="mt-3 leading-relaxed text-muted">
-            Soft Luxe Daily is a participant in the Amazon Services LLC
+            The Luxe Drawer is a participant in the Amazon Services LLC
             Associates Program, an affiliate advertising program. As an Amazon
             Associate we earn from qualifying purchases. We may receive a
             small commission when you click through and buy, at no extra cost

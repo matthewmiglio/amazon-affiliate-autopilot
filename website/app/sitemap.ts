@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { products } from "@/lib/products";
 import { siteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${siteUrl}/`,
       lastModified: now,
@@ -29,4 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
   ];
+
+  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+    url: `${siteUrl}/p/${p.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...productRoutes];
 }

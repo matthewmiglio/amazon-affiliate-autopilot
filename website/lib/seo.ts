@@ -1,7 +1,7 @@
-export const siteUrl = "https://theluxedrawer.vercel.app";
-export const siteName = "Soft Luxe Daily";
+export const siteUrl = "https://theluxedrawer.com";
+export const siteName = "The Luxe Drawer";
 export const siteDescription =
-  "Soft Luxe Daily curates daily Amazon luxury picks across beauty, fragrance, fashion, and jewelry. The look — without the markup.";
+  "The Luxe Drawer curates daily Amazon luxury picks across beauty, fragrance, fashion, and jewelry. The look — without the markup.";
 export const ownerEmail = "matmigg0804@gmail.com";
 
 export const socialLinks = {

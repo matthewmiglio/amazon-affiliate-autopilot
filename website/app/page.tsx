@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { products } from "@/lib/products";
+
 import { jsonLd, siteName, siteUrl } from "@/lib/seo";
 
 const PILLARS = ["Beauty", "Fragrance", "Fashion", "Jewelry"];
@@ -21,7 +22,7 @@ export default function Home() {
       "@type": "ListItem",
       position: i + 1,
       name: `${p.brand} ${p.product}`,
-      url: p.affiliateLink,
+      url: `${siteUrl}/p/${p.slug}`,
       image: `${siteUrl}${p.image}`,
     })),
   };
@@ -53,7 +54,7 @@ export default function Home() {
               Curated Daily · Amazon Associate
             </p>
             <h1 className="font-serif-display text-5xl leading-[1.05] text-ink md:text-7xl">
-              Soft Luxe Daily
+              The Luxe Drawer
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
               Daily Amazon luxury finds for women who want the look — without
@@ -85,7 +86,7 @@ export default function Home() {
             <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-[2rem] border border-line shadow-sm">
               <Image
                 src="/character/champagne-slip-head-tilted-dreamy.png"
-                alt="Soft Luxe Daily lifestyle"
+                alt="The Luxe Drawer lifestyle"
                 fill
                 sizes="(max-width: 768px) 100vw, 40vw"
                 className="object-cover"
@@ -139,10 +140,8 @@ export default function Home() {
                 key={p.slug}
                 className="group overflow-hidden rounded-2xl border border-line bg-[color:var(--background)] transition hover:shadow-md"
               >
-                <a
-                  href={p.affiliateLink}
-                  target="_blank"
-                  rel="nofollow noopener sponsored"
+                <Link
+                  href={`/p/${p.slug}`}
                   className="block"
                 >
                   <div className="relative aspect-square overflow-hidden bg-white">
@@ -165,7 +164,7 @@ export default function Home() {
                       {p.price}
                     </p>
                   </div>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -178,7 +177,7 @@ export default function Home() {
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-line">
             <Image
               src="/character/cream-sweater-profile-serene.png"
-              alt="Soft Luxe Daily"
+              alt="The Luxe Drawer"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
@@ -192,7 +191,7 @@ export default function Home() {
               Quiet luxury, sourced from Amazon.
             </h2>
             <p className="mt-5 text-base leading-relaxed text-muted">
-              Soft Luxe Daily is a personal edit. We surface the under-the-radar
+              The Luxe Drawer is a personal edit. We surface the under-the-radar
               products women keep in their actual cabinets — Japanese skincare,
               French fragrance, fashion staples — and link straight to Amazon.
               No pop-ups, no inventory. Just a small list, kept honest.

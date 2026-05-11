@@ -75,7 +75,7 @@ function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="group flex items-center gap-2">
           <span className="font-serif-display text-2xl tracking-tight text-ink">
-            Soft Luxe Daily
+            The Luxe Drawer
           </span>
         </Link>
         <nav className="flex items-center gap-7 text-sm text-muted">
@@ -104,7 +104,7 @@ function Footer() {
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div>
             <p className="font-serif-display text-xl text-ink">
-              Soft Luxe Daily
+              The Luxe Drawer
             </p>
             <p className="mt-1 max-w-md text-sm text-muted">
               As an Amazon Associate I earn from qualifying purchases. Prices
@@ -125,7 +125,7 @@ function Footer() {
           </nav>
         </div>
         <p className="mt-10 text-xs text-muted">
-          © 2026 Soft Luxe Daily. All rights reserved.
+          © 2026 The Luxe Drawer. All rights reserved.
         </p>
       </div>
     </footer>

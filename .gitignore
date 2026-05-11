@@ -25,9 +25,13 @@ uploader/*/history.json
 node_modules/
 
 # Project data — large media / generated output / per-machine
-videos/
-products/
-music/
+/videos/
+/products/
+/music/
+
+# Website generated artifacts (rebuilt by scripts/generate-products.mjs)
+website/public/products/
+website/public/products.json
 narration-benchmarking/
 narration/voice-benchmarking/
 assets/
@@ -49,3 +53,4 @@ hyperframes/scripts/update_plans.py
 # Hedra starting-image benchmarking (local experiments, not pipeline)
 hedra-starting-image-benchmarking/
 same-face-benchmarking/
+test-pinned-comment/

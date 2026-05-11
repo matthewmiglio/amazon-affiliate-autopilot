@@ -4,7 +4,7 @@ import { breadcrumbLd, jsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Privacy policy for the Soft Luxe Daily Uploader application — Pinterest API integration.",
+    "Privacy policy for the The Luxe Drawer Uploader application — Pinterest API integration.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
         Privacy Policy
       </h1>
       <p className="mt-3 text-sm text-muted">
-        Soft Luxe Daily Uploader · Last updated: 2026-05-08
+        The Luxe Drawer Uploader · Last updated: 2026-05-08
       </p>
 
       <div className="mt-10 space-y-8 text-base leading-relaxed text-ink">
