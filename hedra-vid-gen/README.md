@@ -51,7 +51,7 @@ poetry run python avatar-video/generate.py --products <slug> --overwrite
 
 For each slug:
 1. Reads `products/<slug>/manifest.json`
-2. Uploads `lifestyle-1.png` (start keyframe) + `narration.mp3` (audio)
+2. Uploads `starting-pic.png` (start keyframe) + `narration.mp3` (audio)
 3. POSTs an Avatar generation at 9:16 / 720p, duration auto-matched to the audio
 4. Downloads to `products/<slug>/raw-speaker-video.mp4`
 5. Sets `manifest.json["raw-speaker-video-path"] = "raw-speaker-video.mp4"`
@@ -75,10 +75,10 @@ Slugs run concurrently via a `ThreadPoolExecutor` — default 4 workers, configu
 
 For each slug:
 1. Picks 3 random character refs from the curated `FACE_ANCHOR_REFS` whitelist in `starting-image/generate.py` (seeded by `(slug, reroll)`) → uploads each as an image asset
-2. Resolves the product image (`manifest.main-product-image-path` or `main.{png,jpg,…}`) → upload
+2. Resolves the product image (`manifest.product-pic-path` or `product.{png,jpg,…}`) → upload
 3. Builds a prompt with `prompt_builder.build_prompt(slug, manifest, reroll, n_character_refs)` — leads with hard rules (refs are the same woman, torso squared to camera, mic in front, holding closed product label-out, real-photo realism, no vignette / circle crop) before the scene description (room/outfit/lighting/camera). Slug-seeded so re-runs are stable.
 4. POSTs `/generations` with `type:"image"`, `reference_image_ids = [3 char refs…, product]`, `aspect_ratio:"9:16"`, `resolution:"1K"`, model = Nano Banana Pro I2I (`HEDRA_IMAGE_MODEL_ID` overrides). T2I variants ignore reference images and produce drift — never use them.
-5. Polls (20-min cap), fetches the asset URL via `/assets?type=image&ids=<asset_id>` (image generations don't include URLs inline), and downloads to `products/<slug>/lifestyle-1.png` (default) — sets `manifest.json["lifestyle-image-path"]`. With `--output-dir` it writes to `<dir>/<slug>.png` and skips the manifest write — useful for benchmarking.
+5. Polls (20-min cap), fetches the asset URL via `/assets?type=image&ids=<asset_id>` (image generations don't include URLs inline), and downloads to `products/<slug>/starting-pic.png` (default) — sets `manifest.json["starting-pic-path"]`. With `--output-dir` it writes to `<dir>/<slug>.png` and skips the manifest write — useful for benchmarking.
 
 Idempotent — existing target file is never re-rendered without `--overwrite`.
 

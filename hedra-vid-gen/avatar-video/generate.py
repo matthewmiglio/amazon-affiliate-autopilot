@@ -2,7 +2,7 @@
 Hedra Avatar talking-head video generator.
 
 For one or more product slugs (folders under ../../products/), upload that
-product's lifestyle-1.png and narration.mp3 to Hedra, kick off a Hedra Avatar
+product's starting-pic.png and narration.mp3 to Hedra, kick off a Hedra Avatar
 generation (9:16, mobile resolution, duration auto = narration length), poll
 to completion, and download the result to <product>/raw-speaker-video.mp4.
 
@@ -33,7 +33,7 @@ import _common as hc  # noqa: E402
 REPO_ROOT = PARENT.parent
 PRODUCTS_DIR = REPO_ROOT / "products"
 
-LIFESTYLE_NAME = "lifestyle-1.png"
+STARTING_PIC_NAME = "starting-pic.png"
 NARRATION_NAME = "narration.mp3"
 OUTPUT_NAME = "raw-speaker-video.mp4"
 MANIFEST_KEY = "raw-speaker-video-path"
@@ -61,7 +61,7 @@ def _resolve_slugs(args: argparse.Namespace) -> list[str]:
                 continue
             if not (child / "manifest.json").exists():
                 continue
-            if not (child / LIFESTYLE_NAME).exists():
+            if not (child / STARTING_PIC_NAME).exists():
                 continue
             if not (child / NARRATION_NAME).exists():
                 continue
@@ -81,12 +81,12 @@ def _process(slug: str, key: str, overwrite: bool) -> tuple[str, str]:
         return ("FAIL", f"missing {manifest_path}")
     manifest = _load_manifest(manifest_path)
 
-    image_path = folder / LIFESTYLE_NAME
+    image_path = folder / STARTING_PIC_NAME
     audio_path = folder / NARRATION_NAME
     output_path = folder / OUTPUT_NAME
 
     if not image_path.exists():
-        return ("FAIL", f"missing {LIFESTYLE_NAME}")
+        return ("FAIL", f"missing {STARTING_PIC_NAME}")
     if not audio_path.exists():
         return ("FAIL", f"missing {NARRATION_NAME} — run /generate-narration first")
 

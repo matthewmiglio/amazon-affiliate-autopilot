@@ -6,8 +6,8 @@ Per slug, this script:
   1. Picks 3 random images from the FACE_ANCHOR_REFS whitelist in
      assets/character/ (slug-seeded for stable re-runs). Whitelist is
      curated from QA — refs that hurt face lock are excluded.
-  2. Loads the product image at products/<slug>/<main-product-image-path>
-     (falls back to main.png / main.jpg / main.webp).
+  2. Loads the product image at products/<slug>/<product-pic-path>
+     (falls back to product.png / product.jpg / product.webp).
   3. Builds a starting-image prompt via prompt_builder.build_prompt.
      The prompt leads with hard rules (face lock, mic in front, torso
      squared to camera, no vignette) before the scene description.
@@ -16,8 +16,8 @@ Per slug, this script:
      ($HEDRA_IMAGE_MODEL_ID overrides). Resolution: 1K, aspect: 9:16.
   5. Polls, fetches the asset URL from /assets, downloads to
      <output-dir>/<slug>/<output-name> (default
-     products/<slug>/lifestyle-1.png), and updates the manifest's
-     `lifestyle-image-path`.
+     products/<slug>/starting-pic.png), and updates the manifest's
+     `starting-pic-path`.
 
 Idempotent: skips slugs whose target file already exists unless --overwrite.
 
@@ -51,10 +51,10 @@ REPO_ROOT = PARENT.parent
 PRODUCTS_DIR = REPO_ROOT / "products"
 CHARACTER_DIR = REPO_ROOT / "assets" / "character"
 
-OUTPUT_NAME = "lifestyle-1.png"
-MANIFEST_KEY = "lifestyle-image-path"
+OUTPUT_NAME = "starting-pic.png"
+MANIFEST_KEY = "starting-pic-path"
 
-PRODUCT_IMAGE_CANDIDATES = ["main.png", "main.jpg", "main.jpeg", "main.webp"]
+PRODUCT_IMAGE_CANDIDATES = ["product.png", "product.jpg", "product.jpeg", "product.webp"]
 CHARACTER_REF_COUNT = 3
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 
@@ -113,7 +113,7 @@ def _pick_character_refs(slug: str, reroll: int, n: int = CHARACTER_REF_COUNT) -
 
 
 def _product_image(folder: Path, manifest: dict) -> Path:
-    rel = (manifest.get("main-product-image-path") or "").strip()
+    rel = (manifest.get("product-pic-path") or "").strip()
     if rel:
         cand = folder / rel
         if cand.exists():
@@ -122,7 +122,7 @@ def _product_image(folder: Path, manifest: dict) -> Path:
         cand = folder / name
         if cand.exists():
             return cand
-    sys.exit(f"no product image in {folder} (looked for main.png/jpg/jpeg/webp)")
+    sys.exit(f"no product image in {folder} (looked for product.png/jpg/jpeg/webp)")
 
 
 def _load_manifest(p: Path) -> dict:

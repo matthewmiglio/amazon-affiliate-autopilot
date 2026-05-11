@@ -64,7 +64,7 @@ ROOMS = {
     ),
     "bedroom-bed-cozy": (
         "sitting cross-legged on her own unmade-but-styled bed, soft string lights, rattan headboard, "
-        "a small handheld mic she's holding at her chin"
+        "a short-stand condenser mic on a small bedside tray directly in front of her chest pointed at her mouth"
     ),
     "balcony-golden-hour": (
         "a small outdoor balcony with potted plants and warm golden-hour light, soft-blurred city behind, "
@@ -240,8 +240,9 @@ def build_prompt(
         "camera). Her eyes are on the lens. NEVER profile, NEVER over-the-shoulder, NEVER back-to-camera, "
         "NEVER glancing away. "
         "(2) A microphone is IN FRONT OF HER, between her and the camera, clearly visible in the frame "
-        "(desktop boom-arm condenser on a stand pointed at her mouth, or a clip-on lapel mic on her collar, "
-        "or a small handheld mic she's holding to her chin). The mic is NEVER behind her, NEVER off-frame. "
+        "(desktop boom-arm condenser on a stand pointed at her mouth, a short-stand condenser on the surface "
+        "in front of her, or a clip-on lapel mic on her collar). She is NEVER holding the mic — both hands "
+        "stay on the product. The mic is NEVER handheld, NEVER behind her, NEVER off-frame. "
         "(3) She is HOLDING the product label-out at chest height, cap on, lid closed. NEVER applying, "
         "dispensing, swiping, spraying, or mid-use. "
         "(4) Real-photo realism. NOT illustrated, NOT 3D-render, NOT anime, NOT painted. "
