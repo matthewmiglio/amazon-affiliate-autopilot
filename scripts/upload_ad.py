@@ -153,7 +153,12 @@ def build_description(brand: str, product: str, script: str, slug: str, hashtags
         parts.append(f"{brand + ' ' if brand else ''}{product}.")
     tail_tags = list(hashtags) + ["#shorts"]
     parts.append(" ".join(tail_tags))
-    return "\n\n".join(p for p in parts if p).strip()
+    # YouTube Shorts collapses newlines without inserting spaces — without a
+    # trailing space on each segment, the URL slug smashes into the next
+    # sentence ("...-dYour girlfriend") and the script's final period welds
+    # to the first hashtag ("grab it.#TikTokMadeMeBuyIt"). Trailing spaces
+    # are invisible in normal rendering and survive the collapse.
+    return " \n\n".join(p for p in parts if p).strip()
 
 
 def build_yt_tags(brand: str, product: str, category: str, hashtags: list[str]) -> list[str]:
