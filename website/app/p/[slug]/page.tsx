@@ -7,6 +7,7 @@ import {
   products,
   relatedProducts,
 } from "@/lib/products";
+import { BuyButton } from "@/components/buy-button";
 import {
   breadcrumbLd,
   jsonLd,
@@ -147,14 +148,13 @@ export default async function ProductDetail({
           )}
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href={p.affiliateLink}
-              target="_blank"
-              rel="nofollow sponsored noopener"
+            <BuyButton
+              slug={p.slug}
+              destination={p.affiliateLink}
               className="inline-flex items-center justify-center rounded-full bg-ink px-8 py-3 text-sm font-medium tracking-wide text-[color:var(--background)] transition hover:bg-[#3a3330]"
             >
               Buy on Amazon →
-            </a>
+            </BuyButton>
             <Link
               href="/products"
               className="inline-flex items-center justify-center rounded-full border border-line px-7 py-3 text-sm font-medium text-ink transition hover:border-ink"

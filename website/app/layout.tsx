@@ -9,6 +9,7 @@ import {
   siteUrl,
   socialLinks,
 } from "@/lib/seo";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -150,6 +151,7 @@ export default function RootLayout({
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />
+        <AnalyticsTracker />
       </body>
     </html>
   );
