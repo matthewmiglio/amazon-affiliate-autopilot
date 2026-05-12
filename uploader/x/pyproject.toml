@@ -1,0 +1,20 @@
+[project]
+name = "uploader-x"
+version = "0.1.0"
+description = "X (Twitter) video tweet uploader for the Amazon-affiliate pipeline"
+authors = [
+    { name = "Matt", email = "matmigg0804@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "requests (>=2.31,<3.0)",
+    "python-dotenv (>=1.0,<2.0)",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false

@@ -12,8 +12,18 @@ Plan for the X video-post uploader. X is a long-tail addition to the affiliate p
 
 External setup that must happen before any code runs. None of this is blocked; do it first.
 
-- [ ] Create / confirm `@theluxedrawer` X account is active and the email is verified
-- [ ] Apply for an **X Developer account** at `developer.x.com` (free, ~10 min — needs phone-verified X account)
+### Account warm-up (done / in progress)
+
+- [x] `@theluxedrawer` X account created, email + phone verified
+- [x] Profile bio set (per Option A draft — covers automation disclosure + `#ad` + `theluxedrawer.com`)
+- [x] Profile website field set to `https://theluxedrawer.com`
+- [x] Followed ~niche accounts to seed the timeline
+- [~] **Organic warm-up tweets** — drip-posting 2–3/day across 3–5 days before flipping on automation, to avoid day-one bot pattern-match. Day 1 in progress (2 scheduled, 3 h apart, 1 already live). 10 + 10 = 20 candidate tweets drafted in chat history if more needed.
+- [x] Bio includes automation disclosure (X policy requirement for automated accounts)
+
+### Developer portal (next up)
+
+- [ ] Apply for an **X Developer account** at `developer.x.com` (free, ~10 min — needs phone-verified X account). Answer the "will this app post automated content?" question honestly: *"automated posting of short-form product video, ~1 post/day, all videos uniquely generated, FTC #ad disclosure on every affiliate post"*
 - [ ] Create a **Project + App** inside the developer portal (one project, one app)
 - [ ] Pick the API tier:
   - **Free** — 500 posts/month, 1 project/app, write access **yes**, media upload **yes** (sufficient for ~16 posts/day if we ever ramped — currently we do ~1/day, so free is more than enough)
@@ -23,9 +33,9 @@ External setup that must happen before any code runs. None of this is blocked; d
   - App permissions: **Read and write** (media uploads + tweet creation)
   - Callback URI: `http://localhost:8086/` (8086 to avoid colliding with Pinterest's 8085)
   - Website URL: `https://theluxedrawer.com`
-- [ ] Capture **API Key**, **API Key Secret**, **Client ID**, **Client Secret** from the app's Keys & Tokens tab — store in `.env` (NOT committed)
+- [ ] Capture **API Key**, **API Key Secret**, **Client ID**, **Client Secret** from the app's Keys & Tokens tab — store in `uploader/x/.env` as `X_API_KEY`, `X_API_KEY_SECRET`, `X_CLIENT_ID`, `X_CLIENT_SECRET` (NOT committed)
 - [ ] Confirm required OAuth 2.0 scopes are checked: `tweet.read`, `tweet.write`, `users.read`, `media.write`, `offline.access` (last one is required to get a refresh token)
-- [ ] **Read the Automation Rules** — X requires automated accounts to disclose automation in bio. Add "Automated by @matmigg" or similar to `@theluxedrawer` bio.
+- [ ] **Read the Automation Rules** — already satisfied via the bio disclosure above, but re-read at portal time in case policy shifted.
 - [ ] **Read the Affiliate / Spam policy** — bulk identical posts get flagged. Our descriptions are already unique per product, so we're fine.
 
 ---
@@ -35,11 +45,11 @@ External setup that must happen before any code runs. None of this is blocked; d
 What the multi-platform refactor laid down — the X module slots in with no further changes.
 
 - [x] `scripts/upload_ad.py` iterates a `platforms` list and per-platform `manifest["uploads"][platform]`
-- [x] `scripts/status.py` matrix is platform-agnostic (just needs an `x-up` column added)
-- [ ] `uploader/x/` folder created with `.gitkeep`
-- [ ] Manifest schema migrated to include `uploads.x.{uploaded,url,metadata}` on every product (run the same migrator that added `pinterest`)
-- [ ] Stub `_gen_x()` metadata builder in `scripts/upload_ad.py` (writes empty `text` and pre-fills `destination_url` from the affiliate link)
-- [ ] `scripts/upload_ad.py` includes `"x"` in its platform iteration and skips with `"x not implemented"` until the script lands
+- [x] `scripts/status.py` matrix is platform-agnostic — `x-up` column + `--needs-x-upload` flag added
+- [x] `uploader/x/` folder created with `.gitkeep` + `.env.example` (placeholders for the four credentials)
+- [x] **No bulk migrator needed** — `ensure_platform_metadata()` lazily creates `uploads.x.{uploaded,url,metadata:{text,destination_url}}` on first run via `setdefault`. Pre-fills `destination_url` from the affiliate link the moment any product is processed.
+- [x] `_gen_x()` stub added in `scripts/upload_ad.py` (writes empty `text`, pre-fills `destination_url` from the affiliate link)
+- [x] `scripts/upload_ad.py` includes `"x"` in `PLATFORMS`, registers `_gen_x` in `_GENERATORS`, adds `x` URL regex to `_URL_PATTERNS` (matches `https://x.com/...`), and `has_content` check now also considers `metadata["text"]`. Until `uploader/x/upload.py` exists, the runner naturally returns `SKIP — x not implemented (no uploader/x/upload.py)` because of the existing missing-uploader branch.
 
 ---
 
@@ -47,16 +57,11 @@ What the multi-platform refactor laid down — the X module slots in with no fur
 
 Mirrors `youtube_auth.py` / planned `pinterest_auth.py`. X requires **OAuth 2.0 with PKCE** for user-context tweets (the older OAuth 1.0a still works but Twitter is pushing everything to v2/OAuth 2.0).
 
-- [ ] `x_auth.py` with OAuth 2.0 authorization-code + PKCE flow
-  - Generate `code_verifier` + `code_challenge` (SHA256)
-  - Open browser to `https://x.com/i/oauth2/authorize?response_type=code&client_id=<id>&redirect_uri=http://localhost:8086/&scope=tweet.read%20tweet.write%20users.read%20media.write%20offline.access&state=<rand>&code_challenge=<chall>&code_challenge_method=S256`
-  - Local listener catches `?code=...`
-  - Exchanges code at `POST https://api.x.com/2/oauth2/token` (`grant_type=authorization_code`, `code_verifier=...`)
-- [ ] Persist `tokens/user_token.json`: `{ access_token, refresh_token, expires_at }`
-  - `access_token` — 2 hours (short!)
-  - `refresh_token` — 6 months, sliding (only with `offline.access` scope)
-- [ ] **Auto-refresh on every uploader invocation** — access token is so short that we'll always refresh. Use `grant_type=refresh_token` against the same `/2/oauth2/token` endpoint.
-- [ ] CLI: `python uploader/x/upload.py auth` — runs the flow, saves the token
+- [x] `x_auth.py` with OAuth 2.0 authorization-code + PKCE flow (confidential client — Basic auth with Client ID/Secret on the token endpoint)
+- [x] Persist `tokens/user_token.json`: `{ access_token, refresh_token, expires_at, scope, token_type }`
+- [x] `get_access_token()` auto-refreshes when `expires_at - 120s` has passed (refresh-token grant)
+- [x] CLI: `python uploader/x/upload.py auth` runs PKCE flow; `whoami` calls `/2/users/me` to verify
+- [x] **Verified end-to-end on 2026-05-12:** authorized as `@theluxedrawer` (id 2054210727318073344), token saved, `whoami` returns the right user. `X_AUTH_NO_BROWSER=1` env var added so the URL is printed instead of auto-opening (lets you paste into the right browser session when default browser is signed into a different account).
 
 > **Note on OAuth 1.0a fallback:** the legacy `media/upload` endpoint historically required OAuth 1.0a, but the v2 `POST /2/media/upload` endpoint (GA 2025) accepts OAuth 2.0 user-context. Use v2 throughout; only fall back to 1.0a if a future endpoint we need doesn't support 2.0.
 
