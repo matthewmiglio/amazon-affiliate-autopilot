@@ -25,9 +25,7 @@ External setup that must happen before any code runs. None of this is blocked; d
 
 - [ ] Apply for an **X Developer account** at `developer.x.com` (free, ~10 min — needs phone-verified X account). Answer the "will this app post automated content?" question honestly: *"automated posting of short-form product video, ~1 post/day, all videos uniquely generated, FTC #ad disclosure on every affiliate post"*
 - [ ] Create a **Project + App** inside the developer portal (one project, one app)
-- [ ] Pick the API tier:
-  - **Free** — 500 posts/month, 1 project/app, write access **yes**, media upload **yes** (sufficient for ~16 posts/day if we ever ramped — currently we do ~1/day, so free is more than enough)
-  - **Basic ($200/mo)** — 3000 posts/month, better rate limits — skip until we're rate-limited on free
+- [x] **Pricing model (verified 2026-05-12):** X has moved to **pay-per-use credits, no free posting tier**. Empirically ~$0.11 per POST /2/tweets regardless of whether the tweet has media — text and video cost the same. The Free tier shown in the dev portal gates *which endpoints you can call*, not how many calls; **all** outbound posts deduct from a prepaid credit balance. At 1 post/day that's ~$40/yr; at 3/day ~$120/yr. Sets a hard floor: there's no path to "free posting" on X — budget for it or skip the platform.
 - [ ] In the App settings, set **User authentication settings**:
   - Type: **Web App, Automated App or Bot**
   - App permissions: **Read and write** (media uploads + tweet creation)
@@ -71,6 +69,16 @@ Mirrors `youtube_auth.py` / planned `pinterest_auth.py`. X requires **OAuth 2.0 
 
 X video tweet creation is **two-step**: chunked media upload → poll status → create tweet referencing the media_id.
 
+> **Auth twist discovered 2026-05-12:** the plan originally said v2 throughout with OAuth 2.0. Reality is a hybrid:
+> - `POST /2/tweets` and `GET /2/users/me` — **OAuth 2.0 bearer** (works fine)
+> - Chunked media upload — **MUST use the legacy `upload.twitter.com/1.1/media/upload.json` endpoint signed with OAuth 1.0a HMAC**. The v2 `/2/media/upload` endpoint only accepts images / subtitles (enum: `tweet_image`, `dm_image`, `subtitles`) — no video. v1.1 chunked upload returns 403 to OAuth 2.0 bearers.
+>
+> So we need both flavors of credentials in `.env`:
+> - `X_CLIENT_ID` + `X_CLIENT_SECRET` (OAuth 2.0)
+> - `X_API_KEY` + `X_API_KEY_SECRET` + `X_ACCESS_TOKEN` + `X_ACCESS_TOKEN_SECRET` (OAuth 1.0a)
+>
+> The Access Token + Secret are generated one-time in the dev portal under Keys & Tokens → OAuth 1.0 Keys → "Access Token and Secret → Generate". App permissions must be "Read and write" before generating, otherwise the token is read-only and media upload returns 403.
+
 ### 3a — HTTP client
 
 - [ ] `api_client.py` — `requests.Session` wrapper around `https://api.x.com/2`
@@ -83,20 +91,12 @@ X video tweet creation is **two-step**: chunked media upload → poll status →
 
 X's media upload is **chunked** — required for video, even small clips. Steps:
 
-- [ ] **Step 1 — INIT:** `POST /2/media/upload` with `command=INIT`, `media_type=video/mp4`, `media_category=tweet_video`, `total_bytes=<size>` → `{ media_id }`
-- [ ] **Step 2 — APPEND (loop):** read `final-with-music.mp4` in 5 MB chunks. For each chunk:
-  `POST /2/media/upload` with `command=APPEND`, `media_id=<id>`, `segment_index=<0..N>`, `media=<bytes>`
-- [ ] **Step 3 — FINALIZE:** `POST /2/media/upload` with `command=FINALIZE`, `media_id=<id>` → `{ processing_info: { state, check_after_secs } }`
-- [ ] **Step 4 — STATUS poll:** `GET /2/media/upload?command=STATUS&media_id=<id>` every `check_after_secs` until `state == "succeeded"` (typically 5–30 s for a 15–20 s 9:16 mp4). Bail on `state == "failed"`.
-- [ ] **Step 5 — Create tweet:**
-  ```
-  POST /2/tweets
-  {
-    "text": "<≤280 chars, includes affiliate URL + disclosure>",
-    "media": { "media_ids": ["<from step 1>"] }
-  }
-  ```
-- [ ] **Step 6 — Emit:** print exactly `uploaded -> https://x.com/theluxedrawer/status/<id>`
+- [x] **Step 1 — INIT:** `POST upload.twitter.com/1.1/media/upload.json` (form-urlencoded) with `command=INIT`, `media_type=video/mp4`, `media_category=tweet_video`, `total_bytes=<size>` → `{ media_id_string }`
+- [x] **Step 2 — APPEND (loop):** read `final-with-music.mp4` in 5 MB chunks. For each chunk: same endpoint, multipart/form-data with `command=APPEND`, `media_id=<id>`, `segment_index=<0..N>`, `media=<bytes>`
+- [x] **Step 3 — FINALIZE:** same endpoint with `command=FINALIZE`, `media_id=<id>` → `{ processing_info: { state, check_after_secs } }`
+- [x] **Step 4 — STATUS poll:** `GET upload.twitter.com/1.1/media/upload.json?command=STATUS&media_id=<id>` every `check_after_secs` until `state == "succeeded"`. Observed: pending → in_progress (20% → 75%) → succeeded in ~3s for a 3.5 MB / 17 s clip.
+- [x] **Step 5 — Create tweet:** `POST api.x.com/2/tweets` (OAuth 2.0 bearer, JSON) with `{ text, media: { media_ids: [<id>] } }`. **All 5 steps 1-4 use OAuth 1.0a; only step 5 uses the OAuth 2.0 bearer.**
+- [x] **Step 6 — Emit:** print exactly `uploaded -> https://x.com/<username>/status/<id>` (username pulled via `GET /2/users/me` so the URL works for any account)
 
 ### 3c — Cover / thumbnail
 
