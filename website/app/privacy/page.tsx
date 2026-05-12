@@ -3,7 +3,7 @@ import { breadcrumbLd, jsonLd, siteUrl } from "@/lib/seo";
 
 const privacyTitle = "Privacy Policy";
 const privacyDescription =
-  "Privacy policy for the The Luxe Drawer Uploader application — Pinterest API integration.";
+  "Privacy policy for The Luxe Drawer Uploader — single-operator publishing tool for YouTube, X, Pinterest, Instagram, and Facebook.";
 
 export const metadata: Metadata = {
   title: privacyTitle,
@@ -46,14 +46,15 @@ export default function PrivacyPage() {
           This application is for personal use only and is operated by a
           single individual (
           <a
-            href="mailto:matmigg0804@gmail.com"
+            href="mailto:matthew2miglio0804@gmail.com"
             className="underline underline-offset-4 hover:text-gold"
           >
-            matmigg0804@gmail.com
+            matthew2miglio0804@gmail.com
           </a>
-          ). It accesses Pinterest only on behalf of the account owner
-          (theluxedrawer) for the purpose of publishing video pins via the
-          Pinterest API v5.
+          ). It accesses YouTube, X (Twitter), Pinterest, Instagram, and
+          Facebook only on behalf of the account owner (theluxedrawer) for the
+          sole purpose of publishing the operator&rsquo;s own short-form video
+          content to the operator&rsquo;s own accounts on those platforms.
         </p>
 
         <section>
@@ -62,12 +63,19 @@ export default function PrivacyPage() {
           </h2>
           <ul className="mt-3 list-disc space-y-2 pl-6 text-muted">
             <li>
-              OAuth access tokens issued by Pinterest, stored locally on the
-              operator&rsquo;s machine.
+              OAuth access tokens and refresh tokens issued by each platform
+              (YouTube, X, Pinterest, Instagram, Facebook), stored locally on
+              the operator&rsquo;s machine. No tokens for any other user are
+              accessed, requested, or stored.
             </li>
             <li>
-              No data is collected from third parties or end users — there are
-              no end users.
+              Public response metadata returned by the publishing endpoints
+              (post ID, post URL, processing status), retained locally to
+              de-duplicate uploads and resume after failures.
+            </li>
+            <li>
+              No data is collected from third parties or end users — this
+              application has no end users beyond the single operator.
             </li>
           </ul>
         </section>
@@ -78,7 +86,8 @@ export default function PrivacyPage() {
           </h2>
           <p className="mt-3 text-muted">
             None. No data is shared with, sold to, or processed by any third
-            party.
+            party. Tokens never leave the operator&rsquo;s local machine
+            except in outbound API calls to the issuing platform.
           </p>
         </section>
 
@@ -87,9 +96,11 @@ export default function PrivacyPage() {
             Data retention
           </h2>
           <p className="mt-3 text-muted">
-            OAuth tokens are retained until revoked by the user or rotated by
-            Pinterest. They can be deleted at any time by removing the local
-            token file.
+            OAuth tokens are retained until revoked by the operator on the
+            issuing platform or rotated by the platform itself. They can be
+            deleted at any time by removing the local token file. Upload
+            metadata is retained indefinitely on the operator&rsquo;s local
+            machine for the lifetime of the project.
           </p>
         </section>
 
@@ -97,7 +108,18 @@ export default function PrivacyPage() {
           <h2 className="font-serif-display text-2xl text-ink">User rights</h2>
           <p className="mt-3 text-muted">
             The sole user (the operator) has full control over all stored data
-            and may delete it at any time.
+            and may delete it at any time. Because there are no third-party
+            end users, no external data-rights requests apply.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-serif-display text-2xl text-ink">
+            Children&rsquo;s privacy
+          </h2>
+          <p className="mt-3 text-muted">
+            This application is not directed at, nor used by, anyone under 18.
+            No data from children is collected or processed.
           </p>
         </section>
 
@@ -105,10 +127,10 @@ export default function PrivacyPage() {
           <h2 className="font-serif-display text-2xl text-ink">Contact</h2>
           <p className="mt-3 text-muted">
             <a
-              href="mailto:matmigg0804@gmail.com"
+              href="mailto:matthew2miglio0804@gmail.com"
               className="underline underline-offset-4 hover:text-gold"
             >
-              matmigg0804@gmail.com
+              matthew2miglio0804@gmail.com
             </a>
           </p>
         </section>
