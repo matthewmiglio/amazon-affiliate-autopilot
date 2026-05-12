@@ -47,10 +47,10 @@ If 0 videos were generated (all SKIP/FIXED), you can omit the line. Don't run th
 ## Workflow
 
 1. **Resolve slugs.** Validate each `products/<slug>/manifest.json` exists. If a full folder path was supplied, take the basename.
-2. **Verify env.** `hedra-vid-gen/.env` must have `HEDRA_API_KEY`. Abort if missing — do not invent one.
-3. **Delegate to `hedra-vid-gen/avatar-video/generate.py`.** Run:
+2. **Verify env.** `hedra/.env` must have `HEDRA_API_KEY`. Abort if missing — do not invent one.
+3. **Delegate to `hedra/avatar-video/generate.py`.** Run:
    ```
-   cd hedra-vid-gen
+   cd hedra
    poetry run python avatar-video/generate.py --products <comma-joined-slugs>
    # or
    poetry run python avatar-video/generate.py --all-needing
@@ -74,10 +74,10 @@ Do NOT change the model, aspect ratio, or resolution without explicit user direc
 
 ## Background invocation gotcha
 
-If you launch `generate.py` as a backgrounded bash task, **use the absolute path** — backgrounded shells reset cwd to the repo root, so `cd hedra-vid-gen && poetry run ...` will fail with "No such file or directory":
+If you launch `generate.py` as a backgrounded bash task, **use the absolute path** — backgrounded shells reset cwd to the repo root, so `cd hedra && poetry run ...` will fail with "No such file or directory":
 
 ```
-cd /c/My_Files/my_programs/amazon-affiliate/hedra-vid-gen && poetry run python avatar-video/generate.py --products <slug>
+cd /c/My_Files/my_programs/amazon-affiliate/hedra && poetry run python avatar-video/generate.py --products <slug>
 ```
 
 Foreground invocations are fine — the relative `cd` works in those.
@@ -91,7 +91,7 @@ The per-file upload step (`upload_file`) does NOT auto-retry transient `requests
 If `generate.py` prints `[<slug>] starting generation…` and then later `OK\tgeneration <gen_id>` BUT dies on a download error (or you killed it), do NOT re-run `generate.py` — that double-bills. Instead:
 
 ```
-cd hedra-vid-gen && poetry run python avatar-video/recover.py <slug> <gen_id>
+cd hedra && poetry run python avatar-video/recover.py <slug> <gen_id>
 ```
 
 The gen_id is in the OK row of `generate.py`'s output (or in the bg task log).
@@ -110,7 +110,7 @@ If a slug times out:
 2. Probe `GET https://api.hedra.com/web-app/public/generations/<gen_id>/status`. If `status` is still `queued`/`processing`, the gen is alive — don't re-run.
 3. Use the bundled recovery script — it tolerates transient HTTP errors, polls until completion, downloads to `products/<slug>/raw-speaker-video.mp4`, and updates the manifest:
    ```
-   cd hedra-vid-gen
+   cd hedra
    poetry run python avatar-video/recover.py <slug> <generation_id>
    ```
 4. Only re-run the slug via `generate.py` if the generation truly failed (`status` ∈ `{error, failed, canceled}`) — re-running while the original is still queued double-bills.

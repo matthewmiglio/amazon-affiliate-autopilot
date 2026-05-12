@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hedra-vid-gen"
+name = "hedra"
 version = "0.1.0"
 description = "Hedra Avatar talking-head video generator for Amazon affiliate products"
 authors = ["Matt"]

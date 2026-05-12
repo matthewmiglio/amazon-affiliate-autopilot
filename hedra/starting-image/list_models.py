@@ -1,6 +1,6 @@
 """
 List Hedra AI models. Print id/name/type so you can pick an image-capable
-model and pin its id as HEDRA_IMAGE_MODEL_ID in hedra-vid-gen/.env.
+model and pin its id as HEDRA_IMAGE_MODEL_ID in hedra/.env.
 
 Usage:
   poetry run python list_models.py

@@ -48,10 +48,10 @@ If 0 images were generated (all SKIP/FIXED), you can omit the line. Don't run th
 ## Workflow
 
 1. **Resolve slugs.** Validate each `products/<slug>/manifest.json` exists. If a full folder path was supplied, take the basename.
-2. **Verify env.** `hedra-vid-gen/.env` must have `HEDRA_API_KEY`. `HEDRA_IMAGE_MODEL_ID` is optional — when blank the script defaults to Nano Banana Pro I2I (`c81e401b-6036-4e1f-9165-60eafcee9dd3`), the empirically-best model for character lock on this pipeline. Character references are pulled automatically: **3 random images per slug from a hand-curated 5-ref whitelist** (`FACE_ANCHOR_REFS` in `starting-image/generate.py`), seeded by `(slug, reroll)` so re-runs are stable.
-3. **Delegate to `hedra-vid-gen/starting-image/generate.py`.** Run:
+2. **Verify env.** `hedra/.env` must have `HEDRA_API_KEY`. `HEDRA_IMAGE_MODEL_ID` is optional — when blank the script defaults to Nano Banana Pro I2I (`c81e401b-6036-4e1f-9165-60eafcee9dd3`), the empirically-best model for character lock on this pipeline. Character references are pulled automatically: **3 random images per slug from a hand-curated 5-ref whitelist** (`FACE_ANCHOR_REFS` in `starting-image/generate.py`), seeded by `(slug, reroll)` so re-runs are stable.
+3. **Delegate to `hedra/starting-image/generate.py`.** Run:
    ```
-   cd hedra-vid-gen
+   cd hedra
    poetry run python starting-image/generate.py --products <comma-joined-slugs>
    # or
    poetry run python starting-image/generate.py --all-needing
@@ -70,7 +70,7 @@ If 0 images were generated (all SKIP/FIXED), you can omit the line. Don't run th
 - Reference images: **3 random images** from the curated 5-ref `FACE_ANCHOR_REFS` whitelist in `starting-image/generate.py` for face lock (seeded by `(slug, reroll)`), followed by **1** product image — all passed as `reference_image_ids` in that order.
 - Asset URL: completed `type:"image"` generations don't include the URL inline. The script falls back to `GET /assets?type=image&ids=<asset_id>` and reads `[0].asset.url`.
 - Poll cap: 20 minutes. Banana I2I usually finishes in ~30-60s but occasionally stalls server-side at 10% — when that happens, retry the slug.
-- Text prompt: built by `hedra-vid-gen/starting-image/prompt_builder.build_prompt(slug, manifest, reroll, n_character_refs)`. The builder leads with hard rules (refs 1-N are the SAME woman, torso squared to camera, mic in front of her, holding closed product label-out, real-photo realism, no vignette / circle crop / soft-edge oval), then layers the scene (room/outfit/lighting/camera). Don't author a prompt by hand — use the builder.
+- Text prompt: built by `hedra/starting-image/prompt_builder.build_prompt(slug, manifest, reroll, n_character_refs)`. The builder leads with hard rules (refs 1-N are the SAME woman, torso squared to camera, mic in front of her, holding closed product label-out, real-photo realism, no vignette / circle crop / soft-edge oval), then layers the scene (room/outfit/lighting/camera). Don't author a prompt by hand — use the builder.
 
 Do NOT change the model, aspect ratio, resolution, reference-image order, or the prompt-builder hard rules without explicit user direction.
 

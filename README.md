@@ -76,7 +76,7 @@ https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b
 | `characters/` | Per-channel character refs + pinned voice (the host identity) |
 | `amazon-product-page-scraper/` | Chrome extension — scrapes Amazon product pages into manifests |
 | `products/` | Per-product folders — manifest + all generated media (gitignored) |
-| `hedra-vid-gen/` | Hedra API client — starting-image + avatar-video generation |
+| `hedra/` | Hedra API client — starting-image + avatar-video generation |
 | `narration/` | ElevenLabs TTS generation |
 | `captioning/` | WhisperX transcription + word-level caption renderer + style presets |
 | `music/` | Background music library (`<adjective>-<animal>.mp3`) |

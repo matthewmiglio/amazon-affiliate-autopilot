@@ -30,7 +30,7 @@ def api_key() -> str:
     load_dotenv(ROOT / ".env")
     key = os.getenv("HEDRA_API_KEY")
     if not key:
-        sys.exit("HEDRA_API_KEY missing in hedra-vid-gen/.env")
+        sys.exit("HEDRA_API_KEY missing in hedra/.env")
     return key
 
 

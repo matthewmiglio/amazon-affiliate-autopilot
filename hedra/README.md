@@ -1,10 +1,10 @@
-# hedra-vid-gen
+# hedra
 
 Hedra Platform API tools for the Amazon affiliate pipeline. Two subfolders,
 one shared `.env` / `pyproject.toml` / `_common.py` at the top.
 
 ```
-hedra-vid-gen/
+hedra/
 ├── .env                  # HEDRA_API_KEY + a few model/asset pins (see below)
 ├── pyproject.toml
 ├── poetry.lock
@@ -20,7 +20,7 @@ hedra-vid-gen/
 ## Setup
 
 ```
-cd hedra-vid-gen
+cd hedra
 poetry install --no-root
 ```
 
@@ -43,7 +43,7 @@ during QA are excluded.
 ## avatar-video — talking-head video
 
 ```
-cd hedra-vid-gen
+cd hedra
 poetry run python avatar-video/generate.py --products <slug>
 poetry run python avatar-video/generate.py --all-needing
 poetry run python avatar-video/generate.py --products <slug> --overwrite
@@ -61,7 +61,7 @@ Idempotent — existing `raw-speaker-video.mp4` is never re-rendered without `--
 ## starting-image — composed UGC starting frame
 
 ```
-cd hedra-vid-gen
+cd hedra
 poetry run python starting-image/generate.py --products <slug>
 poetry run python starting-image/generate.py --all-needing
 poetry run python starting-image/generate.py --all-needing --workers 4    # default; 1 = serial
