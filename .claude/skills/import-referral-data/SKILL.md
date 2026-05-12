@@ -86,6 +86,14 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
         "destination_url": "",
         "board": ""
       }
+    },
+    "x": {
+      "uploaded": false,
+      "url": "",
+      "metadata": {
+        "text": "",
+        "destination_url": ""
+      }
     }
   }
 }
