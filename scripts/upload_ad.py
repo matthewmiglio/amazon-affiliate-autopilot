@@ -33,9 +33,10 @@ UPLOADERS: dict[str, Path] = {
     "instagram": ROOT / "uploader" / "meta"      / "upload_instagram.py",
     "facebook":  ROOT / "uploader" / "meta"      / "upload_facebook.py",
     "pinterest": ROOT / "uploader" / "pinterest" / "upload.py",
+    "x":         ROOT / "uploader" / "x"         / "upload.py",
 }
 
-PLATFORMS = ("youtube", "instagram", "facebook", "pinterest")
+PLATFORMS = ("youtube", "instagram", "facebook", "pinterest", "x")
 
 FINAL_VIDEO_NAME = "final-with-music.mp4"
 
@@ -229,11 +230,24 @@ def _gen_pinterest(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     ])
 
 
+def _gen_x(manifest: OrderedDict, slug: str = "") -> OrderedDict:
+    i = _info(manifest, slug)
+    # X tweets carry the affiliate link inline in the body (no separate URL
+    # field like Pinterest). Pre-fill destination_url from the affiliate link
+    # so the eventual uploader can build the tweet text without re-reading
+    # item-auxiliary-information.
+    return OrderedDict([
+        ("text", ""),
+        ("destination_url", i["link"]),
+    ])
+
+
 _GENERATORS = {
     "youtube":   _gen_youtube,
     "instagram": _gen_instagram,
     "facebook":  _gen_facebook,
     "pinterest": _gen_pinterest,
+    "x":         _gen_x,
 }
 
 
@@ -248,7 +262,7 @@ def get_platform_block(manifest: OrderedDict, platform: str) -> dict:
 def ensure_platform_metadata(manifest: OrderedDict, slug: str, platform: str, regen: bool) -> tuple[OrderedDict, bool]:
     block = get_platform_block(manifest, platform)
     metadata = block.get("metadata") or {}
-    has_content = bool(metadata.get("title") or metadata.get("caption"))
+    has_content = bool(metadata.get("title") or metadata.get("caption") or metadata.get("text"))
     if has_content and not regen:
         return manifest, False
     new_meta = _GENERATORS[platform](manifest, slug)
@@ -275,6 +289,7 @@ _URL_PATTERNS = {
     "instagram": r"uploaded\s*->\s*(https://\S+)",
     "facebook":  r"uploaded\s*->\s*(https://\S+)",
     "pinterest": r"uploaded\s*->\s*(https://\S+)",
+    "x":         r"uploaded\s*->\s*(https://x\.com/\S+)",
 }
 
 

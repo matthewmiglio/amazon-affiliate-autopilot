@@ -50,6 +50,7 @@ def row_for(product_dir: Path) -> dict | None:
         "insta-up": up("instagram"),
         "fb-up":    up("facebook"),
         "pint-up":  up("pinterest"),
+        "x-up":     up("x"),
     }
 
 
@@ -68,6 +69,7 @@ COL_HEADERS = {
     "insta-up": "insta-up",
     "fb-up": "fb-up",
     "pint-up": "pint-up",
+    "x-up": "x-up",
 }
 
 
@@ -99,7 +101,7 @@ def print_matrix(rows: list[dict]) -> None:
         "stitched-narration-video",  # step 6: clean audio swapped in
         "captioned-video",           # step 7: captions burned in
         "final-with-music",          # step 8: bg music mixed
-        "yt-up", "insta-up", "fb-up", "pint-up",  # step 9: per-platform upload
+        "yt-up", "insta-up", "fb-up", "pint-up", "x-up",  # step 9: per-platform upload
     ]
     headers = [COL_HEADERS.get(c, c) for c in cols]
     display = [{**r, "item": (r["item"][:27] + "...") if len(r["item"]) > 30 else r["item"]}
@@ -135,6 +137,7 @@ NEEDS_FLAGS = {
     "needs-insta-upload": "insta-up",
     "needs-fb-upload":    "fb-up",
     "needs-pint-upload":  "pint-up",
+    "needs-x-upload":     "x-up",
 }
 
 
@@ -187,7 +190,7 @@ def main() -> int:
         progress_cols = [
             "script", "narration-audio", "starting-pic", "video-prompt",
             "raw-speaker-video", "stitched-narration-video", "captioned-video",
-            "final-with-music", "yt-up", "insta-up", "fb-up", "pint-up",
+            "final-with-music", "yt-up", "insta-up", "fb-up", "pint-up", "x-up",
         ]
         rows.sort(key=lambda r: -sum(1 for c in progress_cols if r.get(c) == "yes"))
         print_matrix(rows)
