@@ -33,8 +33,8 @@ Authoritative ordering lives in [`.claude/skills/PIPELINE.md`](.claude/skills/PI
 <table>
   <tr>
     <td align="center" width="33%"><img width="220" alt="Character refs" src="https://github.com/user-attachments/assets/2901efcc-9d07-41c1-baf3-c7bf02eeef79" /><br/><sub><b>1. Character refs</b><br/>Pin a host face + voice per channel under <code>characters/&lt;channel&gt;/</code> — same identity across every Short.</sub></td>
-    <td align="center" width="33%"><img width="220" alt="Amazon scraper" src="https://github.com/user-attachments/assets/5a0ae8f4-49dd-4a10-9fc4-863b468c718b" /><br/><sub><b>2. Scrape Amazon</b><br/><code>extensions/amazon-product-page-scraper/</code> Chrome ext pulls link + details + main image into a Downloads dump.</sub></td>
-    <td align="center" width="33%"><sub><b>3. Import scraped data</b><br/><code>/import-referral-data</code><br/>Converts the scrape dump into <code>products/&lt;slug&gt;/manifest.json</code>. Filters &lt;10% commission, dedupes by ASIN.</sub></td>
+    <td align="center" width="33%"><img width="220" alt="Scraped product image" src="https://github.com/user-attachments/assets/f2511824-5d75-49fd-a36a-58042e2453a9" /><br/><sub><b>2. Scrape Amazon</b><br/><code>extensions/amazon-product-page-scraper/</code> Chrome ext pulls link + details + main image into a Downloads dump.</sub></td>
+    <td align="center" width="33%"><img width="220" alt="Scraped product folder" src="https://github.com/user-attachments/assets/40b91b20-fdf4-4593-8cf2-7197d21dd6c3" /><br/><sub><b>3. Import scraped data</b><br/><code>/import-referral-data</code><br/>Converts the scrape dump into <code>products/&lt;slug&gt;/manifest.json</code>. Filters &lt;10% commission, dedupes by ASIN.</sub></td>
   </tr>
 </table>
 
