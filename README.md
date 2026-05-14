@@ -26,57 +26,47 @@ Examples of starting frames across different products.
 
 ## Pipeline
 
-Authoritative ordering lives in [`.claude/skills/PIPELINE.md`](.claude/skills/PIPELINE.md).
+Authoritative ordering lives in [`.claude/skills/PIPELINE.md`](.claude/skills/PIPELINE.md). Twelve stages, grouped into four phases.
 
-### 1. Character refs
-Pin a host face + voice per channel — `characters/<channel>/`. See "The Character" above.
+### Asset gathering
 
-### 2. Scrape Amazon — `extensions/amazon-product-page-scraper/` (Chrome ext)
-Pulls link + product details + main image from an Amazon product page into a Downloads dump.
+<table>
+  <tr>
+    <td align="center" width="33%"><img width="220" alt="Character refs" src="https://github.com/user-attachments/assets/2901efcc-9d07-41c1-baf3-c7bf02eeef79" /><br/><sub><b>1. Character refs</b><br/>Pin a host face + voice per channel under <code>characters/&lt;channel&gt;/</code> — same identity across every Short.</sub></td>
+    <td align="center" width="33%"><img width="220" alt="Amazon scraper" src="https://github.com/user-attachments/assets/5a0ae8f4-49dd-4a10-9fc4-863b468c718b" /><br/><sub><b>2. Scrape Amazon</b><br/><code>extensions/amazon-product-page-scraper/</code> Chrome ext pulls link + details + main image into a Downloads dump.</sub></td>
+    <td align="center" width="33%"><sub><b>3. Import scraped data</b><br/><code>/import-referral-data</code><br/>Converts the scrape dump into <code>products/&lt;slug&gt;/manifest.json</code>. Filters &lt;10% commission, dedupes by ASIN.</sub></td>
+  </tr>
+</table>
 
-<img width="200" src="https://github.com/user-attachments/assets/5a0ae8f4-49dd-4a10-9fc4-863b468c718b" />
+### Scripting
 
-### 3. Import scraped data — `/import-referral-data`
-Converts the scrape dump into `products/<slug>/manifest.json`. Filters anything below 10% commission and dedupes by ASIN.
+<table>
+  <tr>
+    <td align="center" width="33%"><sub><b>4. Video-gen prompt</b><br/><code>/generate-video-prompt</code><br/>Authors the image-to-video animation prompt and writes it to <code>manifest["video-prompt"]</code>.</sub></td>
+    <td align="center" width="33%"><sub><b>5. Narration script</b><br/><code>/write-script</code><br/>15–20s podcast-tone voiceover into <code>script-raw-text</code>.<br/><br/><i>"Listen, your cleanser matters way more than people give it credit for…"</i></sub></td>
+    <td align="center" width="33%"><sub><b>6. Narration audio</b><br/><code>/generate-narration</code><br/>ElevenLabs TTS with the channel voice pinned per character.</sub></td>
+  </tr>
+</table>
 
-### 4. Video-gen prompt — `/generate-video-prompt`
-Authors the image-to-video animation prompt and writes it to `manifest["video-prompt"]`.
+### Video generation
 
-### 5. Narration script — `/write-script`
-15–20s podcast-tone voiceover, written into `script-raw-text` in the manifest.
+<table>
+  <tr>
+    <td align="center" width="33%"><img width="220" alt="Starting frame" src="https://github.com/user-attachments/assets/7a4e8a47-a587-4ad3-b42e-67df9b13f9e4" /><br/><sub><b>7. Starting frame</b><br/><code>/generate-starting-image</code><br/>Hedra image-gen → 9:16 lifestyle composite of the host holding the product.</sub></td>
+    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf">▶ raw-speaker-video.mp4</a><br/><sub><b>8. UGC talking head</b><br/><code>/generate-hedra-video</code><br/>Starting image + narration → Hedra Avatar. Audio baked low-quality — fixed next step.</sub></td>
+    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb">▶ stitched-narration.mp4</a><br/><sub><b>9. Audio restitch</b><br/><code>/stitch-narration</code> (ffmpeg)<br/>Swap Hedra's baked audio for the clean local ElevenLabs mp3.</sub></td>
+  </tr>
+</table>
 
-> "Listen, your cleanser matters way more than people give it credit for. The Clé de Peau Beauté Clarifying Cleansing Foam — made in Japan, built around their Skin Intelligence research that's been their signature for over forty years. Clears the day off without that tight, stripped feeling. An affordable luxury, honestly. Tap the link to grab it on Amazon."
+### Post-production & distribution
 
-### 6. Narration audio — `/generate-narration`
-ElevenLabs TTS with the channel voice pinned per character.
-
-### 7. Starting frame — `/generate-starting-image`
-Hedra image-gen produces a 9:16 lifestyle composite with the host holding the product.
-
-<img width="240" src="https://github.com/user-attachments/assets/7a4e8a47-a587-4ad3-b42e-67df9b13f9e4" />
-
-### 8. UGC talking head — `/generate-hedra-video`
-Starting image + narration → Hedra Avatar. Audio is baked into the mp4 at low quality at this stage — that's fixed in the next step.
-
-https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf
-
-### 9. Audio restitch — `/stitch-narration` (ffmpeg)
-Swap Hedra's baked audio for the clean local ElevenLabs mp3.
-
-https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb
-
-### 10. Captions — `/caption-video`
-WhisperX word-level transcription + auto-picked style preset, scored against the background.
-
-https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f
-
-### 11. Background music — `/overlay-music`
-Ducked random track from the `music/` library, with fade-in / fade-out under the narration.
-
-https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b
-
-### 12. Upload — `/upload-ad`
-Pushes `final-with-music.mp4` to every configured platform, generates per-platform metadata, and writes the resulting URL back to `manifest["uploads"][platform]`. Each platform's metadata + URL is tracked independently, so re-running is safe — already-uploaded targets skip. Today YouTube and X are live; Meta (Instagram/Facebook) and Pinterest run through the same flow but with platform-specific uploader scripts under `uploader/`.
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f">▶ captioned-video.mp4</a><br/><sub><b>10. Captions</b><br/><code>/caption-video</code><br/>WhisperX word-level transcription + auto-picked style preset, scored against the background.</sub></td>
+    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b">▶ final-with-music.mp4</a><br/><sub><b>11. Background music</b><br/><code>/overlay-music</code><br/>Ducked random track from <code>music/</code>, fade-in / fade-out under the narration.</sub></td>
+    <td align="center" width="33%"><img width="220" alt="Multi-platform upload" src="https://github.com/user-attachments/assets/b6553d79-0be6-467d-bd13-6b63948ac638" /><br/><sub><b>12. Upload</b><br/><code>/upload-ad</code><br/>Pushes the final mp4 to every configured platform, generates per-platform metadata, writes URLs back to <code>manifest["uploads"]</code>. YouTube + X live; Meta + Pinterest in progress.</sub></td>
+  </tr>
+</table>
 
 Supporting skill: `/import-music` — ingest local mp4 recordings into the `music/` library that stage 11 picks from.
 
