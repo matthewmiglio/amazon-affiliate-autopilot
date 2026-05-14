@@ -105,11 +105,13 @@ One product, four platforms — picked from `products/amika-aura-hair-and-body-m
 
 What the same product looks like once it lands on each social platform:
 
-<p align="center">
-  <img width="300" alt="Instagram post" src="https://github.com/user-attachments/assets/b6553d79-0be6-467d-bd13-6b63948ac638" />
-  <img width="300" alt="Facebook post" src="https://github.com/user-attachments/assets/77d634a8-e957-496b-8dd4-abc96b62d7d7" />
-  <img width="240" alt="X post" src="https://github.com/user-attachments/assets/1a760835-923a-42fc-a746-bbe1ea6c0945" />
-</p>
+<table>
+  <tr>
+    <td align="center"><img width="280" alt="Instagram post" src="https://github.com/user-attachments/assets/b6553d79-0be6-467d-bd13-6b63948ac638" /><br/><sub><b>Instagram</b></sub></td>
+    <td align="center"><img width="280" alt="Facebook post" src="https://github.com/user-attachments/assets/77d634a8-e957-496b-8dd4-abc96b62d7d7" /><br/><sub><b>Facebook</b></sub></td>
+    <td align="center"><img width="280" alt="X post" src="https://github.com/user-attachments/assets/1a760835-923a-42fc-a746-bbe1ea6c0945" /><br/><sub><b>X</b></sub></td>
+  </tr>
+</table>
 
 ## Layout
 
