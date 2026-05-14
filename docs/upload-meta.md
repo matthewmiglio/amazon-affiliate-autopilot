@@ -32,9 +32,9 @@ This phase is mostly waiting; start it before writing any code.
 
 ### Day 2+ — Pending
 
-- [ ] **Create a Facebook Page** for theluxedrawer (category: Shopping & Retail / Product/Service)
-- [ ] **Link IG ↔ Page** via business.facebook.com (Meta Business Suite → Linked accounts → Instagram → Connect)
-- [ ] **Set up Meta Business Manager** (Business Suite onboarding)
+- [x] **Create a Facebook Page** for theluxedrawer (category: Shopping & Retail / Product/Service)
+- [x] **Link IG ↔ Page** via business.facebook.com (Meta Business Suite → Linked accounts → Instagram → Connect)
+- [x] **Set up Meta Business Manager** (Business Suite onboarding)
 - [ ] **Create the Meta Developer App** at `developers.facebook.com`
   - [ ] Type: **Business**
   - [ ] Add product: **Instagram Graph API**
