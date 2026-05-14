@@ -53,8 +53,8 @@ Authoritative ordering lives in [`.claude/skills/PIPELINE.md`](.claude/skills/PI
 <table>
   <tr>
     <td align="center" width="33%"><img width="220" alt="Starting frame" src="https://github.com/user-attachments/assets/7a4e8a47-a587-4ad3-b42e-67df9b13f9e4" /><br/><sub><b>7. Starting frame</b><br/><code>/generate-starting-image</code><br/>Hedra image-gen → 9:16 lifestyle composite of the host holding the product.</sub></td>
-    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf">▶ raw-speaker-video.mp4</a><br/><sub><b>8. UGC talking head</b><br/><code>/generate-hedra-video</code><br/>Starting image + narration → Hedra Avatar. Audio baked low-quality — fixed next step.</sub></td>
-    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb">▶ stitched-narration.mp4</a><br/><sub><b>9. Audio restitch</b><br/><code>/stitch-narration</code> (ffmpeg)<br/>Swap Hedra's baked audio for the clean local ElevenLabs mp3.</sub></td>
+    <td align="center" width="33%"><video src="https://github.com/user-attachments/assets/b076a779-15fd-453d-8c82-2605f3636edf" width="220" controls muted></video><br/><sub><b>8. UGC talking head</b><br/><code>/generate-hedra-video</code><br/>Starting image + narration → Hedra Avatar. Audio baked low-quality — fixed next step.</sub></td>
+    <td align="center" width="33%"><video src="https://github.com/user-attachments/assets/cb38d493-fcb4-45cc-9e56-34ed0720e2cb" width="220" controls muted></video><br/><sub><b>9. Audio restitch</b><br/><code>/stitch-narration</code> (ffmpeg)<br/>Swap Hedra's baked audio for the clean local ElevenLabs mp3.</sub></td>
   </tr>
 </table>
 
@@ -62,8 +62,8 @@ Authoritative ordering lives in [`.claude/skills/PIPELINE.md`](.claude/skills/PI
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f">▶ captioned-video.mp4</a><br/><sub><b>10. Captions</b><br/><code>/caption-video</code><br/>WhisperX word-level transcription + auto-picked style preset, scored against the background.</sub></td>
-    <td align="center" width="33%"><a href="https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b">▶ final-with-music.mp4</a><br/><sub><b>11. Background music</b><br/><code>/overlay-music</code><br/>Ducked random track from <code>music/</code>, fade-in / fade-out under the narration.</sub></td>
+    <td align="center" width="33%"><video src="https://github.com/user-attachments/assets/c4a164fa-5b65-4566-b7ac-f2c248588c6f" width="220" controls muted></video><br/><sub><b>10. Captions</b><br/><code>/caption-video</code><br/>WhisperX word-level transcription + auto-picked style preset, scored against the background.</sub></td>
+    <td align="center" width="33%"><video src="https://github.com/user-attachments/assets/7f6f7bad-c77b-4862-b18d-eb6d94c1bd3b" width="220" controls muted></video><br/><sub><b>11. Background music</b><br/><code>/overlay-music</code><br/>Ducked random track from <code>music/</code>, fade-in / fade-out under the narration.</sub></td>
     <td align="center" width="33%"><img width="220" alt="Multi-platform upload" src="https://github.com/user-attachments/assets/b6553d79-0be6-467d-bd13-6b63948ac638" /><br/><sub><b>12. Upload</b><br/><code>/upload-ad</code><br/>Pushes the final mp4 to every configured platform, generates per-platform metadata, writes URLs back to <code>manifest["uploads"]</code>. YouTube + X live; Meta + Pinterest in progress.</sub></td>
   </tr>
 </table>
