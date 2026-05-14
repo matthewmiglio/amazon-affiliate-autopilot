@@ -9,9 +9,9 @@ Each pipeline stage is a slash-command skill — idempotent, manifest-driven, an
 A pinned character folder defines the host. Same face, same voice across every Short.
 
 <p align="center">
-  <img width="240" alt="Host pose 1" src="https://github.com/user-attachments/assets/2901efcc-9d07-41c1-baf3-c7bf02eeef79" />
-  <img width="240" alt="Host pose 2" src="https://github.com/user-attachments/assets/6203d864-c59a-4319-8dd6-3976c00ab58d" />
-  <img width="240" alt="Host pose 3" src="https://github.com/user-attachments/assets/7cc1e1a5-75ad-420d-a51f-42c7d1dd3a5a" />
+  <img width="240" alt="Host pose 1" src="https://github.com/user-attachments/assets/584dd08a-7946-48f7-9818-4d0783c72d5d" />
+  <img width="240" alt="Host pose 2" src="https://github.com/user-attachments/assets/cf70e254-5141-43f6-b327-652cc3afff30" />
+  <img width="240" alt="Host pose 3" src="https://github.com/user-attachments/assets/89671cef-ba2f-4e90-9df6-c64d38acd819" />
 </p>
 
 ## Lifestyle Frames
@@ -32,7 +32,7 @@ Authoritative ordering lives in [`.claude/skills/PIPELINE.md`](.claude/skills/PI
 
 <table>
   <tr>
-    <td align="center" width="33%"><img width="220" alt="Character refs" src="https://github.com/user-attachments/assets/2901efcc-9d07-41c1-baf3-c7bf02eeef79" /><br/><sub><b>1. Character refs</b><br/>Pin a host face + voice per channel under <code>characters/&lt;channel&gt;/</code> — same identity across every Short.</sub></td>
+    <td align="center" width="33%"><img width="220" alt="Character refs" src="https://github.com/user-attachments/assets/584dd08a-7946-48f7-9818-4d0783c72d5d" /><br/><sub><b>1. Character refs</b><br/>Pin a host face + voice per channel under <code>characters/&lt;channel&gt;/</code> — same identity across every Short.</sub></td>
     <td align="center" width="33%"><img width="220" alt="Scraped product image" src="https://github.com/user-attachments/assets/f2511824-5d75-49fd-a36a-58042e2453a9" /><br/><sub><b>2. Scrape Amazon</b><br/><code>extensions/amazon-product-page-scraper/</code> Chrome ext pulls link + details + main image into a Downloads dump.</sub></td>
     <td align="center" width="33%"><img width="220" alt="Scraped product folder" src="https://github.com/user-attachments/assets/40b91b20-fdf4-4593-8cf2-7197d21dd6c3" /><br/><sub><b>3. Import scraped data</b><br/><code>/import-referral-data</code><br/>Converts the scrape dump into <code>products/&lt;slug&gt;/manifest.json</code>. Filters &lt;10% commission, dedupes by ASIN.</sub></td>
   </tr>
