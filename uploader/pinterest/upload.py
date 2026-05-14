@@ -36,7 +36,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 import requests
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
 
 try:
     from dotenv import load_dotenv
@@ -49,11 +49,11 @@ PRODUCTS = HERE.parent.parent / "products"
 TOKEN_FILE = HERE / "token.json"
 HISTORY_FILE = HERE / "history.json"
 
-API_BASE = "https://api.pinterest.com/v5"
+API_BASE = "https://api-sandbox.pinterest.com/v5"
 OAUTH_AUTHORIZE = "https://www.pinterest.com/oauth/"
 OAUTH_TOKEN = f"{API_BASE}/oauth/token"
 
-SCOPES = "pins:read,pins:write,boards:read,user_accounts:read"
+SCOPES = "pins:read,pins:write,boards:read,boards:write,user_accounts:read"
 REDIRECT_URI = "http://localhost:8085/"
 PIN_IMAGE_NAME = "starting-pic.png"
 
@@ -95,7 +95,9 @@ def app_credentials() -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 
 def do_auth() -> None:
+    print("[auth] loading app credentials from .env...", flush=True)
     cid, sec = app_credentials()
+    print(f"[auth] app_id={cid} secret={'*' * 4}{sec[-4:]}", flush=True)
 
     params = {
         "client_id": cid,
@@ -105,29 +107,43 @@ def do_auth() -> None:
     }
     auth_url = f"{OAUTH_AUTHORIZE}?{urlencode(params)}"
 
-    print("\n" + "=" * 70)
-    print("PASTE THIS URL INTO A BROWSER WHERE YOU'RE LOGGED INTO PINTEREST:")
-    print(auth_url)
-    print("=" * 70 + "\n")
-    print("(Make sure http://localhost:8085/ is registered as a redirect URI on the app.)\n")
+    print("\n" + "=" * 70, flush=True)
+    print("PASTE THIS URL INTO A BROWSER WHERE YOU'RE LOGGED INTO PINTEREST:", flush=True)
+    print(auth_url, flush=True)
+    print("=" * 70 + "\n", flush=True)
+    print("(Make sure http://localhost:8085/ is registered as a redirect URI on the app.)\n", flush=True)
 
     code_holder: list[str] = []
+    error_holder: list[str] = []
 
     class _Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             qs = parse_qs(urlparse(self.path).query)
+            print(f"[auth] callback hit: path={self.path}", flush=True)
             code_holder.extend(qs.get("code", []))
+            error_holder.extend(qs.get("error", []))
+            error_holder.extend(qs.get("error_description", []))
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"<h2>Auth complete. You can close this tab.</h2>")
-        def log_message(self, *a):
-            pass
+        def log_message(self, fmt, *a):
+            print(f"[auth][http] {fmt % a}", flush=True)
 
-    server = HTTPServer(("localhost", 8085), _Handler)
+    print("[auth] binding HTTP server on http://localhost:8085/ (waiting for browser callback)...", flush=True)
+    try:
+        server = HTTPServer(("localhost", 8085), _Handler)
+    except OSError as e:
+        sys.exit(f"[auth] could not bind localhost:8085 — {e}. Is something else using the port?")
+    print("[auth] server ready. Open the URL above in your browser now.", flush=True)
     server.handle_request()
+    print("[auth] callback handled.", flush=True)
+    if error_holder:
+        sys.exit(f"[auth] Pinterest returned error: {' | '.join(error_holder)}")
     if not code_holder:
-        sys.exit("No auth code received.")
+        sys.exit("[auth] No auth code received (callback had no ?code=).")
+    print(f"[auth] got auth code: {code_holder[0][:8]}...", flush=True)
 
+    print("[auth] exchanging code for token...", flush=True)
     basic = base64.b64encode(f"{cid}:{sec}".encode()).decode()
     resp = requests.post(
         OAUTH_TOKEN,
@@ -139,6 +155,7 @@ def do_auth() -> None:
         },
         timeout=30,
     )
+    print(f"[auth] token endpoint -> HTTP {resp.status_code}", flush=True)
     if resp.status_code != 200:
         sys.exit(f"Token exchange failed: {resp.status_code} {resp.text}")
     tok = resp.json()
@@ -198,10 +215,66 @@ def auth_headers() -> dict:
 # Pinterest API
 # ---------------------------------------------------------------------------
 
-def list_boards() -> list[dict]:
-    resp = requests.get(f"{API_BASE}/boards", headers=auth_headers(), timeout=30)
+def list_boards(verbose: bool = False) -> list[dict]:
+    """Paginate through /boards. Sandbox sometimes serves an empty first page;
+    we follow `bookmark` until exhausted. Set verbose=True to dump raw payloads."""
+    items: list[dict] = []
+    params: dict[str, str] = {"page_size": "250"}
+    page = 0
+    while True:
+        page += 1
+        resp = requests.get(f"{API_BASE}/boards", headers=auth_headers(),
+                            params=params, timeout=30)
+        if verbose:
+            print(f"[boards] page={page} url={resp.url} -> HTTP {resp.status_code}", flush=True)
+        resp.raise_for_status()
+        payload = resp.json()
+        if verbose:
+            print(f"[boards] payload keys={list(payload.keys())} "
+                  f"items={len(payload.get('items') or [])} "
+                  f"bookmark={payload.get('bookmark')!r}", flush=True)
+            if not payload.get("items"):
+                print(f"[boards] raw: {json.dumps(payload)[:400]}", flush=True)
+        items.extend(payload.get("items") or [])
+        bookmark = payload.get("bookmark")
+        if not bookmark:
+            break
+        params["bookmark"] = bookmark
+        if page > 20:
+            break
+    return items
+
+
+def get_board(board_id: str) -> dict:
+    resp = requests.get(f"{API_BASE}/boards/{board_id}", headers=auth_headers(), timeout=30)
+    if resp.status_code != 200:
+        raise RuntimeError(f"Get board failed: {resp.status_code} {resp.text}")
+    return resp.json()
+
+
+def delete_board(board_id: str) -> None:
+    resp = requests.delete(f"{API_BASE}/boards/{board_id}", headers=auth_headers(), timeout=30)
+    if resp.status_code not in (200, 204):
+        raise RuntimeError(f"Delete board failed: {resp.status_code} {resp.text}")
+
+
+def get_user_account() -> dict:
+    resp = requests.get(f"{API_BASE}/user_account", headers=auth_headers(), timeout=30)
     resp.raise_for_status()
-    return resp.json().get("items", [])
+    return resp.json()
+
+
+def create_board(name: str, description: str = "", privacy: str = "PUBLIC") -> dict:
+    body = {"name": name, "description": description, "privacy": privacy}
+    resp = requests.post(
+        f"{API_BASE}/boards",
+        headers={**auth_headers(), "Content-Type": "application/json"},
+        data=json.dumps(body),
+        timeout=30,
+    )
+    if resp.status_code not in (200, 201):
+        raise RuntimeError(f"Create board failed: {resp.status_code} {resp.text}")
+    return resp.json()
 
 
 def create_pin(board_id: str, title: str, description: str, link: str, image_path: Path) -> dict:
@@ -312,10 +385,11 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
 # CLI helpers
 # ---------------------------------------------------------------------------
 
-def cmd_boards() -> None:
-    boards = list_boards()
+def cmd_boards(verbose: bool = False) -> None:
+    boards = list_boards(verbose=verbose)
+    print(f"[boards] API_BASE={API_BASE}", flush=True)
     if not boards:
-        print("No boards. Create one at https://www.pinterest.com/")
+        print("No boards. Create one with: python upload.py create-board --name \"Name\"")
         return
     print(f"{'id':<22}{'name':<40}privacy")
     for b in boards:
@@ -347,12 +421,15 @@ def cmd_list() -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("target", nargs="?", help='product slug, "auth", or "boards"')
-    ap.add_argument("--board", help="override board_id for this upload")
+    ap.add_argument("target", nargs="?",
+                    help='product slug, "auth", "boards", "create-board", "delete-board", "get-board", or "whoami"')
+    ap.add_argument("--board", help="override board_id for upload; or target id for delete-board/get-board")
+    ap.add_argument("--name", help='board name (for "create-board")')
     ap.add_argument("--list", action="store_true", help="print status table")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="ignore history (re-pin)")
     ap.add_argument("-y", "--yes", action="store_true")
+    ap.add_argument("-v", "--verbose", action="store_true", help="dump raw API responses")
     args = ap.parse_args()
 
     if args.list:
@@ -362,7 +439,29 @@ def main() -> None:
         do_auth()
         return
     if args.target == "boards":
-        cmd_boards()
+        cmd_boards(verbose=args.verbose)
+        return
+    if args.target == "whoami":
+        print(json.dumps(get_user_account(), indent=2))
+        return
+    if args.target == "get-board":
+        if not args.board:
+            ap.error("get-board requires --board <id>")
+        print(json.dumps(get_board(args.board), indent=2))
+        return
+    if args.target == "delete-board":
+        if not args.board:
+            ap.error("delete-board requires --board <id>")
+        delete_board(args.board)
+        print(f"deleted board {args.board}")
+        return
+    if args.target == "create-board":
+        if not args.name:
+            ap.error("create-board requires --name")
+        b = create_board(args.name)
+        print(f"created board: id={b.get('id')}  name={b.get('name')}  privacy={b.get('privacy')}")
+        if args.verbose:
+            print(f"[create-board] full response: {json.dumps(b, indent=2)}")
         return
     if not args.target:
         ap.error('pass a product slug, "auth", "boards", or "--list"')

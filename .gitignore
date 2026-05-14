@@ -16,6 +16,7 @@ uploader/channels.json
 uploader/*/tokens/
 uploader/*/channels.json
 uploader/*/history.json
+uploader/pinterest/record-script.md
 docs/website-analytics-plan.md
 
 # OS / editor

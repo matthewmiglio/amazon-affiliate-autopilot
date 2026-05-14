@@ -219,14 +219,26 @@ def _gen_facebook(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     return OrderedDict([("caption", ""), ("hashtags", [])])
 
 
+PINTEREST_DEFAULT_BOARD_ID = "650911021084140332"  # Luxe Beauty Finds
+
+
 def _gen_pinterest(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     i = _info(manifest, slug)
     site_link = f"{WEBSITE_URL}/p/{slug}" if slug else WEBSITE_URL
+    title_raw = short_tagline(i["brand"], i["product"]) or "Amazon find"
+    title = title_raw[:97] + "..." if len(title_raw) > 100 else title_raw
+    desc_parts = []
+    if i["script"]:
+        desc_parts.append(i["script"].strip())
+    elif i["product"]:
+        desc_parts.append(f"{i['brand'] + ' ' if i['brand'] else ''}{i['product']}.")
+    desc_parts.append(f"Shop: {site_link}")
+    description = "\n\n".join(p for p in desc_parts if p)[:500]
     return OrderedDict([
-        ("title", ""),
-        ("description", ""),
-        ("destination_url", site_link),
-        ("board", ""),
+        ("title", title),
+        ("description", description),
+        ("link", site_link),
+        ("board_id", PINTEREST_DEFAULT_BOARD_ID),
     ])
 
 
