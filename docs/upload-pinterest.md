@@ -12,13 +12,13 @@ Plan for the Pinterest video-pin uploader. Pinterest is the highest-ROI affiliat
 
 External setup that must happen before any code runs. None of this is blocked by anything else; do it first so the rest can move.
 
-- [x] Convert Pinterest account to **Business** (Content creator, Beauty focus, username `theluxedrawer`)
-- [x] Profile filled in (name "Soft Luxe Daily", disclosure in About, she/her, avatar)
+- [x] Convert Pinterest account to **Business** (Content creator, Beauty focus, brand handle)
+- [x] Profile filled in (display name, disclosure in About, she/her, avatar)
 - [x] Create at least one **board per niche** (boards created)
 - [x] Public privacy policy hosted (GitHub gist — see `docs/pinterest-privacy-policy.md` for source)
-- [x] Register an app at `developers.pinterest.com` — **App ID: `1568898`** ("Soft Luxe Daily uploader")
+- [x] Register an app at `developers.pinterest.com` (App ID held in `uploader/pinterest/.env` — not committed)
 - [x] Add redirect URI `http://localhost:8085/` to the app
-- [~] Capture `client_id` + `client_secret` — `client_id=1568898` captured; `client_secret` **gated behind "Trial access pending"** (Pinterest review, usually hours to ~2 days)
+- [~] Capture `client_id` + `client_secret` — `client_id` captured; `client_secret` **gated behind "Trial access pending"** (Pinterest review, usually hours to ~2 days)
 - [ ] Confirm required scopes are checked: `boards:read`, `pins:read`, `pins:write`, `user_accounts:read` (gated until trial access approved)
 
 ---
@@ -135,7 +135,7 @@ As an Amazon Associate I earn from qualifying purchases. #affiliate
 
 - [ ] OAuth flow runs end-to-end, `tokens/user_token.json` populated
 - [ ] `boards.json` covers every `category` value present in `products/*/manifest.json`
-- [ ] Manual `python uploader/pinterest/upload.py <test-slug>` — confirm pin appears on the right board, video plays, click goes to Amazon with our tracking ID preserved (`tag=theluxedrawer-20`)
+- [ ] Manual `python uploader/pinterest/upload.py <test-slug>` — confirm pin appears on the right board, video plays, click goes to Amazon with our tracking ID preserved (`tag=<associates-tracking-id>`)
 - [ ] `/upload-ad <slug>` end-to-end — confirm `uploads.pinterest.uploaded=true` + URL written to manifest
 - [ ] `python scripts/status.py --matrix` — confirm `pint-up` column reflects state
 

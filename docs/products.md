@@ -2,7 +2,7 @@
 
 Affiliate products collected via SiteStripe. Always verify the SiteStripe header shows `Category: Luxury Stores Beauty` and `Commission rate: 10.00%` before adding here for the hero category.
 
-Tracking ID: `theluxedrawer-20`
+Tracking ID: `<associates-tracking-id>`
 
 ---
 

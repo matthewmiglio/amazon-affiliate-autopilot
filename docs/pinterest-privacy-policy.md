@@ -1,11 +1,11 @@
-Privacy Policy — Soft Luxe Daily Uploader
+Privacy Policy — Channel Uploader
 
 Last updated: 2026-05-08
 
 This application is for personal use only and is operated by a single
-individual (matmigg0804@gmail.com). It accesses Pinterest only on behalf
-of the account owner (theluxedrawer) for the purpose of publishing video
-pins via the Pinterest API v5.
+individual (contact email withheld from repo). It accesses Pinterest only on
+behalf of the account owner for the purpose of publishing video pins via the
+Pinterest API v5.
 
 Data collected
 - OAuth access tokens issued by Pinterest, stored locally on the
@@ -26,4 +26,6 @@ User rights
   and may delete it at any time.
 
 Contact
-- matmigg0804@gmail.com
+- Contact email withheld from this repo for privacy. The live, hosted
+  version of this policy (linked from the Pinterest developer app
+  metadata) lists a real reachable address.

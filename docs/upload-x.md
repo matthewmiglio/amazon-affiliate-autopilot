@@ -14,9 +14,9 @@ External setup that must happen before any code runs. None of this is blocked; d
 
 ### Account warm-up (done / in progress)
 
-- [x] `@theluxedrawer` X account created, email + phone verified
-- [x] Profile bio set (per Option A draft — covers automation disclosure + `#ad` + `theluxedrawer.com`)
-- [x] Profile website field set to `https://theluxedrawer.com`
+- [x] Brand-handle X account created, email + phone verified
+- [x] Profile bio set (per Option A draft — covers automation disclosure + `#ad` + brand domain)
+- [x] Profile website field set to the brand domain
 - [x] Followed ~niche accounts to seed the timeline
 - [~] **Organic warm-up tweets** — drip-posting 2–3/day across 3–5 days before flipping on automation, to avoid day-one bot pattern-match. Day 1 in progress (2 scheduled, 3 h apart, 1 already live). 10 + 10 = 20 candidate tweets drafted in chat history if more needed.
 - [x] Bio includes automation disclosure (X policy requirement for automated accounts)
@@ -30,7 +30,7 @@ External setup that must happen before any code runs. None of this is blocked; d
   - Type: **Web App, Automated App or Bot**
   - App permissions: **Read and write** (media uploads + tweet creation)
   - Callback URI: `http://localhost:8086/` (8086 to avoid colliding with Pinterest's 8085)
-  - Website URL: `https://theluxedrawer.com`
+  - Website URL: the brand domain
 - [ ] Capture **API Key**, **API Key Secret**, **Client ID**, **Client Secret** from the app's Keys & Tokens tab — store in `uploader/x/.env` as `X_API_KEY`, `X_API_KEY_SECRET`, `X_CLIENT_ID`, `X_CLIENT_SECRET` (NOT committed)
 - [ ] Confirm required OAuth 2.0 scopes are checked: `tweet.read`, `tweet.write`, `users.read`, `media.write`, `offline.access` (last one is required to get a refresh token)
 - [ ] **Read the Automation Rules** — already satisfied via the bio disclosure above, but re-read at portal time in case policy shifted.
@@ -59,7 +59,7 @@ Mirrors `youtube_auth.py` / planned `pinterest_auth.py`. X requires **OAuth 2.0 
 - [x] Persist `tokens/user_token.json`: `{ access_token, refresh_token, expires_at, scope, token_type }`
 - [x] `get_access_token()` auto-refreshes when `expires_at - 120s` has passed (refresh-token grant)
 - [x] CLI: `python uploader/x/upload.py auth` runs PKCE flow; `whoami` calls `/2/users/me` to verify
-- [x] **Verified end-to-end on 2026-05-12:** authorized as `@theluxedrawer` (id 2054210727318073344), token saved, `whoami` returns the right user. `X_AUTH_NO_BROWSER=1` env var added so the URL is printed instead of auto-opening (lets you paste into the right browser session when default browser is signed into a different account).
+- [x] **Verified end-to-end on 2026-05-12:** authorized as the brand handle (user id stored in token JSON), token saved, `whoami` returns the right user. `X_AUTH_NO_BROWSER=1` env var added so the URL is printed instead of auto-opening (lets you paste into the right browser session when default browser is signed into a different account).
 
 > **Note on OAuth 1.0a fallback:** the legacy `media/upload` endpoint historically required OAuth 1.0a, but the v2 `POST /2/media/upload` endpoint (GA 2025) accepts OAuth 2.0 user-context. Use v2 throughout; only fall back to 1.0a if a future endpoint we need doesn't support 2.0.
 
@@ -136,7 +136,7 @@ Total: ~180 chars, leaves margin for variance.
 
 - [ ] OAuth flow runs end-to-end, `tokens/user_token.json` populated
 - [ ] Token auto-refresh exercised (manually expire access_token, confirm uploader transparently refreshes)
-- [ ] Manual `python uploader/x/upload.py <test-slug>` — confirm tweet appears, video plays inline, the t.co link resolves to Amazon with `tag=theluxedrawer-20` preserved
+- [ ] Manual `python uploader/x/upload.py <test-slug>` — confirm tweet appears, video plays inline, the t.co link resolves to Amazon with `tag=<associates-tracking-id>` preserved
 - [ ] `/upload-ad <slug>` end-to-end — confirm `uploads.x.uploaded=true` + URL written to manifest
 - [ ] `python scripts/status.py --matrix` — confirm `x-up` column reflects state
 - [ ] Spot-check the **X Analytics** view (`x.com/i/analytics`) shows impressions for the test tweet within 1 hour
@@ -182,7 +182,7 @@ python uploader/x/upload.py <product-slug> -y
 2. Read `products/<slug>/final-with-music.mp4`
 3. Read `manifest["uploads"]["x"]["metadata"]`
 4. INIT → APPEND → FINALIZE → STATUS poll → POST /2/tweets
-5. Print `uploaded -> https://x.com/theluxedrawer/status/<id>` on success
+5. Print `uploaded -> https://x.com/<username>/status/<id>` on success
 6. Non-zero exit + stderr JSON on failure
 
 ## Rate limits & idempotency

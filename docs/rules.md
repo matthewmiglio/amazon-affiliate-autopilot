@@ -44,7 +44,7 @@ The rules that keep the channel alive. Breaking any of the **HARD RULES** can te
 
 14. **Only link to Amazon.com product pages, storefronts, or Idea Lists** via your tracking ID. Don't redirect affiliate clicks to non-Amazon destinations.
 
-15. **One Associate ID per property.** Use `theluxedrawer-20` only for the TheLuxeDrawer channel. If you launch other channels/sites, list them in your account or create separate tracking IDs.
+15. **One Associate ID per property.** Use `<associates-tracking-id>` only for this channel. If you launch other channels/sites, list them in your account or create separate tracking IDs.
 
 ### YouTube
 
