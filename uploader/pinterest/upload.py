@@ -49,13 +49,14 @@ PRODUCTS = HERE.parent.parent / "products"
 TOKEN_FILE = HERE / "token.json"
 HISTORY_FILE = HERE / "history.json"
 
-API_BASE = "https://api-sandbox.pinterest.com/v5"
+API_BASE = os.environ.get("PINTEREST_API_BASE", "https://api.pinterest.com/v5")
 OAUTH_AUTHORIZE = "https://www.pinterest.com/oauth/"
 OAUTH_TOKEN = f"{API_BASE}/oauth/token"
 
 SCOPES = "pins:read,pins:write,boards:read,boards:write,user_accounts:read"
 REDIRECT_URI = "http://localhost:8085/"
 PIN_IMAGE_NAME = "starting-pic.png"
+PIN_VIDEO_NAME = "final-with-music.mp4"
 
 
 # ---------------------------------------------------------------------------
@@ -195,6 +196,9 @@ def refresh_access_token() -> str:
 
 
 def access_token() -> str:
+    env_tok = os.environ.get("PINTEREST_ACCESS_TOKEN")
+    if env_tok:
+        return env_tok
     tok = load_token()
     if not tok:
         sys.exit("No token. Run: python upload.py auth")
@@ -277,6 +281,75 @@ def create_board(name: str, description: str = "", privacy: str = "PUBLIC") -> d
     return resp.json()
 
 
+def register_media() -> dict:
+    resp = requests.post(
+        f"{API_BASE}/media",
+        headers={**auth_headers(), "Content-Type": "application/json"},
+        data=json.dumps({"media_type": "video"}),
+        timeout=30,
+    )
+    if resp.status_code not in (200, 201):
+        raise RuntimeError(f"Register media failed: {resp.status_code} {resp.text}")
+    return resp.json()
+
+
+def upload_video_bytes(reg: dict, video_path: Path) -> None:
+    upload_url = reg["upload_url"]
+    params = reg.get("upload_parameters") or {}
+    with video_path.open("rb") as f:
+        # S3 wants fields ordered, file last
+        fields = [(k, (None, v)) for k, v in params.items()]
+        fields.append(("file", (video_path.name, f, "video/mp4")))
+        resp = requests.post(upload_url, files=fields, timeout=600)
+    if resp.status_code not in (200, 201, 204):
+        raise RuntimeError(f"Upload bytes failed: {resp.status_code} {resp.text[:500]}")
+
+
+def poll_media(media_id: str, timeout_s: int = 600, interval_s: int = 5) -> dict:
+    import time
+    start = time.time()
+    last = None
+    while time.time() - start < timeout_s:
+        resp = requests.get(f"{API_BASE}/media/{media_id}", headers=auth_headers(), timeout=30)
+        resp.raise_for_status()
+        last = resp.json()
+        status = (last.get("status") or "").lower()
+        print(f"  [media] {media_id} status={status}", flush=True)
+        if status == "succeeded":
+            return last
+        if status == "failed":
+            raise RuntimeError(f"Media processing failed: {last}")
+        time.sleep(interval_s)
+    raise RuntimeError(f"Media processing timed out after {timeout_s}s, last={last}")
+
+
+def create_video_pin(board_id: str, title: str, description: str, link: str,
+                     media_id: str, cover_path: Path) -> dict:
+    with cover_path.open("rb") as f:
+        cover_b64 = base64.b64encode(f.read()).decode()
+    body = {
+        "board_id": board_id,
+        "title": title[:100],
+        "description": description[:500],
+        "link": link,
+        "media_source": {
+            "source_type": "video_id",
+            "media_id": media_id,
+            "cover_image_content_type": "image/png",
+            "cover_image_data": cover_b64,
+        },
+    }
+    resp = requests.post(
+        f"{API_BASE}/pins",
+        headers={**auth_headers(), "Content-Type": "application/json"},
+        data=json.dumps(body),
+        timeout=120,
+    )
+    if resp.status_code not in (200, 201):
+        raise RuntimeError(f"Create video pin failed: {resp.status_code} {resp.text}")
+    return resp.json()
+
+
 def create_pin(board_id: str, title: str, description: str, link: str, image_path: Path) -> dict:
     with image_path.open("rb") as f:
         b64 = base64.b64encode(f.read()).decode()
@@ -341,9 +414,11 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
         return None
 
     image_path = PRODUCTS / slug / PIN_IMAGE_NAME
+    video_path = PRODUCTS / slug / PIN_VIDEO_NAME
     if not image_path.exists():
-        print(f"  [skip] {slug}: image not found at {image_path}")
+        print(f"  [skip] {slug}: cover image not found at {image_path}")
         return None
+    use_video = video_path.exists()
 
     history = load_history()
     if not force and slug in history:
@@ -353,7 +428,10 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
 
     print(f"\n{slug}")
     print(f"  board:       {board_id}")
-    print(f"  image:       {image_path.name} ({image_path.stat().st_size // 1024} KB)")
+    print(f"  mode:        {'video' if use_video else 'image'}")
+    if use_video:
+        print(f"  video:       {video_path.name} ({video_path.stat().st_size // 1024} KB)")
+    print(f"  cover:       {image_path.name} ({image_path.stat().st_size // 1024} KB)")
     print(f"  title:       {title}")
     print(f"  description: {description[:80] + ('...' if len(description) > 80 else '')}")
     print(f"  link:        {link}")
@@ -365,10 +443,19 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
         if input("  upload? [y/N] ").strip().lower() != "y":
             return None
 
-    pin = create_pin(board_id, title, description, link, image_path)
+    if use_video:
+        reg = register_media()
+        media_id = reg["media_id"]
+        print(f"  [media] registered media_id={media_id}", flush=True)
+        upload_video_bytes(reg, video_path)
+        print(f"  [media] bytes uploaded; polling status...", flush=True)
+        poll_media(media_id)
+        pin = create_video_pin(board_id, title, description, link, media_id, image_path)
+    else:
+        pin = create_pin(board_id, title, description, link, image_path)
     pin_id = pin.get("id")
     pin_url = f"https://www.pinterest.com/pin/{pin_id}/" if pin_id else None
-    print(f"  pinned -> {pin_url}")
+    print(f"uploaded -> {pin_url}")
 
     history[slug] = {
         "pin_id": pin_id,

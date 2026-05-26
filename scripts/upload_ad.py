@@ -219,7 +219,7 @@ def _gen_facebook(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     return OrderedDict([("caption", ""), ("hashtags", [])])
 
 
-PINTEREST_DEFAULT_BOARD_ID = "650911021084140332"  # Luxe Beauty Finds
+PINTEREST_DEFAULT_BOARD_ID = "650911021084144474"  # Luxe Beauty (prod)
 
 
 def _gen_pinterest(manifest: OrderedDict, slug: str = "") -> OrderedDict:
