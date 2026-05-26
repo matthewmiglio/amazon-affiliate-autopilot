@@ -58,19 +58,18 @@ PRODUCT_IMAGE_CANDIDATES = ["product.png", "product.jpg", "product.jpeg", "produ
 CHARACTER_REF_COUNT = 3
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 
-# Whitelist of face-anchor character refs — the empirically-strongest set.
-# Curated from QA: each one of these landed in outputs that the user verified
-# matched her face. Refs that appeared in "not her" / "close-but-off" outputs
-# (white-pantsuit-power-pose, champagne-slip-head-tilted-dreamy,
-# smoky-eyes-extreme-closeup, cream-slip-three-quarter-soft) are intentionally
-# excluded — they're still her, but their pose / camera / framing confuses
-# the I2I model and drags consistency down.
+# Whitelist of face-anchor character refs — survivors of the
+# similar-character-testing batch ranking (avg score >= 7 over 40 rated gens).
+# Losers were moved to assets/character-archived/. See
+# tests/similar-character-testing/ratings.json for the source data.
 FACE_ANCHOR_REFS = {
-    "cable-knit-mug-laughing-warm",
-    "laughing-white-tee-daylight",
-    "lavender-sweater-whisper-pink",
-    "cream-sweater-knees-up-contemplative",
-    "crouched-tank-shorts-looking-up",
+    "cream-sweater-knees-up-contemplative",   # 10.00
+    "fireplace-loungewear-reading-glance",    # 10.00
+    "crouched-tank-shorts-looking-up",        # 9.20
+    "overhead-bed-tank-eyes-closed",          # 8.40
+    "pink-sweater-chin-on-hand",              # 7.75
+    "bed-reading-white-shirt-candid",         # 7.71
+    "laughing-white-tee-daylight",            # 7.20
 }
 
 # Nano Banana Pro I2I — image-to-image variant. Strong multi-reference
