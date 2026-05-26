@@ -17,7 +17,7 @@ uploader/*/tokens/
 uploader/*/channels.json
 uploader/*/history.json
 uploader/pinterest/record-script.md
-docs/website-analytics-plan.md
+docs/
 
 # OS / editor
 .DS_Store
@@ -61,3 +61,4 @@ hyperframes/scripts/update_plans.py
 hedra-starting-image-benchmarking/
 same-face-benchmarking/
 test-pinned-comment/
+tests/
