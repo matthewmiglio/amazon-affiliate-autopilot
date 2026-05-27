@@ -25,7 +25,8 @@ If the user provides nothing, ask once. Don't guess.
 ## Workflow
 
 1. **Resolve the product folder.**
-2. **Delegate to `scripts/upload_ad.py`.**
+2. **Author Pinterest metadata BEFORE delegating.** See `## Pinterest metadata (agent-authored)` below — you (the agent) must write `uploads.pinterest.metadata` directly into the manifest with `title`, `description`, `alt_text`, `category`, `link`. The script's templated fallback exists only for cron paths that skip /upload-ad; if you let it fire here, you're shipping weak SEO copy.
+3. **Delegate to `scripts/upload_ad.py`.**
    ```
    python scripts/upload_ad.py --product <slug-or-path>
    ```
@@ -48,6 +49,50 @@ If the user provides nothing, ask once. Don't guess.
 | `true` | — | SKIP (unless `--overwrite`) |
 | `false` / missing | yes | uploader runs, manifest updated on success |
 | `false` / missing | no  | SKIP with `"not implemented"` |
+
+## Pinterest metadata (agent-authored)
+
+Pinterest is a **search engine**, not a follow-feed. Distribution is driven by keyword match in title + description + alt_text, plus board topic relevance. Write copy for Pinterest *search*, not for ears.
+
+Before running `scripts/upload_ad.py`, write `manifest["uploads"]["pinterest"]["metadata"]` with these five fields. The uploader will use them verbatim and resolve `board_id` from `category` automatically (auto-creating the board if it doesn't exist yet — see `uploader/pinterest/boards.json`).
+
+```json
+{
+  "title":       "<≤100 chars, keyword-first>",
+  "description": "<≤500 chars, keyword lead, then narrative, then 3-5 hashtags>",
+  "alt_text":    "<≤500 chars, describe the image for visual search>",
+  "category":    "<one of: skincare | makeup | fragrance | haircare | jewelry | clothing | home | beauty>",
+  "link":        "https://theluxedrawer.com/p/<slug>"
+}
+```
+
+### Title guidelines
+- **Lead with the searchable keywords**, not the brand. Pinterest weights the first ~40 chars most.
+- Pattern: `<Search Phrase> — <Brand> <Product Short>` or `<Benefit/Use Case> <Product Type>: <Brand>`.
+- Bad (current templated output): `Cle De Peau Clarifying Cleansing Foam for Women`
+- Good: `Luxury Japanese Foaming Cleanser for Glowy Skin — Cle de Peau`
+- Good: `Best Anti-Aging Eye Cream for Dark Circles: Cle de Peau Supreme`
+- ≤100 chars, no emojis, Title Case.
+
+### Description guidelines
+- **First sentence is keyword-dense**, not conversational. "Listen, your cleanser matters…" is *terrible* opening copy for Pinterest. Save the narrative voice for sentence two onward.
+- Structure: `[keyword lead, ~80 chars] [narrative body, can reuse parts of script-raw-text] [Shop: <link>] [3-5 hashtags]`
+- Example opening: `Luxury Japanese foaming cleanser for sensitive, glowy skin. Made by Cle de Peau Beauté in Japan — built around their Skin Intelligence research…`
+- End with 3-5 relevant hashtags on their own line: `#skincareroutine #luxuryskincare #amazonfinds #jbeauty #skintok`
+- ≤500 chars total.
+
+### alt_text guidelines
+- Describe **what's in the image** so Pinterest's visual search can match it.
+- Pattern: `<Brand> <Product> — <image scene>. <Category context>.`
+- Example: `Cle de Peau Clarifying Cleansing Foam bottle held by a woman in a soft-lit bathroom. Luxury Japanese skincare from Amazon.`
+- ≤500 chars.
+
+### Category guidelines
+- Pick the single lowercase keyword that best buckets the product. The uploader maps it to a board (creating `Luxe Skincare`, `Luxe Makeup`, etc. on first miss).
+- Use the product's `item-auxiliary-information.category` as a hint, but normalize to one of: `skincare`, `makeup`, `fragrance`, `haircare`, `jewelry`, `clothing`, `home`, `beauty`.
+
+### `--regen-meta`
+If the user asks to rewrite Pinterest copy for a product that already has metadata, you (the agent) author a fresh `uploads.pinterest.metadata` block following the rules above, save the manifest, then run `scripts/upload_ad.py --product <slug>` (no `--regen-meta` needed — your block is already there). `--regen-meta` only invokes the templated fallback and should NOT be used for Pinterest.
 
 ## Hashtag bank
 

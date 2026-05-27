@@ -16,6 +16,7 @@ uploader/channels.json
 uploader/*/tokens/
 uploader/*/channels.json
 uploader/*/history.json
+uploader/*/boards.json
 uploader/pinterest/record-script.md
 docs/
 

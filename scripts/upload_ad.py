@@ -219,26 +219,38 @@ def _gen_facebook(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     return OrderedDict([("caption", ""), ("hashtags", [])])
 
 
-PINTEREST_DEFAULT_BOARD_ID = "650911021084144474"  # Luxe Beauty (prod)
-
-
 def _gen_pinterest(manifest: OrderedDict, slug: str = "") -> OrderedDict:
+    """Templated fallback for Pinterest metadata.
+
+    Prefer agent-authored metadata (see .claude/skills/upload-ad/SKILL.md
+    "Pinterest metadata" section): the agent writes title/description/alt_text/
+    category directly into the manifest before this fallback ever fires. This
+    function only runs when /upload-ad was skipped (e.g. cron sees a slug with
+    no metadata at all). board_id is intentionally omitted — the uploader
+    resolves it from `category` at post time via resolve_board().
+    """
     i = _info(manifest, slug)
     site_link = f"{WEBSITE_URL}/p/{slug}" if slug else WEBSITE_URL
     title_raw = short_tagline(i["brand"], i["product"]) or "Amazon find"
     title = title_raw[:97] + "..." if len(title_raw) > 100 else title_raw
+    hashtags = pick_hashtags(i["category"], max_chars_for_tags=120)
     desc_parts = []
+    if i["product"]:
+        lead = f"{i['brand'] + ' ' if i['brand'] else ''}{i['product']}"
+        desc_parts.append(lead)
     if i["script"]:
         desc_parts.append(i["script"].strip())
-    elif i["product"]:
-        desc_parts.append(f"{i['brand'] + ' ' if i['brand'] else ''}{i['product']}.")
     desc_parts.append(f"Shop: {site_link}")
+    if hashtags:
+        desc_parts.append(" ".join(hashtags))
     description = "\n\n".join(p for p in desc_parts if p)[:500]
+    alt_text = (f"{i['brand']} {i['product']}".strip() or "Amazon find")[:500]
     return OrderedDict([
         ("title", title),
         ("description", description),
+        ("alt_text", alt_text),
+        ("category", i["category"] or "beauty"),
         ("link", site_link),
-        ("board_id", PINTEREST_DEFAULT_BOARD_ID),
     ])
 
 

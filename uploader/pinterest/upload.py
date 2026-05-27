@@ -48,6 +48,7 @@ HERE = Path(__file__).resolve().parent
 PRODUCTS = HERE.parent.parent / "products"
 TOKEN_FILE = HERE / "token.json"
 HISTORY_FILE = HERE / "history.json"
+BOARDS_FILE = HERE / "boards.json"
 
 API_BASE = os.environ.get("PINTEREST_API_BASE", "https://api.pinterest.com/v5")
 OAUTH_AUTHORIZE = "https://www.pinterest.com/oauth/"
@@ -324,7 +325,7 @@ def poll_media(media_id: str, timeout_s: int = 600, interval_s: int = 5) -> dict
 
 
 def create_video_pin(board_id: str, title: str, description: str, link: str,
-                     media_id: str, cover_path: Path) -> dict:
+                     media_id: str, cover_path: Path, alt_text: str = "") -> dict:
     with cover_path.open("rb") as f:
         cover_b64 = base64.b64encode(f.read()).decode()
     body = {
@@ -339,6 +340,8 @@ def create_video_pin(board_id: str, title: str, description: str, link: str,
             "cover_image_data": cover_b64,
         },
     }
+    if alt_text:
+        body["alt_text"] = alt_text[:500]
     resp = requests.post(
         f"{API_BASE}/pins",
         headers={**auth_headers(), "Content-Type": "application/json"},
@@ -350,7 +353,7 @@ def create_video_pin(board_id: str, title: str, description: str, link: str,
     return resp.json()
 
 
-def create_pin(board_id: str, title: str, description: str, link: str, image_path: Path) -> dict:
+def create_pin(board_id: str, title: str, description: str, link: str, image_path: Path, alt_text: str = "") -> dict:
     with image_path.open("rb") as f:
         b64 = base64.b64encode(f.read()).decode()
 
@@ -365,6 +368,8 @@ def create_pin(board_id: str, title: str, description: str, link: str, image_pat
             "data": b64,
         },
     }
+    if alt_text:
+        body["alt_text"] = alt_text[:500]
     resp = requests.post(
         f"{API_BASE}/pins",
         headers={**auth_headers(), "Content-Type": "application/json"},
@@ -379,6 +384,50 @@ def create_pin(board_id: str, title: str, description: str, link: str, image_pat
 # ---------------------------------------------------------------------------
 # Upload flow
 # ---------------------------------------------------------------------------
+
+def _load_boards_map() -> dict:
+    if BOARDS_FILE.exists():
+        try:
+            return json.loads(BOARDS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_boards_map(m: dict) -> None:
+    BOARDS_FILE.write_text(json.dumps(m, indent=2), encoding="utf-8")
+
+
+BOARD_NAME_PREFIX = os.environ.get("PINTEREST_BOARD_PREFIX", "Luxe")
+
+
+def resolve_board(category: str) -> str:
+    """Return a board_id for the given category, creating the board if missing.
+
+    Categories are normalized to lowercase single-word keys (e.g. "skincare").
+    Unknown categories fall back to "beauty"."""
+    key = (category or "").strip().lower() or "beauty"
+    # Collapse common multi-word categories down to a primary bucket.
+    for bucket in ("skincare", "makeup", "fragrance", "haircare", "jewelry",
+                   "clothing", "apparel", "home"):
+        if bucket in key:
+            key = bucket
+            break
+    boards = _load_boards_map()
+    if key in boards and boards[key]:
+        return boards[key]
+    pretty = key.replace("-", " ").title()
+    name = f"{BOARD_NAME_PREFIX} {pretty}".strip()
+    print(f"  [board] no board for category '{key}', creating '{name}'...", flush=True)
+    b = create_board(name=name, description=f"Curated {pretty.lower()} finds from Amazon.")
+    bid = b.get("id")
+    if not bid:
+        raise RuntimeError(f"create_board returned no id: {b!r}")
+    boards[key] = bid
+    _save_boards_map(boards)
+    print(f"  [board] created {name} -> {bid}", flush=True)
+    return bid
+
 
 def manifest_path(slug: str) -> Path:
     return PRODUCTS / slug / "manifest.json"
@@ -400,6 +449,8 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
     meta = ((manifest.get("uploads") or {}).get("pinterest") or {}).get("metadata") or {}
     title = meta.get("title")
     description = meta.get("description", "")
+    alt_text = meta.get("alt_text", "")
+    category = meta.get("category", "") or (manifest.get("item-auxiliary-information") or {}).get("category", "")
     link = meta.get("link") or manifest.get("affiliate-link") or manifest.get("amazon-link")
     board_id = board_override or meta.get("board_id")
 
@@ -410,8 +461,17 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
         print(f"  [skip] {slug}: no affiliate link in manifest")
         return None
     if not board_id:
-        print(f"  [skip] {slug}: no board_id (set uploads.pinterest.metadata.board_id or pass --board)")
-        return None
+        try:
+            board_id = resolve_board(category)
+        except Exception as e:
+            print(f"  [skip] {slug}: no board_id and auto-create failed: {e}")
+            return None
+        # Persist the resolved board_id back to the manifest so future runs are stable.
+        meta["board_id"] = board_id
+        manifest.setdefault("uploads", {}).setdefault("pinterest", {})["metadata"] = meta
+        manifest_path(slug).write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
 
     image_path = PRODUCTS / slug / PIN_IMAGE_NAME
     video_path = PRODUCTS / slug / PIN_VIDEO_NAME
@@ -434,6 +494,8 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
     print(f"  cover:       {image_path.name} ({image_path.stat().st_size // 1024} KB)")
     print(f"  title:       {title}")
     print(f"  description: {description[:80] + ('...' if len(description) > 80 else '')}")
+    if alt_text:
+        print(f"  alt_text:    {alt_text[:80] + ('...' if len(alt_text) > 80 else '')}")
     print(f"  link:        {link}")
 
     if dry_run:
@@ -450,9 +512,9 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
         upload_video_bytes(reg, video_path)
         print(f"  [media] bytes uploaded; polling status...", flush=True)
         poll_media(media_id)
-        pin = create_video_pin(board_id, title, description, link, media_id, image_path)
+        pin = create_video_pin(board_id, title, description, link, media_id, image_path, alt_text=alt_text)
     else:
-        pin = create_pin(board_id, title, description, link, image_path)
+        pin = create_pin(board_id, title, description, link, image_path, alt_text=alt_text)
     pin_id = pin.get("id")
     pin_url = f"https://www.pinterest.com/pin/{pin_id}/" if pin_id else None
     print(f"uploaded -> {pin_url}")
