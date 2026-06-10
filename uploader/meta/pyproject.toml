@@ -1,0 +1,9 @@
+[project]
+name = "meta-uploader"
+version = "0.1.0"
+description = "Soft Luxe Daily — Instagram Reels + Facebook Reels uploader via Meta Graph API."
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+]

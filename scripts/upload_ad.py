@@ -211,12 +211,52 @@ def _gen_youtube(manifest: OrderedDict, slug: str = "") -> OrderedDict:
     ])
 
 
+def _build_meta_caption(i: dict, hashtags: list[str]) -> str:
+    """Shared IG + FB caption builder.
+
+    Template (per upload-meta.md Phase 7):
+        {title-or-tagline}
+
+        {narration first sentence}
+
+        🛒 {affiliate_url}
+
+        As an Amazon Associate I earn from qualifying purchases. #ad
+
+        {hashtags}
+    """
+    tagline = short_tagline(i["brand"], i["product"])
+    site_link = f"{WEBSITE_URL}/p/{i['slug']}" if i["slug"] else WEBSITE_URL
+    link = i["link"] or site_link
+    script = (i["script"] or "").strip()
+    hook = re.split(r"(?<=[.!?])\s+", script, maxsplit=1)[0] if script else ""
+
+    parts = [tagline]
+    if hook and hook.lower() != tagline.lower():
+        parts.append(hook)
+    parts.append(f"🛒 {link}")
+    parts.append("As an Amazon Associate I earn from qualifying purchases. #ad")
+    if hashtags:
+        parts.append(" ".join(hashtags))
+    return "\n\n".join(parts).strip()
+
+
 def _gen_instagram(manifest: OrderedDict, slug: str = "") -> OrderedDict:
-    return OrderedDict([("caption", ""), ("hashtags", [])])
+    i = _info(manifest, slug)
+    hashtags = pick_hashtags(i["category"], max_chars_for_tags=200)[:5]
+    return OrderedDict([
+        ("caption", _build_meta_caption(i, hashtags)),
+        ("hashtags", hashtags),
+    ])
 
 
 def _gen_facebook(manifest: OrderedDict, slug: str = "") -> OrderedDict:
-    return OrderedDict([("caption", ""), ("hashtags", [])])
+    i = _info(manifest, slug)
+    hashtags = pick_hashtags(i["category"], max_chars_for_tags=200)[:5]
+    return OrderedDict([
+        ("caption", _build_meta_caption(i, hashtags)),
+        ("hashtags", hashtags),
+    ])
 
 
 def _gen_pinterest(manifest: OrderedDict, slug: str = "") -> OrderedDict:
