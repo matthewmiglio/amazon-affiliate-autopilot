@@ -85,8 +85,8 @@ def request(method: str, path: str, *,
             break
         time.sleep(RETRY_BACKOFF ** attempt)
 
-    detail = (last_resp.text or "")[:600] if last_resp else ""
-    code = last_resp.status_code if last_resp else "?"
+    detail = (last_resp.text or "")[:600] if last_resp is not None else ""
+    code = last_resp.status_code if last_resp is not None else "?"
     _log_history({"method": method, "url": url, "status": code, "error": detail})
     raise RuntimeError(f"Graph API {method} {path} -> HTTP {code}: {detail}")
 

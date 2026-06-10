@@ -10,6 +10,50 @@ Plan for the Instagram Reels + Facebook Reels uploaders. Both share Meta's Graph
 
 ---
 
+## CURRENT STATUS (2026-06-10): API access blocked
+
+Code is complete and tested locally. **Every Graph API call from our app is rejected by Meta** with:
+
+```
+HTTP 400: {"error":{"message":"API access blocked.","type":"OAuthException","code":200, ...}}
+```
+
+This holds even for `/me` (zero-permission identity call), so it's not a Reels or permissions issue. The system-user token Meta issued is real but Meta is gating the entire app at the platform level.
+
+### What works
+- `/upload-ad concealer-spf-27` runs end-to-end through our orchestrator
+- YouTube / Pinterest / X SKIP (already uploaded earlier)
+- IG + FB both FAIL with `API access blocked` (error code 200) on the very first call (FB phase-1 `/video_reels?upload_phase=start`, IG `/media?media_type=REELS&upload_type=resumable`)
+
+### What we've ruled out
+- ❌ Reels-specific gate (also blocks `/me`)
+- ❌ Permission missing (the token has all 6 scopes we requested)
+- ❌ Code bug (we hit the same error directly from `curl`/`urllib` bypassing our wrapper)
+- ❌ Token format / expired (Meta-issued never-expiring system-user token, all 6 scopes confirmed in BM)
+- ❌ Asset assignment (system user has Page + IG + App as assets, Full control on each, plus Administrator role in the dev portal App Roles page)
+
+### Likely root cause (most → least likely)
+1. **Business portfolio is unverified.** `theluxedrawer` showed `(Unverified business)` during setup. Meta restricts Graph API access for unverified businesses regardless of permissions. To fix: complete **business verification** at `business.facebook.com/settings/info` — requires real business documents (registration, tax ID), which conflicts with the alias strategy.
+2. **App is in Development mode (Unpublished).** System-user tokens are *supposed* to bypass dev-mode restrictions but in practice Meta often gates all Graph API until the app is Live. Going Live requires App Review approval for `instagram_content_publish` + `pages_manage_posts` (3-7 day wait, screencast demo, possible business verification ambush).
+3. **Missing required app metadata.** App Settings → Basic still has empty Privacy Policy URL, Terms of Service URL, App icon (1024x1024), Data Deletion URL. Meta sometimes blocks Graph API when these are missing, especially for write-action permissions.
+
+### Next-session diagnostic checklist
+Take screenshots of these so we know exactly which gate is the wall:
+
+- `business.facebook.com/settings/info` → business verification status / banner
+- `developers.facebook.com/apps/26908915385424703/dashboard/` → Use Mode toggle (Development vs Live), required-action banners, Alert Inbox
+- `developers.facebook.com/apps/26908915385424703/app-review/permissions/` → current Access level for each permission (Standard vs Advanced)
+
+### What was committed before the block was discovered
+- `uploader/meta/` module (`meta_auth.py`, `graph_client.py`, `upload_facebook.py`, `upload_instagram.py`) — code is correct, deployed, tested locally up to the API boundary
+- `uploader/meta/tokens/system_user_token.json` — never-expiring system-user token (rotated previously). Currently NON-FUNCTIONAL against Meta.
+- `data/tags_mapping.json` + `/generate-upload-metadata` skill — metadata authoring path is decoupled from the upload path, so improvements there land independently of the Meta block.
+
+### Hold pattern
+**Don't burn more upload attempts.** Each failed Graph API call adds to Meta's "this app looks broken" signal, which can escalate to outright app suspension. Code is verified-correct via direct HTTP; the wall is Meta-side and we have to clear it via UI / business verification / App Review before any more retries.
+
+---
+
 ## Phase 0 — Manual prerequisites + App Review (start immediately)
 
 This phase is mostly waiting; start it before writing any code.
