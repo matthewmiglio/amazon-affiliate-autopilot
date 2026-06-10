@@ -27,7 +27,11 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 
 ```json
 {
-  "starting-pic-path": "",
+  "starting-image": {
+    "path": "starting-pic.png",
+    "generated": false,
+    "source-images": []
+  },
   "narration-audio-path": "",
   "raw-speaker-video-path": "",
   "stitched-narration-video-path": "",
@@ -99,7 +103,7 @@ This matches the existing `assets/products/<x>/manifest.json` shape used elsewhe
 }
 ```
 
-- `starting-pic-path`, `narration-audio-path`, `raw-speaker-video-path`, `stitched-narration-video-path`, and `captioned-video-path` stay empty — those get filled in by downstream skills (starting-pic generation, Hedra TTS, the AI video gen output, `/stitch-narration`, and `/caption-video` respectively).
+- `starting-image` starts with `generated: false`, `source-images: []`. `narration-audio-path`, `raw-speaker-video-path`, `stitched-narration-video-path`, and `captioned-video-path` stay empty. These get filled in by downstream skills (starting-pic generation, Hedra TTS, the AI video gen output, `/stitch-narration`, and `/caption-video` respectively).
 - `script-raw-text` and `video-prompt` stay empty — narration and the Hedra video prompt are authored later.
 - `background-music-track` stays empty — populated by `/overlay-music` once a track is mixed in.
 - `category` is inferred from brand + product name. Reasonable buckets: skincare/makeup, fragrance, makeup, jewelry, beauty (fallback).

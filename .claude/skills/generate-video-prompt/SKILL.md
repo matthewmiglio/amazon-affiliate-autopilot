@@ -1,7 +1,7 @@
 ---
 name: generate-video-prompt
 description: |
-  Author the AI video-gen prompt that animates a product's existing starting-pic into a 15–20 second talking-head UGC ad clip aligned with its narration script. Reads the product folder's `manifest.json` (specifically `script-raw-text` and `starting-pic-path`), produces one concise prompt suitable for a Sora-class image-to-video tool, and writes it back to `manifest.json` under the `video-prompt` key. Use when the user runs `/generate-video-prompt`, says "write a video prompt for X", "draft the video animation prompt", or supplies a product folder and asks for the next-stage video prompt.
+  Author the AI video-gen prompt that animates a product's existing starting-pic into a 15-20 second talking-head UGC ad clip aligned with its narration script. Reads the product folder's `manifest.json` (specifically `script-raw-text` and `starting-image.path`), produces one concise prompt suitable for a Sora-class image-to-video tool, and writes it back to `manifest.json` under the `video-prompt` key. Use when the user runs `/generate-video-prompt`, says "write a video prompt for X", "draft the video animation prompt", or supplies a product folder and asks for the next-stage video prompt.
 allowed-tools: Read, Glob, Bash, Edit, Write
 ---
 
@@ -22,7 +22,7 @@ When invoked, look for / ask for:
    - a bare slug — resolve under `products/` first; if not found, try `assets/products/`
 2. **Optional gesture override** — the user can pass a one-line gesture cue ("she taps the cap on the punchline") that the skill folds into the gesture beats.
 
-Verify the folder exists and contains both `manifest.json` and the file referenced by its `starting-pic-path`. If `script-raw-text` is empty or `starting-pic-path` is missing/blank/nonexistent, stop and ask the user — don't fabricate.
+Verify the folder exists and contains both `manifest.json` and the file referenced by its `starting-image.path`. If `script-raw-text` is empty or `starting-image.path` is missing/blank/nonexistent, stop and ask the user, don't fabricate.
 
 ## HARD RULES (carry forward from /generate-starting-image)
 
@@ -74,7 +74,7 @@ Keep it under ~120 words. One paragraph. No extra preamble, no caption copy, no 
 ## Workflow
 
 1. Resolve the product folder. Read `manifest.json`.
-2. Pull `script-raw-text` (string) and `starting-pic-path` (relative file in the folder). Validate both — non-empty + image file exists. If either fails, tell the user what's missing and stop.
+2. Pull `script-raw-text` (string) and `starting-image.path` (relative file in the folder). Validate both: non-empty + image file exists. If either fails, tell the user what's missing and stop.
 3. Pull the product description from `item-auxiliary-information` (`brand`, `product`, `category`) so the prompt can name the product naturally (e.g. "the closed Charlotte Tilbury Pillow Talk Dreams Come True 15-piece makeup kit").
 4. Identify 2–4 trigger phrases from the script — one for the brand, one for the main claim, one for the close. Map each to a gesture beat from the variation list (or the user's override).
 5. Compose the paragraph from the template.

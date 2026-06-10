@@ -41,7 +41,7 @@ def row_for(product_dir: Path) -> dict | None:
         "category": info.get("category", "") or "",
         "product-pic": yn(has_file(m.get("product-pic-path", ""))),
         "narration-audio": yn(has_file(m.get("narration-audio-path", ""))),
-        "starting-pic": yn(has_file(m.get("starting-pic-path", ""))),
+        "starting-pic": yn(has_file((m.get("starting-image") or {}).get("path", ""))),
         "raw-speaker-video": yn(has_file(m.get("raw-speaker-video-path", ""))),
         "stitched-narration-video": yn(has_file(m.get("stitched-narration-video-path", ""))),
         "captioned-video": yn(has_file(m.get("captioned-video-path", ""))),

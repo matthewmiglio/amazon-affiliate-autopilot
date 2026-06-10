@@ -78,7 +78,7 @@ For each slug:
 2. Resolves the product image (`manifest.product-pic-path` or `product.{png,jpg,…}`) → upload
 3. Builds a prompt with `prompt_builder.build_prompt(slug, manifest, reroll, n_character_refs)` — leads with hard rules (refs are the same woman, torso squared to camera, mic in front, holding closed product label-out, real-photo realism, no vignette / circle crop) before the scene description (room/outfit/lighting/camera). Slug-seeded so re-runs are stable.
 4. POSTs `/generations` with `type:"image"`, `reference_image_ids = [3 char refs…, product]`, `aspect_ratio:"9:16"`, `resolution:"1K"`, model = Nano Banana Pro I2I (`HEDRA_IMAGE_MODEL_ID` overrides). T2I variants ignore reference images and produce drift — never use them.
-5. Polls (20-min cap), fetches the asset URL via `/assets?type=image&ids=<asset_id>` (image generations don't include URLs inline), and downloads to `products/<slug>/starting-pic.png` (default) — sets `manifest.json["starting-pic-path"]`. With `--output-dir` it writes to `<dir>/<slug>.png` and skips the manifest write — useful for benchmarking.
+5. Polls (20-min cap), fetches the asset URL via `/assets?type=image&ids=<asset_id>` (image generations don't include URLs inline), and downloads to `products/<slug>/starting-pic.png` (default), then writes `manifest.json["starting-image"] = {path, generated: true, source-images: [<char ref stems>]}`. With `--output-dir` it writes to `<dir>/<slug>.png` and skips the manifest write (useful for benchmarking).
 
 Idempotent — existing target file is never re-rendered without `--overwrite`.
 

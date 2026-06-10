@@ -1,11 +1,11 @@
 ---
 name: generate-starting-image
-description: Generate the 9:16 starting-frame image for Amazon affiliate products via Hedra's image-generation endpoint. For each product slug, uploads the channel's pinned character reference(s) plus the product pic to Hedra, calls `type:"image"` generation with a prompt built from the SKILL.md axes (room / outfit / mic / hold / camera angle), downloads the result to `<product>/starting-pic.png`, and syncs `starting-pic-path` in the manifest. Idempotent — existing images are never re-rendered without `--overwrite`. Accepts a single slug, a comma-list, or `--all-needing`. Use when the user runs /generate-starting-image, says "generate starting image for X", "make the starting pic", or supplies a product folder and asks for the next-stage image.
+description: Generate the 9:16 starting-frame image for Amazon affiliate products via Hedra's image-generation endpoint. For each product slug, uploads the channel's pinned character reference(s) plus the product pic to Hedra, calls `type:"image"` generation with a prompt built from the SKILL.md axes (room / outfit / mic / hold / camera angle), downloads the result to `<product>/starting-pic.png`, and writes the `starting-image` block in the manifest (path, generated=true, source-images = stems of the char refs used). Idempotent: existing images are never re-rendered without `--overwrite`. Accepts a single slug, a comma-list, or `--all-needing`. Use when the user runs /generate-starting-image, says "generate starting image for X", "make the starting pic", or supplies a product folder and asks for the next-stage image.
 ---
 
 # generate-starting-image
 
-Take one or more product slugs, render each into a 9:16 "podcast / UGC ad" starting frame via Hedra's multi-reference image generation, and write `starting-pic.png` into each product folder. Keep `manifest.json["starting-pic-path"]` aligned. Each genuinely-missing image is one Hedra image generation billed to the user's account.
+Take one or more product slugs, render each into a 9:16 "podcast / UGC ad" starting frame via Hedra's multi-reference image generation, and write `starting-pic.png` into each product folder. Keep `manifest.json["starting-image"]` aligned with the produced file and the character references used. Each genuinely-missing image is one Hedra image generation billed to the user's account.
 
 ## Inputs
 
@@ -20,12 +20,12 @@ If the user provides nothing, ask once. Don't guess.
 
 ## State machine (per product)
 
-| `starting-pic.png` exists? | manifest has `"starting-pic.png"`? | Action | Cost |
+| `starting-pic.png` exists? | manifest has well-formed `starting-image` block? | Action | Cost |
 |---|---|---|---|
 | ✅ | ✅ | Do nothing | free |
-| ✅ | ❌ | Fix manifest only — set `starting-pic-path` to `"starting-pic.png"` | free |
-| ❌ | ✅ | Run Hedra image generation, download png (manifest already correct) | 1 Hedra image generation |
-| ❌ | ❌ | Run Hedra image generation, download png, set `starting-pic-path` | 1 Hedra image generation |
+| ✅ | ❌ | Fix manifest only: write `starting-image = {path, generated: true, source-images: ["unknown"]}` | free |
+| ❌ | ✅ | Run Hedra image generation, download png (manifest already correct, will be overwritten with real source-images) | 1 Hedra image generation |
+| ❌ | ❌ | Run Hedra image generation, download png, write `starting-image = {path, generated: true, source-images: [stems...]}` | 1 Hedra image generation |
 
 Pre-flight bail per product (FAIL row):
 - `manifest.json` missing → `"missing manifest.json"`

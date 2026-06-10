@@ -16,8 +16,9 @@ Per slug, this script:
      ($HEDRA_IMAGE_MODEL_ID overrides). Resolution: 1K, aspect: 9:16.
   5. Polls, fetches the asset URL from /assets, downloads to
      <output-dir>/<slug>/<output-name> (default
-     products/<slug>/starting-pic.png), and updates the manifest's
-     `starting-pic-path`.
+     products/<slug>/starting-pic.png), and writes the manifest's
+     `starting-image` block (path, generated=true, source-images = stems
+     of the character refs that went in).
 
 Idempotent: skips slugs whose target file already exists unless --overwrite.
 
@@ -52,7 +53,24 @@ PRODUCTS_DIR = REPO_ROOT / "products"
 CHARACTER_DIR = REPO_ROOT / "assets" / "character"
 
 OUTPUT_NAME = "starting-pic.png"
-MANIFEST_KEY = "starting-pic-path"
+MANIFEST_KEY = "starting-image"
+
+
+def _write_starting_image_block(manifest: dict, char_paths: list[Path] | None, image_filename: str) -> None:
+    """Set manifest['starting-image'] = {path, generated, source-images}.
+
+    char_paths=None means we don't know which refs were used (FIXED-state sync
+    over an image that pre-dates this provenance tracking) — record "unknown".
+    """
+    if char_paths is None:
+        source_images = ["unknown"]
+    else:
+        source_images = [p.stem for p in char_paths]
+    manifest[MANIFEST_KEY] = {
+        "path": image_filename,
+        "generated": True,
+        "source-images": source_images,
+    }
 
 PRODUCT_IMAGE_CANDIDATES = ["product.png", "product.jpg", "product.jpeg", "product.webp"]
 CHARACTER_REF_COUNT = 3
@@ -211,7 +229,7 @@ def generate_one(
     if update_manifest:
         rel = output_path.name if output_path.parent == folder else str(output_path.relative_to(folder)) if output_path.is_relative_to(folder) else None
         if rel is not None:
-            manifest[MANIFEST_KEY] = rel
+            _write_starting_image_block(manifest, char_paths, rel)
             _save_manifest(manifest_path, manifest)
 
     return ("OK", f"generation {gen_id} -> {output_path}")
@@ -243,8 +261,18 @@ def _process_one(
             manifest_path = PRODUCTS_DIR / slug / "manifest.json"
             if manifest_path.exists():
                 m = _load_manifest(manifest_path)
-                if m.get(MANIFEST_KEY) != OUTPUT_NAME:
-                    m[MANIFEST_KEY] = OUTPUT_NAME
+                block = m.get(MANIFEST_KEY) or {}
+                # Sync the block if missing or pointing at a stale path. The
+                # source-images we record here is "unknown" because we have no
+                # way to recover the char refs from a pre-existing file.
+                needs_sync = (
+                    not isinstance(block, dict)
+                    or block.get("path") != OUTPUT_NAME
+                    or not block.get("generated")
+                    or "source-images" not in block
+                )
+                if needs_sync:
+                    _write_starting_image_block(m, None, OUTPUT_NAME)
                     _save_manifest(manifest_path, m)
                     return (slug, "FIXED", "manifest synced")
         return (slug, "SKIP", "image already exists")
