@@ -3,10 +3,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PRODUCTS_DIR = ROOT / "products"
+
+# Reuse the validator from upload_ad so "meta-ok" matches what upload-ad accepts.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from upload_ad import is_metadata_complete, PLATFORMS as UPLOAD_PLATFORMS  # noqa: E402
 
 
 def yn(v) -> str:
@@ -30,6 +35,13 @@ def row_for(product_dir: Path) -> dict | None:
     def up(platform: str) -> str:
         return yn(bool((uploads.get(platform) or {}).get("uploaded")))
 
+    def meta_ok() -> str:
+        for p in UPLOAD_PLATFORMS:
+            metadata = ((uploads.get(p) or {}).get("metadata") or {})
+            if not is_metadata_complete(p, metadata):
+                return "no"
+        return "yes"
+
     return {
         "item": product_dir.name,
         "commission": m.get("commission-percentage", "") or "",
@@ -46,6 +58,7 @@ def row_for(product_dir: Path) -> dict | None:
         "stitched-narration-video": yn(has_file(m.get("stitched-narration-video-path", ""))),
         "captioned-video": yn(has_file(m.get("captioned-video-path", ""))),
         "final-with-music": yn(has_file(m.get("final-with-music-video-path", ""))),
+        "meta-ok":  meta_ok(),
         "yt-up":    up("youtube"),
         "insta-up": up("instagram"),
         "fb-up":    up("facebook"),
@@ -65,6 +78,7 @@ COL_HEADERS = {
     "stitched-narration-video": "redo-narr",
     "captioned-video": "captions",
     "final-with-music": "music",
+    "meta-ok": "meta-ok",
     "yt-up": "yt-up",
     "insta-up": "insta-up",
     "fb-up": "fb-up",
@@ -101,7 +115,8 @@ def print_matrix(rows: list[dict]) -> None:
         "stitched-narration-video",  # step 6: clean audio swapped in
         "captioned-video",           # step 7: captions burned in
         "final-with-music",          # step 8: bg music mixed
-        "yt-up", "insta-up", "fb-up", "pint-up", "x-up",  # step 9: per-platform upload
+        "meta-ok",                   # step 9: upload metadata authored
+        "yt-up", "insta-up", "fb-up", "pint-up", "x-up",  # step 10: per-platform upload
     ]
     headers = [COL_HEADERS.get(c, c) for c in cols]
     display = [{**r, "item": (r["item"][:27] + "...") if len(r["item"]) > 30 else r["item"]}
@@ -133,6 +148,7 @@ NEEDS_FLAGS = {
     "needs-stitched-narration": "stitched-narration-video",
     "needs-captioned": "captioned-video",
     "needs-final-with-music": "final-with-music",
+    "needs-upload-metadata": "meta-ok",
     "needs-yt-upload":    "yt-up",
     "needs-insta-upload": "insta-up",
     "needs-fb-upload":    "fb-up",
@@ -190,7 +206,8 @@ def main() -> int:
         progress_cols = [
             "script", "narration-audio", "starting-pic", "video-prompt",
             "raw-speaker-video", "stitched-narration-video", "captioned-video",
-            "final-with-music", "yt-up", "insta-up", "fb-up", "pint-up", "x-up",
+            "final-with-music", "meta-ok",
+            "yt-up", "insta-up", "fb-up", "pint-up", "x-up",
         ]
         rows.sort(key=lambda r: -sum(1 for c in progress_cols if r.get(c) == "yes"))
         print_matrix(rows)
