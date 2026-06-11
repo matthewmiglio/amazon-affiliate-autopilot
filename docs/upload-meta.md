@@ -10,47 +10,62 @@ Plan for the Instagram Reels + Facebook Reels uploaders. Both share Meta's Graph
 
 ---
 
-## CURRENT STATUS (2026-06-10): API access blocked
+## CURRENT STATUS (2026-06-10): ✅ WORKING — both platforms live
 
-Code is complete and tested locally. **Every Graph API call from our app is rejected by Meta** with:
+First production uploads succeeded:
+- **FB Reel:** https://www.facebook.com/reel/1536738854822005/ (concealer-spf-27)
+- **IG Reel:** https://www.instagram.com/reel/DZbI-2Ejdgn/ (concealer-spf-27)
 
-```
-HTTP 400: {"error":{"message":"API access blocked.","type":"OAuthException","code":200, ...}}
-```
+### The "API access blocked" saga (for future re-derivation)
 
-This holds even for `/me` (zero-permission identity call), so it's not a Reels or permissions issue. The system-user token Meta issued is real but Meta is gating the entire app at the platform level.
+Earlier on 2026-06-10 every Graph API call — even zero-permission `/me` — returned
+`HTTP 400 {"message":"API access blocked","code":200}`. Two fixes resolved it:
 
-### What works
-- `/upload-ad concealer-spf-27` runs end-to-end through our orchestrator
-- YouTube / Pinterest / X SKIP (already uploaded earlier)
-- IG + FB both FAIL with `API access blocked` (error code 200) on the very first call (FB phase-1 `/video_reels?upload_phase=start`, IG `/media?media_type=REELS&upload_type=resumable`)
+1. **Missing app metadata was the app-level gate.** Filling in App Settings → Basic
+   cleared the block within ~5 minutes of saving:
+   - Privacy Policy URL: `https://theluxedrawer.com/privacy`
+   - Terms of Service URL: `https://theluxedrawer.com/terms`
+   - User data deletion → "Data deletion instructions URL": `https://theluxedrawer.com/privacy`
+   - App domains: `theluxedrawer.com`
+   - (App icon still empty — not required for dev-mode API access)
+   - DPO/GDPR section left entirely blank — saves fine, don't put a home address in it
+   No business verification needed. No App Review needed. No Live mode needed.
 
-### What we've ruled out
-- ❌ Reels-specific gate (also blocks `/me`)
-- ❌ Permission missing (the token has all 6 scopes we requested)
-- ❌ Code bug (we hit the same error directly from `curl`/`urllib` bypassing our wrapper)
-- ❌ Token format / expired (Meta-issued never-expiring system-user token, all 6 scopes confirmed in BM)
-- ❌ Asset assignment (system user has Page + IG + App as assets, Full control on each, plus Administrator role in the dev portal App Roles page)
+2. **Page publishing needs the PAGE token, not the system-user token.** After the
+   app-level block cleared, FB Reels phase-1 returned
+   `(#200) Subject does not have permission to post videos on this target`.
+   Fix: exchange the system-user token for the Page access token via
+   `GET /me/accounts?fields=id,name,access_token` and use that for all
+   `/video_reels` calls + the rupload Authorization header. The Page token is
+   derived from the never-expiring system-user token, so it also never expires.
+   Implemented as `meta_auth.page_access_token()` (cached in `tokens/page_token.json`,
+   delete the file to force re-fetch).
 
-### Likely root cause (most → least likely)
-1. **Business portfolio is unverified.** `theluxedrawer` showed `(Unverified business)` during setup. Meta restricts Graph API access for unverified businesses regardless of permissions. To fix: complete **business verification** at `business.facebook.com/settings/info` — requires real business documents (registration, tax ID), which conflicts with the alias strategy.
-2. **App is in Development mode (Unpublished).** System-user tokens are *supposed* to bypass dev-mode restrictions but in practice Meta often gates all Graph API until the app is Live. Going Live requires App Review approval for `instagram_content_publish` + `pages_manage_posts` (3-7 day wait, screencast demo, possible business verification ambush).
-3. **Missing required app metadata.** App Settings → Basic still has empty Privacy Policy URL, Terms of Service URL, App icon (1024x1024), Data Deletion URL. Meta sometimes blocks Graph API when these are missing, especially for write-action permissions.
+   **IG does NOT need the page token** — the IG resumable flow
+   (`/{ig-user-id}/media?upload_type=resumable` → rupload → `/media_publish`)
+   works with the plain system-user token, because IG access is granted through
+   the Page asset assignment.
 
-### Next-session diagnostic checklist
-Take screenshots of these so we know exactly which gate is the wall:
+### Verified-working state
+- App in Development mode / Unpublished — fine for posting to our own Page/IG
+- Business portfolio still unverified — fine at our volume
+- All six permissions at Standard Access ("Ready for testing") — sufficient since
+  the system user is an app admin; Advanced Access / App Review only needed if
+  we ever post on behalf of OTHER businesses
+- Token chain: system_user_token.json (never expires) → page_token.json (never
+  expires, auto-fetched on first use)
 
-- `business.facebook.com/settings/info` → business verification status / banner
-- `developers.facebook.com/apps/26908915385424703/dashboard/` → Use Mode toggle (Development vs Live), required-action banners, Alert Inbox
-- `developers.facebook.com/apps/26908915385424703/app-review/permissions/` → current Access level for each permission (Standard vs Advanced)
+### Stats module (added 2026-06-11)
 
-### What was committed before the block was discovered
-- `uploader/meta/` module (`meta_auth.py`, `graph_client.py`, `upload_facebook.py`, `upload_instagram.py`) — code is correct, deployed, tested locally up to the API boundary
-- `uploader/meta/tokens/system_user_token.json` — never-expiring system-user token (rotated previously). Currently NON-FUNCTIONAL against Meta.
-- `data/tags_mapping.json` + `/generate-upload-metadata` skill — metadata authoring path is decoupled from the upload path, so improvements there land independently of the Meta block.
-
-### Hold pattern
-**Don't burn more upload attempts.** Each failed Graph API call adds to Meta's "this app looks broken" signal, which can escalate to outright app suspension. Code is verified-correct via direct HTTP; the wall is Meta-side and we have to clear it via UI / business verification / App Review before any more retries.
+`scripts/fetch_stats.py` snapshots per-post counts daily (Scheduled Task
+`AmazonAffiliateDailyStats`, 6:45am) into `stats/stats.csv` + `stats/raw/<date>.json`.
+Per-platform fetchers: `uploader/meta/meta_stats.py` (IG basic like/comment counts via
+`instagram_basic`; FB likes/comments via `pages_read_engagement` + Page token),
+`uploader/pinterest/pinterest_stats.py` (full pin analytics via `pins:read`).
+IG views/reach/saves and FB play counts currently return None — they need
+`instagram_manage_insights` / `read_insights` permissions (dashboard add + token regen,
+no App Review, our own assets). The fetchers degrade gracefully and will pick those
+metrics up automatically once the permissions are added.
 
 ---
 
