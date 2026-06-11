@@ -57,6 +57,41 @@ def ig_user_id() -> str:
     return os.environ["META_IG_USER_ID"]
 
 
+PAGE_TOKEN_FILE = HERE / "tokens" / "page_token.json"
+
+
+def page_access_token() -> str:
+    """Page access token for the FB Page (needed for posting videos/Reels).
+
+    Derived from the never-expiring system-user token via /me/accounts, so it
+    is itself never-expiring. Fetched once and cached to tokens/page_token.json;
+    delete that file to force a re-fetch.
+    """
+    if PAGE_TOKEN_FILE.exists():
+        cached = json.loads(PAGE_TOKEN_FILE.read_text(encoding="utf-8"))
+        if cached.get("page_id") == fb_page_id() and cached.get("access_token"):
+            return cached["access_token"]
+
+    import requests  # local import; only needed on first fetch
+    url = f"https://graph.facebook.com/{graph_version()}/me/accounts"
+    resp = requests.get(url, params={
+        "fields": "id,name,access_token",
+        "access_token": access_token(),
+    }, timeout=30)
+    if resp.status_code != 200:
+        raise RuntimeError(f"page token fetch failed: HTTP {resp.status_code} {resp.text[:400]}")
+    for page in resp.json().get("data", []):
+        if page.get("id") == fb_page_id() and page.get("access_token"):
+            PAGE_TOKEN_FILE.write_text(json.dumps({
+                "page_id": page["id"],
+                "page_name": page.get("name", ""),
+                "access_token": page["access_token"],
+                "derived_from": "system_user_token via /me/accounts",
+            }, indent=2), encoding="utf-8")
+            return page["access_token"]
+    raise RuntimeError(f"page {fb_page_id()} not found in /me/accounts response")
+
+
 def whoami() -> dict:
     """Return a quick identity dump for debugging."""
     return {

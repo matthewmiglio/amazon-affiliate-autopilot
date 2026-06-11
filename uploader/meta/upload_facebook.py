@@ -69,10 +69,15 @@ def load_manifest(slug: str) -> dict | None:
 # ---------------------------------------------------------------------------
 
 def _start_upload(page_id: str, file_size: int) -> dict:
-    """Phase 1: tell Meta we're about to upload N bytes. Returns video_id + upload_url."""
+    """Phase 1: tell Meta we're about to upload N bytes. Returns video_id + upload_url.
+
+    Page-level video publishing requires the PAGE access token, not the bare
+    system-user token ("Subject does not have permission to post videos on
+    this target" otherwise)."""
     return graph_client.post(
         f"/{page_id}/video_reels",
-        params={"upload_phase": "start"},
+        params={"upload_phase": "start",
+                "access_token": meta_auth.page_access_token()},
     )
 
 
@@ -80,7 +85,7 @@ def _upload_bytes(upload_url: str, video_path: Path) -> None:
     """Phase 2: POST the raw mp4 body to the upload_url Meta gave us."""
     size = video_path.stat().st_size
     headers = {
-        "Authorization": f"OAuth {meta_auth.access_token()}",
+        "Authorization": f"OAuth {meta_auth.page_access_token()}",
         "offset": "0",
         "file_size": str(size),
     }
@@ -99,6 +104,7 @@ def _finish_upload(page_id: str, video_id: str, caption: str) -> dict:
             "video_id": video_id,
             "video_state": "PUBLISHED",
             "description": caption,
+            "access_token": meta_auth.page_access_token(),
         },
     )
 
@@ -107,7 +113,10 @@ def _poll_until_published(video_id: str, timeout_s: int = 600, interval_s: int =
     """Reels can take 30s-2min to process. Block until Meta marks it published."""
     start = time.time()
     while time.time() - start < timeout_s:
-        info = graph_client.get(f"/{video_id}", params={"fields": "status,published"})
+        info = graph_client.get(f"/{video_id}", params={
+            "fields": "status,published",
+            "access_token": meta_auth.page_access_token(),
+        })
         status = (info.get("status") or {}).get("video_status") if isinstance(info.get("status"), dict) else info.get("status")
         published = info.get("published")
         print(f"  [fb] {video_id} status={status} published={published}", flush=True)
@@ -120,7 +129,10 @@ def _poll_until_published(video_id: str, timeout_s: int = 600, interval_s: int =
 
 
 def _resolve_permalink(video_id: str) -> str:
-    info = graph_client.get(f"/{video_id}", params={"fields": "permalink_url"})
+    info = graph_client.get(f"/{video_id}", params={
+        "fields": "permalink_url",
+        "access_token": meta_auth.page_access_token(),
+    })
     p = info.get("permalink_url")
     if p:
         return p if p.startswith("http") else f"https://www.facebook.com{p}"
