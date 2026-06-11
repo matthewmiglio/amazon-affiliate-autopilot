@@ -33,6 +33,10 @@ Reads (per slug):
 Writes:
 - `products/<slug>/manifest.json` -> `uploads.<platform>.metadata` for all 5 platforms
 
+## Platform on/off switch
+
+`data/platforms.json` (machine-local, gitignored, auto-created by `scripts/upload_ad.py` with all platforms enabled) marks platforms enabled/disabled with a reason (e.g. youtube disabled after a channel ban). **Do not author metadata for disabled platforms** unless the user explicitly asks — check this file at the start of the workflow.
+
 ## Workflow
 
 1. **Resolve the product folder.** Read its `manifest.json`.

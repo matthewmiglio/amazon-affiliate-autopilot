@@ -10,8 +10,10 @@ ROOT = Path(__file__).resolve().parent.parent
 PRODUCTS_DIR = ROOT / "products"
 
 # Reuse the validator from upload_ad so "meta-ok" matches what upload-ad accepts.
+# enabled_platforms(): disabled platforms (data/platforms.json) don't count
+# against meta-ok.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from upload_ad import is_metadata_complete, PLATFORMS as UPLOAD_PLATFORMS  # noqa: E402
+from upload_ad import is_metadata_complete, enabled_platforms  # noqa: E402
 
 
 def yn(v) -> str:
@@ -36,7 +38,7 @@ def row_for(product_dir: Path) -> dict | None:
         return yn(bool((uploads.get(platform) or {}).get("uploaded")))
 
     def meta_ok() -> str:
-        for p in UPLOAD_PLATFORMS:
+        for p in enabled_platforms():
             metadata = ((uploads.get(p) or {}).get("metadata") or {})
             if not is_metadata_complete(p, metadata):
                 return "no"

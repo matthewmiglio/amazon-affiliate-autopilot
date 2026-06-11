@@ -40,6 +40,10 @@ If the user provides nothing, ask once. Don't guess.
 5. **Do NOT** add `--overwrite` unless the user explicitly asks to re-upload.
 6. **Deploy the website artifacts immediately, do NOT ask first.** After every successful upload, commit + push `website/` straight away (use `/commit-nextjs` or a direct `git add website/ && git commit && git push`). The YouTube description points viewers at `https://theluxedrawer.com/p/<slug>`, so delaying the push means viewers 404. Standing approval: never ask before this commit/push, just do it. If `git status website/` is clean (prebuild was a no-op because the slug was already published), skip the commit silently. Same for unrelated dirty files outside `website/`, leave them alone.
 
+## Platform on/off switch
+
+`data/platforms.json` (machine-local, gitignored, auto-created with all platforms enabled) is the master enable/disable switch per platform. Disabled platforms print `SKIP platform disabled (<reason>)` and are excluded from scheduling, metadata authoring, and `meta-ok`. Flip `enabled` back to `true` to restore a platform end-to-end.
+
 ## State machine (per product / per platform)
 
 | `uploads.<platform>.uploaded` | metadata complete? | uploader exists? | Action |

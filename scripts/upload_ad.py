@@ -37,6 +37,33 @@ UPLOADERS: dict[str, Path] = {
 
 PLATFORMS = ("youtube", "instagram", "facebook", "pinterest", "x")
 
+PLATFORMS_CONFIG = ROOT / "data" / "platforms.json"
+
+
+def load_platform_config() -> dict:
+    """data/platforms.json: {platform: {enabled: bool, reason: str}}.
+
+    Machine-local state (gitignored). Auto-created with all platforms enabled
+    on first use; flip `enabled` to false (with a `reason`) to take a platform
+    out of every pipeline stage (metadata authoring, scheduling, uploading,
+    meta-ok status)."""
+    if not PLATFORMS_CONFIG.exists():
+        default = {p: {"enabled": True, "reason": ""} for p in PLATFORMS}
+        PLATFORMS_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+        PLATFORMS_CONFIG.write_text(json.dumps(default, indent=2) + "\n", encoding="utf-8")
+        return default
+    return json.loads(PLATFORMS_CONFIG.read_text(encoding="utf-8"))
+
+
+def platform_enabled(platform: str) -> tuple[bool, str]:
+    """Returns (enabled, reason)."""
+    cfg = load_platform_config().get(platform) or {}
+    return bool(cfg.get("enabled", True)), (cfg.get("reason") or "")
+
+
+def enabled_platforms() -> tuple[str, ...]:
+    return tuple(p for p in PLATFORMS if platform_enabled(p)[0])
+
 FINAL_VIDEO_NAME = "final-with-music.mp4"
 
 def load_manifest(path: Path) -> OrderedDict:
@@ -189,6 +216,10 @@ def process(product_arg: str, overwrite: bool) -> int:
     any_failed = False
     any_uploaded = False
     for platform in PLATFORMS:
+        on, reason = platform_enabled(platform)
+        if not on:
+            print(f"{slug}\t{platform}\tSKIP\tplatform disabled ({reason or 'no reason given'})")
+            continue
         status, detail = process_platform(manifest_path, slug, platform, overwrite)
         print(f"{slug}\t{platform}\t{status}\t{detail}")
         if status == "FAIL":
