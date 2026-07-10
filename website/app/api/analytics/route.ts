@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     try { referrer_host = new URL(body.referrer).hostname; } catch { /* keep null */ }
   }
   const h = req.headers;
-  await sb.from("analytics_events").insert({
+  await sb.from("amazon_analytics").insert({
     event_type,
     path:        typeof body.path        === "string" ? body.path        : null,
     slug:        typeof body.slug        === "string" ? body.slug        : null,
