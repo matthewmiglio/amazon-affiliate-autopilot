@@ -13,7 +13,7 @@ WEBSITE = HERE.parent.parent
 SRC_DIR = WEBSITE / "public" / "products"
 DST_DIR = WEBSITE / "public" / "products-nobg"
 
-REMOVE_BG_DIR = Path(r"C:\My_Files\my_programs\wow_fishbot\ads\scripts")
+REMOVE_BG_DIR = Path(r"M:\my_files\my_programs\wow_fishbot\ads\scripts")
 sys.path.insert(0, str(REMOVE_BG_DIR))
 
 # remove_bg.py calls os.add_dll_directory at import time for cudnn; if that fails,
