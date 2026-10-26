@@ -17,7 +17,7 @@ The output is a single ~80–120 word paragraph that the user pastes into a Sora
 
 When invoked, look for / ask for:
 1. **Product folder or slug** (required) — accepts:
-   - an absolute path like `C:\My_Files\my_programs\amazon-affiliate\products\<slug>`
+   - an absolute path like `M:\my_files\my_programs\amazon-affiliate\products\<slug>`
    - a repo-relative path like `products/<slug>` or `assets/products/<slug>`
    - a bare slug — resolve under `products/` first; if not found, try `assets/products/`
 2. **Optional gesture override** — the user can pass a one-line gesture cue ("she taps the cap on the punchline") that the skill folds into the gesture beats.

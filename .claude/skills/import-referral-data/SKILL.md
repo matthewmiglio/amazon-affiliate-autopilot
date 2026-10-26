@@ -15,7 +15,7 @@ Take newly scraped Amazon affiliate products from the scraper extension's Downlo
   - `data.json` top-level fields: `product-name`, `description`, `product-pic-path`, `affiliate-link`, `commission-rate`, `product-page-url`
   - `data.json` `meta`: `{ brand, price, asin, featureBullets, scrapedAt, ... }`
 
-- **Destination:** `C:\My_Files\my_programs\amazon-affiliate\products\`
+- **Destination:** `M:\my_files\my_programs\amazon-affiliate\products\`
   - One subfolder per imported product, **same folder name as the source folder**
   - Each destination folder contains:
     - `product.<ext>` — the product image, copied from the scraper's `product.<ext>` (keep original extension; do NOT convert)

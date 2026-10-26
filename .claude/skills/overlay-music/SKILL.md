@@ -12,7 +12,7 @@ Pick a random song from the project's `music/` library, lay it under the product
 `/overlay-music <product>` where `<product>` is one of:
 
 - A slug under `products/`: `/overlay-music cle-de-peau-clarifying-cleansing-foam-for-women-4-2-oz-cleanser`
-- An absolute path to a product folder: `/overlay-music C:\My_Files\my_programs\amazon-affiliate\products\<slug>`
+- An absolute path to a product folder: `/overlay-music M:\my_files\my_programs\amazon-affiliate\products\<slug>`
 
 If the user provides nothing, ask once. Don't guess.
 

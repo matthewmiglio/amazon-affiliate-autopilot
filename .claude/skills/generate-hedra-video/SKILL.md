@@ -77,7 +77,7 @@ Do NOT change the model, aspect ratio, or resolution without explicit user direc
 If you launch `generate.py` as a backgrounded bash task, **use the absolute path** — backgrounded shells reset cwd to the repo root, so `cd hedra && poetry run ...` will fail with "No such file or directory":
 
 ```
-cd /c/My_Files/my_programs/amazon-affiliate/hedra && poetry run python avatar-video/generate.py --products <slug>
+cd /m/my_files/my_programs/amazon-affiliate/hedra && poetry run python avatar-video/generate.py --products <slug>
 ```
 
 Foreground invocations are fine — the relative `cd` works in those.
