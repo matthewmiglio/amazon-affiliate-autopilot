@@ -91,14 +91,14 @@ If the manifest already has metadata for a platform, **overwrite it** (this skil
 
   {1-2 sentence body, can paraphrase the script — IG captions are read, not heard}
 
-  🛒 https://theluxedrawer.com/p/<slug>
+  Shop this + all my finds (link in bio)
 
   As an Amazon Associate I earn from qualifying purchases. #ad
 
   {hashtags space-separated}
   ```
 - Max 5 hashtags. IG algorithm down-weights captions with 10+ hashtags now; under-5 reads as confident.
-- The `🛒` emoji is required; it visually separates the link from the body.
+- Instagram does NOT render URLs in captions as clickable links, so NEVER put a bare product URL in the IG caption; point to the bio link instead. The profile bio link is set (manually, in-app) to `https://theluxedrawer.com`.
 - The `#ad` disclosure is mandatory (FTC + Meta branded-content policy).
 - Pick hashtags that match the product type *and* the narration's angle. A skincare product with a "Korean dupe" angle should pull `#kbeauty` + `#skintok` even if `#beauty` would technically work.
 
@@ -111,10 +111,21 @@ If the manifest already has metadata for a platform, **overwrite it** (this skil
 }
 ```
 
-- Facebook captions are nearly identical to Instagram captions but with two adjustments:
-  - **Slightly more explanatory** — FB audience skews older, less context from short-form culture. Spell out e.g. "Korean cushion compact" instead of "K-beauty cushion."
-  - **Fewer hashtags** (2-3 max). FB hashtags barely affect distribution; don't clutter.
-- Same template structure (hook → body → 🛒 link → disclosure → hashtags).
+- **Caption** template — unlike IG, **Facebook renders URLs in captions as clickable links**, so the affiliate link goes high, on its own line right under the hook:
+  ```
+  {hook line — restate the punchline from the narration in ~8 words}
+  {affiliate link — the raw https://amzn.to/… from item-auxiliary-information.affiliate-link}
+
+  {short description, 2-4 sentences. Paraphrase the script.}
+
+  As an Amazon Associate I earn from qualifying purchases. #ad
+
+  {hashtags space-separated}
+  ```
+- **The URL goes right after the hook, on its own line.** Use the **direct Amazon affiliate link** (`item-auxiliary-information.affiliate-link`, the `amzn.to/…` short link), NOT the website link — FB makes it clickable, so send straight to Amazon.
+- **Slightly more explanatory** than IG — FB audience skews older, less context from short-form culture. Spell out e.g. "Korean cushion compact" instead of "K-beauty cushion."
+- **Fewer hashtags** (2-3 max). FB hashtags barely affect distribution; don't clutter.
+- The **`#ad` disclosure** line is mandatory (FTC + Meta branded-content policy); keep it on its own line just before the hashtags.
 
 ### Pinterest
 
@@ -140,7 +151,8 @@ Pinterest is a **search engine**, not a follow-feed. Distribution is driven by k
 
 **Description guidelines**
 - **First sentence is keyword-dense**, not conversational. "Listen, your cleanser matters..." is *terrible* opening copy for Pinterest. Save the narrative voice for sentence two onward.
-- Structure: `[keyword lead, ~80 chars] [narrative body, can reuse parts of script-raw-text] [Shop: <link>] [3-5 hashtags]`
+- Structure: `[keyword lead, ~80 chars] [narrative body, can reuse parts of script-raw-text] [3-5 hashtags]`
+- **Do NOT put any URL in the description.** Pinterest renders in-description links as non-clickable text. The clickable destination is the structured `link` field (the pin's "Visit site" button), not the description.
 - Example opening: `Luxury Japanese foaming cleanser for sensitive, glowy skin. Made by Cle de Peau Beaute in Japan, built around their Skin Intelligence research.`
 - End with 3-5 relevant hashtags on their own line. Pull hashtags AND keyword phrases from the Pinterest pool (the pool contains both).
 - ≤500 chars total.
@@ -220,5 +232,5 @@ Already-uploaded platforms (`uploads.<platform>.uploaded == true`) still get the
 - Don't use the raw Amazon `amzn.to` link in any platform's copy; always `https://theluxedrawer.com/p/<slug>`.
 - Don't put the `#ad` disclosure on Pinterest or X — they're handled by platform policy differently. Keep it on IG/FB/YouTube (where Meta + FTC enforce branded-content tags).
 - Don't write more than 5 hashtags on IG, more than 3 on FB, more than 5 on Pinterest's description tail.
-- Don't omit the `🛒` emoji on IG/FB captions; it's the visual link marker.
+- Don't put a bare product URL in the **Instagram** caption. IG strips clickability from caption URLs, so use the "link in bio" CTA instead. (Facebook keeps its inline URL; FB renders caption links as clickable.)
 - Don't author metadata for any platform NOT in this skill (no TikTok, no Threads, etc. until they're wired into `uploads`).

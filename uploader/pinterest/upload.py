@@ -28,6 +28,7 @@ import datetime as dt
 import io
 import json
 import os
+import re
 import socket
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -449,6 +450,10 @@ def upload_one(slug: str, dry_run: bool, force: bool, assume_yes: bool, board_ov
     meta = ((manifest.get("uploads") or {}).get("pinterest") or {}).get("metadata") or {}
     title = meta.get("title")
     description = meta.get("description", "")
+    # Pinterest renders in-description URLs as non-clickable text, so strip the
+    # "Shop: <url>" line (the destination is the pin's "Visit site" link instead).
+    description = re.sub(r"(?im)^\s*shop:.*$", "", description)
+    description = re.sub(r"\n{3,}", "\n\n", description).strip()
     alt_text = meta.get("alt_text", "")
     category = meta.get("category", "") or (manifest.get("item-auxiliary-information") or {}).get("category", "")
     link = meta.get("link") or manifest.get("affiliate-link") or manifest.get("amazon-link")
